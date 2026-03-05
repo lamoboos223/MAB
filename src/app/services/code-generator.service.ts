@@ -14,16 +14,35 @@ export class CodeGeneratorService {
 
   generateCss(pages: Page[]): string {
     let css = `* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #1a1a2e; color: #eee; padding: 16px; }
-.el-label { font-size: 12px; color: #aaa; margin-bottom: 4px; display: block; }
-select, input[type="text"], input[type="number"], input[type="email"], input[type="tel"] {
-  width: 100%; padding: 10px; background: #16213e; border: 1px solid #0f3460; color: #eee; border-radius: 6px; font-size: 14px;
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  background: #0f0f11; color: #fafafa; padding: 16px;
+  line-height: 1.5;
 }
-button { padding: 10px 20px; background: #e94560; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
-img { max-width: 100%; border-radius: 8px; }
-hr { border: none; border-top: 1px solid #333; margin: 12px 0; }
-.radio-group label, .checkbox-group label { display: block; padding: 6px 0; color: #ccc; font-size: 14px; }
-.map-container { width: 100%; border-radius: 8px; overflow: hidden; }
+.el-label {
+  font-size: 12px; color: #a1a1aa; margin-bottom: 6px; display: block;
+  font-weight: 500; letter-spacing: 0.3px;
+}
+select, input[type="text"], input[type="number"], input[type="email"], input[type="tel"] {
+  width: 100%; padding: 11px 14px; background: #18181b; border: 1px solid #3f3f46;
+  color: #fafafa; border-radius: 8px; font-size: 14px;
+  transition: border-color 0.15s; outline: none;
+}
+select:focus, input:focus { border-color: #8b5cf6; }
+button {
+  padding: 11px 22px; background: #8b5cf6; color: white; border: none;
+  border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;
+  transition: background 0.15s;
+}
+button:active { background: #7c3aed; }
+img { max-width: 100%; border-radius: 10px; }
+hr { border: none; border-top: 1px solid #27272a; margin: 14px 0; }
+.radio-group label, .checkbox-group label {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 0; color: #d4d4d8; font-size: 14px;
+}
+input[type="radio"], input[type="checkbox"] { accent-color: #8b5cf6; }
+.map-container { width: 100%; border-radius: 10px; overflow: hidden; }
 .map-container iframe { width: 100%; height: 250px; border: 0; }
 `;
 
