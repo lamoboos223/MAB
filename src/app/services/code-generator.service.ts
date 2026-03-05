@@ -12,36 +12,46 @@ export class CodeGeneratorService {
     }));
   }
 
-  generateCss(pages: Page[]): string {
+  generateCss(pages: Page[], theme: 'dark' | 'light' = 'dark'): string {
+    const t = theme === 'light' ? {
+      bg: '#ffffff', text: '#18181b', textSecondary: '#52525b', textMuted: '#a1a1aa',
+      inputBg: '#ffffff', inputBorder: '#d4d4d8', border: '#e4e4e7',
+      accent: '#7c3aed', accentHover: '#6d28d9',
+    } : {
+      bg: '#0f0f11', text: '#fafafa', textSecondary: '#d4d4d8', textMuted: '#a1a1aa',
+      inputBg: '#18181b', inputBorder: '#3f3f46', border: '#27272a',
+      accent: '#8b5cf6', accentHover: '#7c3aed',
+    };
+
     let css = `* { margin: 0; padding: 0; box-sizing: border-box; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-  background: #0f0f11; color: #fafafa; padding: 16px;
+  background: ${t.bg}; color: ${t.text}; padding: 16px;
   line-height: 1.5;
 }
 .el-label {
-  font-size: 12px; color: #a1a1aa; margin-bottom: 6px; display: block;
+  font-size: 12px; color: ${t.textMuted}; margin-bottom: 6px; display: block;
   font-weight: 500; letter-spacing: 0.3px;
 }
 select, input[type="text"], input[type="number"], input[type="email"], input[type="tel"] {
-  width: 100%; padding: 11px 14px; background: #18181b; border: 1px solid #3f3f46;
-  color: #fafafa; border-radius: 8px; font-size: 14px;
+  width: 100%; padding: 11px 14px; background: ${t.inputBg}; border: 1px solid ${t.inputBorder};
+  color: ${t.text}; border-radius: 8px; font-size: 14px;
   transition: border-color 0.15s; outline: none;
 }
-select:focus, input:focus { border-color: #8b5cf6; }
+select:focus, input:focus { border-color: ${t.accent}; }
 button {
-  padding: 11px 22px; background: #8b5cf6; color: white; border: none;
+  padding: 11px 22px; background: ${t.accent}; color: white; border: none;
   border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;
   transition: background 0.15s;
 }
-button:active { background: #7c3aed; }
+button:active { background: ${t.accentHover}; }
 img { max-width: 100%; border-radius: 10px; }
-hr { border: none; border-top: 1px solid #27272a; margin: 14px 0; }
+hr { border: none; border-top: 1px solid ${t.border}; margin: 14px 0; }
 .radio-group label, .checkbox-group label {
   display: flex; align-items: center; gap: 8px;
-  padding: 8px 0; color: #d4d4d8; font-size: 14px;
+  padding: 8px 0; color: ${t.textSecondary}; font-size: 14px;
 }
-input[type="radio"], input[type="checkbox"] { accent-color: #8b5cf6; }
+input[type="radio"], input[type="checkbox"] { accent-color: ${t.accent}; }
 .map-container { width: 100%; border-radius: 10px; overflow: hidden; }
 .map-container iframe { width: 100%; height: 250px; border: 0; }
 `;

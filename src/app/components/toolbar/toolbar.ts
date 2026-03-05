@@ -24,7 +24,7 @@ export class Toolbar {
   preview(): void {
     const pages = this.builder.pages();
     const htmlPages = this.codeGen.generatePages(pages);
-    const css = this.codeGen.generateCss(pages);
+    const css = this.codeGen.generateCss(pages, this.themeService.theme());
     const js = this.codeGen.generateJs(pages);
     const mockTwk = this.generateMockTwk();
 
