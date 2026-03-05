@@ -1,0 +1,111 @@
+@if (element; as el) {
+  <!-- Data Source Section -->
+  @if (supportsDataSource) {
+    <section class="section">
+      <h4>Data Source</h4>
+      <div class="radio-row">
+        <label>
+          <input type="radio" name="dataSource" value="static" [checked]="el.dataSource === 'static'" (change)="setDataSource('static')">
+          Static
+        </label>
+        <label>
+          <input type="radio" name="dataSource" value="dynamic" [checked]="el.dataSource === 'dynamic'" (change)="setDataSource('dynamic')">
+          Dynamic
+        </label>
+      </div>
+
+      @if (el.dataSource === 'dynamic') {
+        <div class="field">
+          <label>TWK Function</label>
+          <select [ngModel]="el.dynamicBinding?.functionName || ''" (ngModelChange)="setDynamicFunction($event)">
+            <option value="">-- Select Function --</option>
+            @for (category of categories; track category) {
+              <optgroup [label]="category">
+                @for (fn of getFunctionsForCategory(category); track fn.name) {
+                  <option [value]="fn.name">{{ fn.name }}</option>
+                }
+              </optgroup>
+            }
+          </select>
+        </div>
+
+        @if (el.dynamicBinding; as binding) {
+          @for (param of twkService.getByName(binding.functionName)?.params ?? []; track param.name) {
+            <div class="field">
+              <label>{{ param.name }} <span class="param-type">({{ param.type }}{{ param.required ? ', required' : '' }})</span></label>
+              <input type="text" [ngModel]="binding.params[param.name] || ''" (ngModelChange)="setFunctionParam(param.name, $event)">
+            </div>
+          }
+          <div class="field">
+            <label>Result Path</label>
+            <input type="text" [value]="binding.resultPath" disabled>
+          </div>
+        }
+      }
+    </section>
+  }
+
+  <!-- Button Action Section -->
+  @if (supportsButtonAction) {
+    <section class="section">
+      <h4>Button Action</h4>
+      <div class="field">
+        <label>Action</label>
+        <select [ngModel]="el.pageNavigateTo !== undefined ? '__navigate__' : (el.dynamicBinding?.functionName || '')" (ngModelChange)="setButtonAction($event)">
+          <option value="">-- Select Action --</option>
+          <option value="__navigate__">Navigate to Page</option>
+          @for (category of categories; track category) {
+            <optgroup [label]="category">
+              @for (fn of getFunctionsForCategory(category); track fn.name) {
+                <option [value]="fn.name">{{ fn.name }}</option>
+              }
+            </optgroup>
+          }
+        </select>
+      </div>
+
+      @if (el.pageNavigateTo !== undefined) {
+        <div class="field">
+          <label>Target Page</label>
+          <select [ngModel]="el.pageNavigateTo" (ngModelChange)="setPageNavigateTo($event)">
+            <option value="">-- Select Page --</option>
+            @for (page of builder.pages(); track page.id) {
+              <option [value]="page.id">{{ page.name }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      @if (el.dynamicBinding; as binding) {
+        @for (param of twkService.getByName(binding.functionName)?.params ?? []; track param.name) {
+          <div class="field">
+            <label>{{ param.name }} <span class="param-type">({{ param.type }}{{ param.required ? ', required' : '' }})</span></label>
+            <input type="text" [ngModel]="binding.params[param.name] || ''" (ngModelChange)="setFunctionParam(param.name, $event)">
+          </div>
+        }
+      }
+    </section>
+  }
+
+  <!-- Option Actions Section -->
+  @if (supportsItemActions && el.dataSource === 'static') {
+    <section class="section">
+      <h4>Option Actions</h4>
+      @for (option of el.options; track $index) {
+        <div class="option-action">
+          <span class="option-label">{{ option.label }}</span>
+          <select [ngModel]="option.action?.functionName || ''" (ngModelChange)="setOptionAction($index, $event)">
+            <option value="">-- No Action --</option>
+            @for (category of categories; track category) {
+              <optgroup [label]="category">
+                @for (fn of getFunctionsForCategory(category); track fn.name) {
+                  <option [value]="fn.name">{{ fn.name }}</option>
+                }
+              </optgroup>
+            }
+          </select>
+        </div>
+      }
+    </section>
+  }
+}

@@ -1,0 +1,94 @@
+.field {
+  margin-bottom: 12px;
+
+  label {
+    display: block;
+    font-size: 11px;
+    color: #aaa;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 6px 8px;
+    background: #16213e;
+    border: 1px solid #0f3460;
+    color: #eee;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: inherit;
+    resize: vertical;
+  }
+}
+
+.hint {
+  color: #666;
+  font-size: 13px;
+  font-style: italic;
+  padding: 12px 0;
+}
+
+.options-section {
+  margin-top: 8px;
+
+  .section-label {
+    display: block;
+    font-size: 11px;
+    color: #aaa;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+}
+
+.option-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+  align-items: center;
+
+  input {
+    flex: 1;
+    padding: 6px 8px;
+    background: #16213e;
+    border: 1px solid #0f3460;
+    color: #eee;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+
+  .remove-btn {
+    background: #e94560;
+    border: none;
+    color: #fff;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      background: #c73650;
+    }
+  }
+}
+
+.add-btn {
+  background: transparent;
+  border: 1px dashed #0f3460;
+  color: #aaa;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  width: 100%;
+  margin-top: 4px;
+
+  &:hover {
+    border-color: #e94560;
+    color: #e94560;
+  }
+}

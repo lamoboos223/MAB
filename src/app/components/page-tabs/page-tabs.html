@@ -1,1 +1,15 @@
-<p>page-tabs works!</p>
+<div class="tabs-container">
+  @for (page of builder.pages(); track page.id) {
+    <div
+      class="tab"
+      [class.active]="builder.activePageId() === page.id"
+      (click)="selectPage(page.id)"
+    >
+      <span>{{ page.name }}</span>
+      @if (builder.pages().length > 1) {
+        <button class="tab-close" (click)="removePage($event, page.id)">x</button>
+      }
+    </div>
+  }
+  <button class="add-tab" (click)="addPage()">+</button>
+</div>

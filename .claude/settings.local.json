@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:devportal.tawakkalna.sa)",
+      "Bash(ng version:*)",
+      "Bash(npm install:*)",
+      "Bash(ng new:*)",
+      "Bash(npx ng:*)",
+      "Bash(ng build:*)"
+    ]
+  }
+}

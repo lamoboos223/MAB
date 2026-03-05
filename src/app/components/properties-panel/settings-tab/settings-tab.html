@@ -1,0 +1,124 @@
+@if (element; as el) {
+  @switch (el.type) {
+    @case ('text') {
+      <div class="field">
+        <label>Content</label>
+        <textarea [ngModel]="el.staticContent" (ngModelChange)="updateContent($event)" rows="4"></textarea>
+      </div>
+      <div class="field">
+        <label>Heading Level</label>
+        <select [ngModel]="el.settings['headingLevel'] || 'p'" (ngModelChange)="updateSetting('headingLevel', $event)">
+          <option value="p">Paragraph</option>
+          <option value="h1">H1</option>
+          <option value="h2">H2</option>
+          <option value="h3">H3</option>
+          <option value="h4">H4</option>
+          <option value="h5">H5</option>
+          <option value="h6">H6</option>
+        </select>
+      </div>
+    }
+
+    @case ('button') {
+      <div class="field">
+        <label>Button Label</label>
+        <input type="text" [ngModel]="el.staticContent" (ngModelChange)="updateContent($event)">
+      </div>
+    }
+
+    @case ('image') {
+      <div class="field">
+        <label>Image URL</label>
+        <input type="text" [ngModel]="el.staticContent" (ngModelChange)="updateContent($event)" placeholder="https://...">
+      </div>
+      <div class="field">
+        <label>Alt Text</label>
+        <input type="text" [ngModel]="el.settings['alt'] || ''" (ngModelChange)="updateSetting('alt', $event)">
+      </div>
+      <div class="field">
+        <label>Width</label>
+        <input type="text" [ngModel]="el.settings['width'] || ''" (ngModelChange)="updateSetting('width', $event)" placeholder="e.g. 100%">
+      </div>
+    }
+
+    @case ('input') {
+      <div class="field">
+        <label>Label</label>
+        <input type="text" [ngModel]="el.settings['label'] || ''" (ngModelChange)="updateSetting('label', $event)">
+      </div>
+      <div class="field">
+        <label>Input Type</label>
+        <select [ngModel]="el.settings['inputType'] || 'text'" (ngModelChange)="updateSetting('inputType', $event)">
+          <option value="text">Text</option>
+          <option value="number">Number</option>
+          <option value="email">Email</option>
+          <option value="tel">Telephone</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Placeholder</label>
+        <input type="text" [ngModel]="el.settings['placeholder'] || ''" (ngModelChange)="updateSetting('placeholder', $event)">
+      </div>
+    }
+
+    @case ('dropdown') {
+      <div class="field">
+        <label>Label</label>
+        <input type="text" [ngModel]="el.settings['label'] || ''" (ngModelChange)="updateSetting('label', $event)">
+      </div>
+      <ng-container *ngTemplateOutlet="optionsList"></ng-container>
+    }
+
+    @case ('radio') {
+      <div class="field">
+        <label>Label</label>
+        <input type="text" [ngModel]="el.settings['label'] || ''" (ngModelChange)="updateSetting('label', $event)">
+      </div>
+      <ng-container *ngTemplateOutlet="optionsList"></ng-container>
+    }
+
+    @case ('checkbox') {
+      <div class="field">
+        <label>Label</label>
+        <input type="text" [ngModel]="el.settings['label'] || ''" (ngModelChange)="updateSetting('label', $event)">
+      </div>
+      <ng-container *ngTemplateOutlet="optionsList"></ng-container>
+    }
+
+    @case ('map') {
+      <div class="field">
+        <label>Latitude</label>
+        <input type="text" [ngModel]="el.settings['lat'] || ''" (ngModelChange)="updateSetting('lat', $event)">
+      </div>
+      <div class="field">
+        <label>Longitude</label>
+        <input type="text" [ngModel]="el.settings['lng'] || ''" (ngModelChange)="updateSetting('lng', $event)">
+      </div>
+      <div class="field">
+        <label>Zoom</label>
+        <input type="text" [ngModel]="el.settings['zoom'] || ''" (ngModelChange)="updateSetting('zoom', $event)">
+      </div>
+    }
+
+    @case ('divider') {
+      <div class="hint">
+        Use the Style tab to customize the divider appearance.
+      </div>
+    }
+  }
+}
+
+<ng-template #optionsList>
+  @if (element; as el) {
+    <div class="options-section">
+      <label class="section-label">Options</label>
+      @for (option of el.options; track $index) {
+        <div class="option-row">
+          <input type="text" [ngModel]="option.label" (ngModelChange)="updateOptionLabel($index, $event)">
+          <button class="remove-btn" (click)="removeOption($index)" title="Remove option">x</button>
+        </div>
+      }
+      <button class="add-btn" (click)="addOption()">+ Add Option</button>
+    </div>
+  }
+</ng-template>

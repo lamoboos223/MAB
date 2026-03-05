@@ -1,0 +1,67 @@
+@if (element; as el) {
+  <div class="style-group">
+    <label>Font Size</label>
+    <input type="text" [ngModel]="el.styles.fontSize" (ngModelChange)="updateStyle('fontSize', $event)" placeholder="e.g. 16px">
+  </div>
+
+  <div class="style-group">
+    <label>Font Weight</label>
+    <select [ngModel]="el.styles.fontWeight" (ngModelChange)="updateStyle('fontWeight', $event)">
+      <option value="">Default</option>
+      <option value="light">Light</option>
+      <option value="normal">Normal</option>
+      <option value="semi-bold">Semi-Bold</option>
+      <option value="bold">Bold</option>
+    </select>
+  </div>
+
+  <div class="style-group">
+    <label>Color</label>
+    <input type="color" [ngModel]="el.styles.color || '#ffffff'" (ngModelChange)="updateStyle('color', $event)">
+  </div>
+
+  <div class="style-group">
+    <label>Background Color</label>
+    <input type="color" [ngModel]="el.styles.backgroundColor || '#000000'" (ngModelChange)="updateStyle('backgroundColor', $event)">
+  </div>
+
+  <div class="style-group">
+    <label>Text Align</label>
+    <select [ngModel]="el.styles.textAlign" (ngModelChange)="updateStyle('textAlign', $event)">
+      <option value="">Default</option>
+      <option value="left">Left</option>
+      <option value="center">Center</option>
+      <option value="right">Right</option>
+    </select>
+  </div>
+
+  <div class="style-group">
+    <label>Padding</label>
+    <input type="text" [ngModel]="el.styles.padding" (ngModelChange)="updateStyle('padding', $event)" placeholder="e.g. 8px">
+  </div>
+
+  <div class="style-group">
+    <label>Margin</label>
+    <input type="text" [ngModel]="el.styles.margin" (ngModelChange)="updateStyle('margin', $event)" placeholder="e.g. 8px">
+  </div>
+
+  <div class="style-group">
+    <label>Border Radius</label>
+    <input type="text" [ngModel]="el.styles.borderRadius" (ngModelChange)="updateStyle('borderRadius', $event)" placeholder="e.g. 4px">
+  </div>
+
+  <div class="style-group">
+    <label>Border</label>
+    <input type="text" [ngModel]="el.styles.border" (ngModelChange)="updateStyle('border', $event)" placeholder="e.g. 1px solid #333">
+  </div>
+
+  <div class="style-group">
+    <label>Width</label>
+    <input type="text" [ngModel]="el.styles.width" (ngModelChange)="updateStyle('width', $event)" placeholder="e.g. 100%">
+  </div>
+
+  <div class="style-group">
+    <label>Height</label>
+    <input type="text" [ngModel]="el.styles.height" (ngModelChange)="updateStyle('height', $event)" placeholder="e.g. auto">
+  </div>
+}

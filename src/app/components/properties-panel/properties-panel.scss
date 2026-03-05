@@ -1,0 +1,53 @@
+.panel-container {
+  padding: 16px;
+  height: 100%;
+}
+
+.panel-header {
+  margin-bottom: 12px;
+}
+
+.el-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e94560;
+  letter-spacing: 1px;
+}
+
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #0f3460;
+
+  button {
+    flex: 1;
+    padding: 8px;
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    font-size: 12px;
+    border-bottom: 2px solid transparent;
+
+    &.active {
+      color: #e94560;
+      border-bottom-color: #e94560;
+    }
+
+    &:hover {
+      color: #ccc;
+    }
+  }
+}
+
+.tab-content {
+  padding-top: 4px;
+}
+
+.no-selection {
+  color: #555;
+  text-align: center;
+  padding: 40px 20px;
+  font-size: 14px;
+}

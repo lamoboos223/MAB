@@ -1,0 +1,27 @@
+.style-group {
+  margin-bottom: 12px;
+
+  label {
+    display: block;
+    font-size: 11px;
+    color: #aaa;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 6px 8px;
+    background: #16213e;
+    border: 1px solid #0f3460;
+    color: #eee;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+
+  input[type="color"] {
+    height: 32px;
+    padding: 2px;
+    cursor: pointer;
+  }
+}

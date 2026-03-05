@@ -1,9 +1,18 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { UpperCasePipe } from '@angular/common';
+import { BuilderService } from '../../services/builder.service';
+import { StyleTab } from './style-tab/style-tab';
+import { DataTab } from './data-tab/data-tab';
+import { SettingsTab } from './settings-tab/settings-tab';
 
 @Component({
   selector: 'app-properties-panel',
-  imports: [],
+  standalone: true,
+  imports: [UpperCasePipe, StyleTab, DataTab, SettingsTab],
   templateUrl: './properties-panel.html',
-  styleUrl: './properties-panel.scss',
+  styleUrl: './properties-panel.scss'
 })
-export class PropertiesPanel {}
+export class PropertiesPanel {
+  builder = inject(BuilderService);
+  activeTab: 'style' | 'data' | 'settings' = 'style';
+}

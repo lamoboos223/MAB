@@ -1,1 +1,21 @@
-<p>properties-panel works!</p>
+<div class="panel-container">
+  @if (builder.selectedElement(); as el) {
+    <div class="panel-header">
+      <span class="el-type">{{ el.type | uppercase }}</span>
+    </div>
+    <div class="tabs">
+      <button [class.active]="activeTab === 'style'" (click)="activeTab = 'style'">Style</button>
+      <button [class.active]="activeTab === 'data'" (click)="activeTab = 'data'">Data</button>
+      <button [class.active]="activeTab === 'settings'" (click)="activeTab = 'settings'">Settings</button>
+    </div>
+    <div class="tab-content">
+      @switch (activeTab) {
+        @case ('style') { <app-style-tab></app-style-tab> }
+        @case ('data') { <app-data-tab></app-data-tab> }
+        @case ('settings') { <app-settings-tab></app-settings-tab> }
+      }
+    </div>
+  } @else {
+    <div class="no-selection">Select an element to edit its properties</div>
+  }
+</div>
