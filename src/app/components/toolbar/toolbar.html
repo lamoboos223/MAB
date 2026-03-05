@@ -1,6 +1,9 @@
 <div class="toolbar-container">
   <div class="toolbar-left"><span class="app-title">Mini Apps Builder</span></div>
   <div class="toolbar-right">
+    <button class="theme-toggle" (click)="toggleTheme()">
+      {{ themeService.theme() === 'dark' ? '☀️' : '🌙' }}
+    </button>
     <button class="toolbar-btn preview-btn" (click)="preview()">Preview</button>
     <button class="toolbar-btn export-btn" (click)="export()">Export ZIP</button>
   </div>

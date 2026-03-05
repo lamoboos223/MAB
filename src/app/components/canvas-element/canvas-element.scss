@@ -1,15 +1,102 @@
 .canvas-el {
-  position: relative; padding: 8px; border: 2px solid transparent;
-  border-radius: 4px; cursor: pointer; transition: border-color 0.2s;
-  &:hover { border-color: #0f3460; }
-  &.selected { border-color: #e94560; }
+  position: relative;
+  padding: 8px;
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--border-primary);
+    background: var(--accent-subtle);
+  }
+
+  &.selected {
+    border-color: var(--accent);
+    background: var(--accent-subtle);
+  }
 }
-.el-actions { position: absolute; top: -10px; right: -10px; z-index: 10; }
-.el-delete { background: #e94560; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; line-height: 1; }
-.el-label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
-.el-button { padding: 8px 16px; background: #e94560; color: white; border: none; border-radius: 4px; cursor: default; }
-.el-input, .el-select { width: 100%; padding: 8px; background: #16213e; border: 1px solid #0f3460; color: #eee; border-radius: 4px; }
-.el-radio, .el-checkbox { display: block; font-size: 13px; color: #ccc; margin: 4px 0; }
-.el-image-placeholder, .el-map-placeholder { background: #0f3460; padding: 30px; text-align: center; color: #aaa; border-radius: 4px; }
-.el-divider { border: none; border-top: 1px solid #333; margin: 8px 0; }
-.binding-badge { background: #0f3460; padding: 2px 8px; border-radius: 4px; font-size: 12px; color: #e94560; }
+
+.el-actions {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  z-index: 10;
+}
+
+.el-delete {
+  background: var(--danger);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.el-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+
+.el-button {
+  padding: 8px 16px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: default;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.el-input, .el-select {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.el-radio, .el-checkbox {
+  display: block;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 4px 0;
+}
+
+.el-image-placeholder, .el-map-placeholder {
+  background: var(--bg-tertiary);
+  padding: 30px;
+  text-align: center;
+  color: var(--text-tertiary);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+
+.el-divider {
+  border: none;
+  border-top: 1px solid var(--border-primary);
+  margin: 8px 0;
+}
+
+.binding-badge {
+  background: var(--accent-subtle);
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  color: var(--accent-text);
+  font-weight: 500;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}

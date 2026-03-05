@@ -1,11 +1,48 @@
-.palette-container { padding: 16px; }
-.palette-title { font-size: 14px; color: #aaa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
-.palette-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.palette-item {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
-  padding: 12px 8px; background: #16213e; border: 1px solid #0f3460;
-  border-radius: 8px; cursor: pointer; transition: background 0.2s;
-  &:hover { background: #0f3460; }
+.palette-container {
+  padding: 16px;
 }
-.palette-icon { font-size: 18px; font-weight: bold; color: #e94560; }
-.palette-label { font-size: 11px; color: #ccc; }
+
+.palette-title {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.palette-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.palette-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 12px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: var(--accent-subtle);
+    border-color: var(--accent);
+  }
+}
+
+.palette-icon {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+
+.palette-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}

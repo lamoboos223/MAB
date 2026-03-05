@@ -163,7 +163,7 @@ export class BuilderService {
         base.settings = { lat: '24.7136', lng: '46.6753', zoom: '13' };
         break;
       case 'divider':
-        base.styles = { border: '1px solid #333' };
+        base.styles = { border: '1px solid #3f3f46' };
         break;
     }
 

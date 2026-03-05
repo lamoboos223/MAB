@@ -1,6 +1,71 @@
-.toolbar-container { display: flex; align-items: center; justify-content: space-between; height: 100%; padding: 0 16px; background: #1a1a2e; }
-.app-title { font-size: 16px; font-weight: 700; color: #e94560; }
-.toolbar-right { display: flex; gap: 8px; }
-.toolbar-btn { padding: 6px 16px; border: none; border-radius: 4px; font-size: 13px; cursor: pointer; }
-.preview-btn { background: #0f3460; color: #eee; }
-.export-btn { background: #e94560; color: white; }
+.toolbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  padding: 0 20px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.3px;
+}
+
+.toolbar-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.toolbar-btn {
+  padding: 7px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.preview-btn {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--border-primary);
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+}
+
+.export-btn {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+
+  &:hover {
+    background: var(--accent-hover);
+  }
+}
+
+.theme-toggle {
+  padding: 7px 10px;
+  background: var(--btn-secondary-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+
+  &:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+  }
+}

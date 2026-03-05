@@ -4,24 +4,33 @@
   label {
     display: block;
     font-size: 11px;
-    color: #aaa;
+    color: var(--text-tertiary);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-bottom: 4px;
+    font-weight: 500;
   }
 
   input, select {
     width: 100%;
-    padding: 6px 8px;
-    background: #16213e;
-    border: 1px solid #0f3460;
-    color: #eee;
-    border-radius: 4px;
+    padding: 7px 10px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--input-text);
+    border-radius: var(--radius-sm);
     font-size: 13px;
+    transition: border-color 0.15s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
   }
 
   input[type="color"] {
-    height: 32px;
-    padding: 2px;
+    height: 34px;
+    padding: 3px;
     cursor: pointer;
+    border-radius: var(--radius-sm);
   }
 }

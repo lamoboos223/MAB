@@ -8,35 +8,40 @@
 }
 
 .el-type {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: #e94560;
+  color: var(--accent-text);
   letter-spacing: 1px;
+  background: var(--accent-subtle);
+  padding: 3px 10px;
+  border-radius: 20px;
 }
 
 .tabs {
   display: flex;
   gap: 0;
   margin-bottom: 16px;
-  border-bottom: 1px solid #0f3460;
+  border-bottom: 1px solid var(--border-primary);
 
   button {
     flex: 1;
     padding: 8px;
     background: none;
     border: none;
-    color: #888;
+    color: var(--text-tertiary);
     cursor: pointer;
     font-size: 12px;
+    font-weight: 500;
     border-bottom: 2px solid transparent;
+    transition: all 0.15s;
 
     &.active {
-      color: #e94560;
-      border-bottom-color: #e94560;
+      color: var(--accent-text);
+      border-bottom-color: var(--accent);
     }
 
-    &:hover {
-      color: #ccc;
+    &:hover:not(.active) {
+      color: var(--text-secondary);
     }
   }
 }
@@ -46,8 +51,8 @@
 }
 
 .no-selection {
-  color: #555;
+  color: var(--text-muted);
   text-align: center;
   padding: 40px 20px;
-  font-size: 14px;
+  font-size: 13px;
 }

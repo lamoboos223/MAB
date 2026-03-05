@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { ExportService } from '../../services/export.service';
 import { BuilderService } from '../../services/builder.service';
 import { CodeGeneratorService } from '../../services/code-generator.service';
+import { ThemeService } from '../../services/theme.service';
 import { PreviewModal } from '../preview-modal/preview-modal';
 
 @Component({
@@ -15,6 +16,7 @@ export class Toolbar {
   private exportService = inject(ExportService);
   private builder = inject(BuilderService);
   private codeGen = inject(CodeGeneratorService);
+  themeService = inject(ThemeService);
 
   showPreview = false;
   previewPages: Record<string, string> = {};
@@ -43,6 +45,8 @@ export class Toolbar {
   closePreview(): void { this.showPreview = false; }
 
   async export(): Promise<void> { await this.exportService.exportZip(); }
+
+  toggleTheme(): void { this.themeService.toggle(); }
 
   private generateMockTwk(): string {
     return `getUserFullName: function() { return Promise.resolve({ result: { full_name: 'Test User' }}); },

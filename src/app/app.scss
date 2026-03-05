@@ -6,8 +6,9 @@
 }
 
 .toolbar {
-  height: 50px;
-  border-bottom: 1px solid #0f3460;
+  height: 52px;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-primary);
 }
 
 .main-content {
@@ -18,8 +19,9 @@
 
 .palette {
   width: 220px;
-  border-right: 1px solid #0f3460;
+  border-right: 1px solid var(--border-primary);
   overflow-y: auto;
+  background: var(--bg-primary);
 }
 
 .canvas {
@@ -28,17 +30,19 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 20px;
-  background-color: #16213e;
+  padding: 24px;
+  background-color: var(--bg-canvas);
 }
 
 .properties {
   width: 300px;
-  border-left: 1px solid #0f3460;
+  border-left: 1px solid var(--border-primary);
   overflow-y: auto;
+  background: var(--bg-primary);
 }
 
 .page-tabs {
   height: 40px;
-  border-top: 1px solid #0f3460;
+  border-top: 1px solid var(--border-primary);
+  background: var(--bg-primary);
 }
