@@ -81,7 +81,8 @@
   padding: 30px;
   text-align: center;
   color: var(--text-tertiary);
-  border-radius: var(--radius);
+  border-radius: inherit;
+  overflow: hidden;
   font-size: 13px;
 }
 
@@ -89,6 +90,18 @@
   border: none;
   border-top: 1px solid var(--border-primary);
   margin: 8px 0;
+}
+
+.inline-edit {
+  width: 100%;
+  padding: 4px 6px;
+  font-size: 13px;
+  background: var(--input-bg);
+  border: 1px solid var(--accent);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  outline: none;
+  font-family: inherit;
 }
 
 .binding-badge {
