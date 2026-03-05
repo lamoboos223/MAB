@@ -1,0 +1,44 @@
+.builder-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.toolbar {
+  height: 50px;
+  border-bottom: 1px solid #0f3460;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.palette {
+  width: 220px;
+  border-right: 1px solid #0f3460;
+  overflow-y: auto;
+}
+
+.canvas {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 20px;
+  background-color: #16213e;
+}
+
+.properties {
+  width: 300px;
+  border-left: 1px solid #0f3460;
+  overflow-y: auto;
+}
+
+.page-tabs {
+  height: 40px;
+  border-top: 1px solid #0f3460;
+}

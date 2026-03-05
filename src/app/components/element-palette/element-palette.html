@@ -1,0 +1,11 @@
+<div class="palette-container">
+  <h3 class="palette-title">Elements</h3>
+  <div class="palette-grid">
+    @for (item of elements; track item.type) {
+      <div class="palette-item" (click)="addElement(item.type)">
+        <span class="palette-icon">{{ item.icon }}</span>
+        <span class="palette-label">{{ item.label }}</span>
+      </div>
+    }
+  </div>
+</div>

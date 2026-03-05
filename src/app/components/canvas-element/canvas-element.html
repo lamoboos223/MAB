@@ -1,0 +1,64 @@
+<div
+  class="canvas-el"
+  [class.selected]="isSelected"
+  [ngStyle]="element.styles"
+  (click)="select($event)"
+>
+  @if (isSelected) {
+    <div class="el-actions">
+      <button class="el-delete" (click)="remove($event)">x</button>
+    </div>
+  }
+
+  @switch (element.type) {
+    @case ('text') {
+      <div class="el-text">
+        @if (element.dataSource === 'dynamic' && element.dynamicBinding) {
+          <span class="binding-badge">{{ element.dynamicBinding.functionName }}()</span>
+        } @else {
+          {{ element.staticContent }}
+        }
+      </div>
+    }
+    @case ('button') {
+      <button class="el-button">{{ element.staticContent }}</button>
+    }
+    @case ('image') {
+      @if (element.dataSource === 'dynamic') {
+        <div class="el-image-placeholder">Image: {{ element.dynamicBinding?.functionName }}()</div>
+      } @else {
+        <div class="el-image-placeholder">Image</div>
+      }
+    }
+    @case ('input') {
+      <label class="el-label">{{ element.settings['label'] }}</label>
+      <input class="el-input" [type]="element.settings['inputType'] || 'text'" [placeholder]="element.settings['placeholder'] || ''" disabled />
+    }
+    @case ('dropdown') {
+      <label class="el-label">{{ element.settings['label'] }}</label>
+      <select class="el-select" disabled>
+        @for (opt of element.options; track opt.value) {
+          <option>{{ opt.label }}</option>
+        }
+      </select>
+    }
+    @case ('radio') {
+      <label class="el-label">{{ element.settings['label'] }}</label>
+      @for (opt of element.options; track opt.value) {
+        <label class="el-radio"><input type="radio" disabled [name]="element.settings['groupName']" /> {{ opt.label }}</label>
+      }
+    }
+    @case ('checkbox') {
+      <label class="el-label">{{ element.settings['label'] }}</label>
+      @for (opt of element.options; track opt.value) {
+        <label class="el-checkbox"><input type="checkbox" disabled /> {{ opt.label }}</label>
+      }
+    }
+    @case ('map') {
+      <div class="el-map-placeholder">Map ({{ element.settings['lat'] }}, {{ element.settings['lng'] }})</div>
+    }
+    @case ('divider') {
+      <hr class="el-divider" />
+    }
+  }
+</div>

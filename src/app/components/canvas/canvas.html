@@ -1,0 +1,17 @@
+<div class="canvas-frame" (click)="deselectAll()">
+  <div class="phone-frame">
+    <div class="phone-header">
+      <span>{{ builder.activePage()?.name }}</span>
+    </div>
+    <div class="phone-body" cdkDropList (cdkDropListDropped)="onDrop($event)">
+      @for (element of builder.activePage()?.elements; track element.id) {
+        <div cdkDrag>
+          <app-canvas-element [element]="element"></app-canvas-element>
+        </div>
+      }
+      @empty {
+        <div class="empty-state">Click elements from the left panel to add them here</div>
+      }
+    </div>
+  </div>
+</div>
