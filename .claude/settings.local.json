@@ -6,7 +6,9 @@
       "Bash(npm install:*)",
       "Bash(ng new:*)",
       "Bash(npx ng:*)",
-      "Bash(ng build:*)"
+      "Bash(ng build:*)",
+      "Bash(ng serve:*)",
+      "Bash(curl:*)"
     ]
   }
 }

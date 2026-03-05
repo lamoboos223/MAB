@@ -17,19 +17,26 @@ export class Toolbar {
   private codeGen = inject(CodeGeneratorService);
 
   showPreview = false;
-  previewHtml = '';
+  previewPages: Record<string, string> = {};
 
   preview(): void {
     const pages = this.builder.pages();
     const htmlPages = this.codeGen.generatePages(pages);
     const css = this.codeGen.generateCss(pages);
     const js = this.codeGen.generateJs(pages);
+    const mockTwk = this.generateMockTwk();
 
-    const firstPage = htmlPages[0]?.html || '';
-    this.previewHtml = firstPage
-      .replace('<link rel="stylesheet" href="css/style.css">', `<style>${css}</style>`)
-      .replace('  <script src="js/twkhelper.js"></script>\n  <script src="js/app.js"></script>',
-        `<script>\nvar TWK = { ${this.generateMockTwk()} };\n</script>\n<script>${js}</script>`);
+    const inlinedPages: Record<string, string> = {};
+    for (const page of htmlPages) {
+      inlinedPages[page.fileName] = page.html
+        .replace('<link rel="stylesheet" href="css/style.css">', `<style>${css}</style>`)
+        .replace(
+          '  <script src="js/twkhelper.js"></script>\n  <script src="js/app.js"></script>',
+          `<script>\nvar TWK = { ${mockTwk} };\n</script>\n<script>${js}</script>`
+        );
+    }
+
+    this.previewPages = inlinedPages;
     this.showPreview = true;
   }
 
