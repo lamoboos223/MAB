@@ -1,0 +1,11 @@
+<div class="modal-backdrop" (click)="close.emit()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <span>Preview</span>
+      <button class="close-btn" (click)="close.emit()">x</button>
+    </div>
+    <div class="phone-preview">
+      <iframe #previewFrame class="preview-iframe"></iframe>
+    </div>
+  </div>
+</div>
