@@ -15,4 +15,22 @@ import { SettingsTab } from './settings-tab/settings-tab';
 export class PropertiesPanel {
   builder = inject(BuilderService);
   activeTab: 'style' | 'data' | 'settings' = 'style';
+
+  private iconMap: Record<string, string> = {
+    text: 'T',
+    button: '▢',
+    image: '🖼',
+    input: '▤',
+    dropdown: '▾',
+    radio: '◉',
+    checkbox: '☑',
+    map: '◎',
+    'date-picker': '📅',
+    'media-select': '📎',
+    divider: '—',
+  };
+
+  getElementIcon(type: string): string {
+    return this.iconMap[type] || '•';
+  }
 }

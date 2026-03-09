@@ -3,10 +3,27 @@
     <div class="phone-header">
       <span>{{ builder.activePage()?.name }}</span>
     </div>
-    <div class="phone-body" cdkDropList (cdkDropListDropped)="onDrop($event)">
+    <div class="phone-body" [class.show-grid]="builder.showGrid()">
       @for (element of builder.activePage()?.elements; track element.id) {
-        <div cdkDrag>
+        <div class="canvas-drag-item"
+          #wrapper
+          [class.selected]="builder.selectedElementId() === element.id"
+          [style.left.px]="element.position?.x ?? 0"
+          [style.top.px]="element.position?.y ?? 0"
+          [style.width]="element.styles.width || null"
+          [style.height]="element.styles.height || null"
+          (mousedown)="onDragStart($event, element)">
           <app-canvas-element [element]="element"></app-canvas-element>
+          @if (builder.selectedElementId() === element.id) {
+            <div class="resize-handle resize-n" (mousedown)="onResizeStart($event, element, 'n', wrapper)"></div>
+            <div class="resize-handle resize-s" (mousedown)="onResizeStart($event, element, 's', wrapper)"></div>
+            <div class="resize-handle resize-e" (mousedown)="onResizeStart($event, element, 'e', wrapper)"></div>
+            <div class="resize-handle resize-w" (mousedown)="onResizeStart($event, element, 'w', wrapper)"></div>
+            <div class="resize-handle resize-nw" (mousedown)="onResizeStart($event, element, 'nw', wrapper)"></div>
+            <div class="resize-handle resize-ne" (mousedown)="onResizeStart($event, element, 'ne', wrapper)"></div>
+            <div class="resize-handle resize-sw" (mousedown)="onResizeStart($event, element, 'sw', wrapper)"></div>
+            <div class="resize-handle resize-se" (mousedown)="onResizeStart($event, element, 'se', wrapper)"></div>
+          }
         </div>
       }
       @empty {

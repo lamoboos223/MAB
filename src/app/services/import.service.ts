@@ -471,7 +471,7 @@ export class ImportService {
       const errorMessage = errorMatch?.[1] || 'Submission failed. Please try again.';
 
       this.applyToElement(pages, elId, {
-        submitConfig: { apiUrl, fieldMappings: mappings, successPage: successPageId, errorMessage }
+        submitConfig: { apiUrl, method: 'POST', fieldMappings: mappings, payloadTemplate: '', headers: [], successPage: successPageId, errorMessage }
       });
     }
 

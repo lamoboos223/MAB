@@ -53,9 +53,17 @@ export interface FieldMapping {
   source: 'input' | 'dynamic' | 'dropdown' | 'radio' | 'checkbox' | 'date-picker' | 'media-select' | 'map';
 }
 
+export interface SubmitHeader {
+  key: string;
+  value: string;
+}
+
 export interface SubmitConfig {
   apiUrl: string;
+  method: string;
   fieldMappings: FieldMapping[];
+  payloadTemplate: string;
+  headers: SubmitHeader[];
   successPage: string;
   errorMessage: string;
 }
@@ -75,4 +83,5 @@ export interface BuilderElement {
   i18n?: { ar: I18nTranslation };
   darkStyles?: ElementStyle;
   submitConfig?: SubmitConfig;
+  position?: { x: number; y: number };
 }

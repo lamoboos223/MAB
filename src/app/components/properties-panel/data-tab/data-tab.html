@@ -84,6 +84,15 @@
           <input type="text" [ngModel]="cfg.apiUrl" (ngModelChange)="updateApiUrl($event)" placeholder="https://api.example.com/endpoint">
         </div>
 
+        <div class="field">
+          <label>Method</label>
+          <select [ngModel]="cfg.method || 'POST'" (ngModelChange)="updateMethod($event)">
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
+          </select>
+        </div>
+
         <div class="submit-section">
           <label class="submit-section__title">Request Body Mapping</label>
           <div class="mapping-list">
@@ -109,9 +118,32 @@
             }
           </div>
 
-          @if (cfg.fieldMappings.length > 0) {
-            <label class="submit-section__title">Request Preview</label>
-            <pre class="request-preview">{{ requestPreview }}</pre>
+          <div class="payload-header">
+            <label class="submit-section__title">Request Payload</label>
+            <button class="reset-btn" (click)="resetPayloadTemplate()" title="Regenerate from field mappings">&#8635; Reset</button>
+          </div>
+          <textarea class="payload-editor"
+            [ngModel]="cfg.payloadTemplate || '{}'"
+            (ngModelChange)="updatePayloadTemplate($event)"
+            spellcheck="false"
+            rows="8"
+          ></textarea>
+          <p class="payload-hint">Use <code>{{ '{' }}{{ '{' }}field_name{{ '}' }}{{ '}' }}</code> for dynamic values</p>
+        </div>
+
+        <div class="submit-section">
+          <div class="header-section-title">
+            <label class="submit-section__title">Request Headers</label>
+            <button class="add-header-btn" (click)="addHeader()">+ Add</button>
+          </div>
+          @for (h of cfg.headers || []; track $index) {
+            <div class="header-row">
+              <input class="header-key" type="text" [ngModel]="h.key" (ngModelChange)="updateHeader($index, 'key', $event)" placeholder="Header-Name">
+              <input class="header-value" type="text" [ngModel]="h.value" (ngModelChange)="updateHeader($index, 'value', $event)" placeholder="value">
+              <button class="header-remove" (click)="removeHeader($index)">&times;</button>
+            </div>
+          } @empty {
+            <p class="empty-headers">No custom headers. Content-Type: application/json is always sent.</p>
           }
         </div>
 

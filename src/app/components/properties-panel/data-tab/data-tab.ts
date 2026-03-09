@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BuilderService } from '../../../services/builder.service';
 import { TwkFunctionsService } from '../../../services/twk-functions.service';
-import { TwkBinding, ElementOption, SubmitConfig, FieldMapping } from '../../../models/element.model';
+import { TwkBinding, ElementOption, SubmitConfig, FieldMapping, SubmitHeader } from '../../../models/element.model';
 import { FunctionPicker } from '../../function-picker/function-picker';
 
 @Component({
@@ -63,7 +63,10 @@ export class DataTab {
         pageNavigateTo: undefined,
         submitConfig: {
           apiUrl: '',
+          method: 'POST',
           fieldMappings: fields.map(f => ({ ...f })),
+          payloadTemplate: this.generateDefaultPayloadTemplate(fields),
+          headers: [],
           successPage: '',
           errorMessage: 'Submission failed. Please try again.'
         }
@@ -130,21 +133,47 @@ export class DataTab {
     return map[source] || source;
   }
 
-  get requestPreview(): string {
-    const el = this.element;
-    if (!el?.submitConfig) return '{}';
+  generateDefaultPayloadTemplate(fields: FieldMapping[]): string {
     const obj: Record<string, string> = {};
-    for (const m of el.submitConfig.fieldMappings) {
-      const placeholders: Record<string, string> = {
-        input: '"..."', dynamic: '"<TWK>"', dropdown: '"selected_value"',
-        radio: '"selected_option"', checkbox: '["val1", "val2"]',
-        'date-picker': '"2025-01-15"', 'media-select': '["base64..."]',
-        map: '{"lat": 24.71, "lng": 46.67}'
-      };
-      obj[m.keyName || '?'] = placeholders[m.source] || '"..."';
+    for (const f of fields) {
+      obj[f.keyName || f.elementLabel] = `{{${f.keyName || f.elementLabel}}}`;
     }
-    const lines = Object.entries(obj).map(([k, v]) => `  "${k}": ${v}`);
-    return `{\n${lines.join(',\n')}\n}`;
+    return JSON.stringify(obj, null, 2);
+  }
+
+  updateMethod(method: string): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, method } });
+  }
+
+  updatePayloadTemplate(template: string): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, payloadTemplate: template } });
+  }
+
+  resetPayloadTemplate(): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    const template = this.generateDefaultPayloadTemplate(el.submitConfig.fieldMappings);
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, payloadTemplate: template } });
+  }
+
+  addHeader(): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    const headers = [...(el.submitConfig.headers || []), { key: '', value: '' }];
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, headers } });
+  }
+
+  updateHeader(index: number, field: 'key' | 'value', val: string): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    const headers = [...(el.submitConfig.headers || [])];
+    headers[index] = { ...headers[index], [field]: val };
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, headers } });
+  }
+
+  removeHeader(index: number): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    const headers = (el.submitConfig.headers || []).filter((_, i) => i !== index);
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, headers } });
   }
 
   setPageNavigateTo(pageId: string): void {

@@ -38,10 +38,13 @@ export class CanvasElement {
     const el = this.liveElement;
     const isDark = this.themeService.theme() === 'dark';
     const isAuto = this.builder.appThemeMode() === 'auto';
-    if (isAuto && isDark) {
-      return { ...el.styles, ...(el.darkStyles ?? {}) };
-    }
-    return el.styles;
+    const base = isAuto && isDark
+      ? { ...el.styles, ...(el.darkStyles ?? {}) }
+      : { ...el.styles };
+    // width/height are handled by the wrapper (canvas-drag-item), not the inner element
+    delete base['width'];
+    delete base['height'];
+    return base;
   }
 
   get isAr(): boolean {

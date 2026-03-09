@@ -1,3 +1,9 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .canvas-el {
   position: relative;
   padding: 8px;
@@ -5,16 +11,11 @@
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.15s;
-
-  &:hover {
-    border-color: var(--border-primary);
-    background: var(--accent-subtle);
-  }
-
-  &.selected {
-    border-color: var(--accent);
-    background: var(--accent-subtle);
-  }
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 
   &.rtl {
     text-align: right;
@@ -72,16 +73,21 @@
   cursor: default;
   font-size: 13px;
   font-weight: 500;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .el-input, .el-select {
   width: 100%;
+  flex: 1;
   padding: 8px 10px;
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   color: var(--input-text);
   border-radius: var(--radius-sm);
   font-size: 13px;
+  box-sizing: border-box;
 }
 
 .el-radio, .el-checkbox {
@@ -99,6 +105,10 @@
   border-radius: inherit;
   overflow: hidden;
   font-size: 13px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .el-image-preview {

@@ -14,6 +14,7 @@ export class BuilderService {
   selectedElementId = signal<string | null>(null);
   secretKey = signal<string>('MY_HMAC_SECRET_2025');
   debugMode = signal<boolean>(false);
+  showGrid = signal<boolean>(false);
 
   activePage = computed(() => {
     const pages = this.pages();
@@ -62,6 +63,9 @@ export class BuilderService {
 
   addElement(type: ElementType): void {
     const element = this.createDefaultElement(type);
+    const page = this.activePage();
+    const count = page ? page.elements.length : 0;
+    element.position = { x: 12, y: 12 + count * 70 };
     const pages = this.pages().map(p => {
       if (p.id === this.activePageId()) {
         return { ...p, elements: [...p.elements, element] };
@@ -104,16 +108,8 @@ export class BuilderService {
     this.pages.set(pages);
   }
 
-  reorderElements(previousIndex: number, currentIndex: number): void {
-    const page = this.activePage();
-    if (!page) return;
-    const elements = [...page.elements];
-    const [moved] = elements.splice(previousIndex, 1);
-    elements.splice(currentIndex, 0, moved);
-    const pages = this.pages().map(p =>
-      p.id === page.id ? { ...p, elements } : p
-    );
-    this.pages.set(pages);
+  updateElementPosition(elementId: string, x: number, y: number): void {
+    this.updateElement(elementId, { position: { x, y } });
   }
 
   private createDefaultElement(type: ElementType): BuilderElement {

@@ -115,6 +115,16 @@
   &--active:hover { background: #b91c1c; }
 }
 
+.grid-btn {
+  background: var(--btn-secondary-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+
+  &:hover { background: var(--bg-tertiary); }
+  &--active { background: var(--accent); color: white; border-color: var(--accent); }
+  &--active:hover { background: var(--accent-hover); }
+}
+
 .theme-toggle {
   padding: 7px 10px;
   background: var(--btn-secondary-bg);

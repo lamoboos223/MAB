@@ -7,6 +7,7 @@
       </button>
     }
     <button class="toolbar-btn debug-btn" [class.debug-btn--active]="builder.debugMode()" (click)="builder.debugMode.set(!builder.debugMode())">Debug</button>
+    <button class="toolbar-btn grid-btn" [class.grid-btn--active]="builder.showGrid()" (click)="builder.showGrid.set(!builder.showGrid())">Grid</button>
     <button class="toolbar-btn import-btn" (click)="triggerImport()">Import ZIP</button>
     <input #fileInput type="file" accept=".zip" (change)="onFileSelected($event)" hidden />
     <select class="lang-select" [value]="previewLang" (change)="setPreviewLang($any($event.target).value)">

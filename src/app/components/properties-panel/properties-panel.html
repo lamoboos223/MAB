@@ -16,6 +16,17 @@
       }
     </div>
   } @else {
-    <div class="no-selection">Select an element to edit its properties</div>
+    <div class="element-list">
+      <div class="element-list__header">Elements</div>
+      @for (el of builder.activePage()?.elements; track el.id) {
+        <button class="element-list__item" (click)="builder.selectElement(el.id)">
+          <span class="element-list__icon">{{ getElementIcon(el.type) }}</span>
+          <span class="element-list__name">{{ el.label || el.staticContent || el.type }}</span>
+          <span class="element-list__type">{{ el.type }}</span>
+        </button>
+      } @empty {
+        <div class="no-selection">No elements on this page</div>
+      }
+    </div>
   }
 </div>

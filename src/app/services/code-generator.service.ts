@@ -56,7 +56,7 @@ ${themeBlock}
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
   background: var(--bg); color: var(--text); padding: 16px;
-  line-height: 1.5;
+  line-height: 1.5; position: relative; min-height: 100vh;
 }
 .el-label {
   font-size: 12px; color: var(--text-muted); margin-bottom: 6px; display: block;
@@ -225,21 +225,6 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
       js += `    new Promise(function(_, reject) { setTimeout(function() { reject(new Error(label + ' timed out after ' + ms + 'ms')); }, ms); })\n`;
       js += `  ]);\n`;
       js += `}\n\n`;
-      js += `// HMAC-SHA256 request signing\n`;
-      js += `var SECRET_KEY = '${secretKey}';\n`;
-      js += `async function hashRequest(body) {\n`;
-      js += `  var cryptoSubtle = (typeof window !== 'undefined' && window.crypto) ? window.crypto.subtle : crypto.subtle;\n`;
-      js += `  var timestamp = new Date().toISOString();\n`;
-      js += `  var nonce = Math.random().toString(36).substring(2);\n`;
-      js += `  var encoder = new TextEncoder();\n`;
-      js += `  var keyData = encoder.encode(SECRET_KEY);\n`;
-      js += `  var payload = body + '|' + timestamp + '|' + nonce;\n`;
-      js += `  var data = encoder.encode(payload);\n`;
-      js += `  var cryptoKey = await cryptoSubtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);\n`;
-      js += `  var signature = await cryptoSubtle.sign('HMAC', cryptoKey, data);\n`;
-      js += `  var hex = Array.from(new Uint8Array(signature)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');\n`;
-      js += `  return { signature: hex, timestamp: timestamp, nonce: nonce };\n`;
-      js += `}\n\n`;
       js += `function showToast(msg) {\n`;
       js += `  var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;\n`;
       js += `  document.body.appendChild(t);\n`;
@@ -358,63 +343,71 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
             js += `    var originalText = btn.textContent;\n`;
             js += `    btn.disabled = true; btn.textContent = 'Submitting...';\n`;
             js += `    try {\n`;
-            // Build body from field mappings
-            js += `      var bodyObj = {};\n`;
+            // Build field values for template substitution
+            js += `      var __fields = {};\n`;
             for (const m of cfg.fieldMappings) {
               const varName = m.elementId.replace(/-/g, '_');
               if (m.source === 'input') {
                 js += `      var f_${varName} = document.getElementById('${m.elementId}');\n`;
-                js += `      if (f_${varName}) bodyObj['${m.keyName}'] = f_${varName}.value;\n`;
+                js += `      __fields['${m.keyName}'] = f_${varName} ? f_${varName}.value : '';\n`;
               } else if (m.source === 'dropdown') {
                 js += `      var f_${varName} = document.querySelector('#${m.elementId} .custom-dropdown__value');\n`;
-                js += `      if (f_${varName}) bodyObj['${m.keyName}'] = f_${varName}.value || '';\n`;
+                js += `      __fields['${m.keyName}'] = f_${varName} ? (f_${varName}.value || '') : '';\n`;
               } else if (m.source === 'radio') {
                 const srcEl = pages.flatMap(p => p.elements).find(e => e.id === m.elementId);
                 const radioName = srcEl?.settings['groupName'] || m.elementId;
                 js += `      var f_${varName} = document.querySelector('input[name="${radioName}"]:checked');\n`;
-                js += `      bodyObj['${m.keyName}'] = f_${varName} ? f_${varName}.value : '';\n`;
+                js += `      __fields['${m.keyName}'] = f_${varName} ? f_${varName}.value : '';\n`;
               } else if (m.source === 'checkbox') {
                 js += `      var f_${varName} = document.querySelectorAll('#${m.elementId} input[type="checkbox"]:checked');\n`;
-                js += `      bodyObj['${m.keyName}'] = Array.from(f_${varName}).map(function(c) { return c.value; });\n`;
+                js += `      __fields['${m.keyName}'] = JSON.stringify(Array.from(f_${varName}).map(function(c) { return c.value; }));\n`;
               } else if (m.source === 'date-picker') {
                 js += `      var f_${varName} = document.querySelector('#${m.elementId} .date-picker-trigger__text');\n`;
-                js += `      bodyObj['${m.keyName}'] = f_${varName} && !f_${varName}.classList.contains('date-picker-trigger__text--placeholder') ? f_${varName}.textContent : '';\n`;
+                js += `      __fields['${m.keyName}'] = f_${varName} && !f_${varName}.classList.contains('date-picker-trigger__text--placeholder') ? f_${varName}.textContent : '';\n`;
               } else if (m.source === 'media-select') {
                 js += `      var f_${varName} = document.querySelectorAll('#${m.elementId} .img-picker__item img, #${m.elementId} .img-picker__item video');\n`;
-                js += `      bodyObj['${m.keyName}'] = Array.from(f_${varName}).map(function(m) { return m.src; });\n`;
+                js += `      __fields['${m.keyName}'] = JSON.stringify(Array.from(f_${varName}).map(function(m) { return m.src; }));\n`;
               } else if (m.source === 'map') {
                 js += `      var f_${varName} = document.querySelector('#${m.elementId} iframe');\n`;
-                js += `      if (f_${varName}) { var src = f_${varName}.getAttribute('src') || ''; var match = src.match(/q=([\\d.-]+),([\\d.-]+)/); bodyObj['${m.keyName}'] = match ? { lat: parseFloat(match[1]), lng: parseFloat(match[2]) } : null; }\n`;
+                js += `      if (f_${varName}) { var src = f_${varName}.getAttribute('src') || ''; var match = src.match(/q=([\\d.-]+),([\\d.-]+)/); __fields['${m.keyName}'] = match ? JSON.stringify({ lat: parseFloat(match[1]), lng: parseFloat(match[2]) }) : 'null'; }\n`;
+                js += `      else { __fields['${m.keyName}'] = 'null'; }\n`;
               } else if (m.source === 'dynamic') {
                 const srcEl = pages.flatMap(p => p.elements).find(e => e.id === m.elementId);
                 if (srcEl?.dynamicBinding) {
                   const b = srcEl.dynamicBinding;
                   const params = Object.values(b.params).filter(v => v).map(v => `'${v}'`).join(', ');
                   js += `      var dyn_${varName} = await TWK.${b.functionName}(${params});\n`;
-                  js += `      bodyObj['${m.keyName}'] = dyn_${varName}.${b.resultPath};\n`;
+                  js += `      __fields['${m.keyName}'] = typeof dyn_${varName}.${b.resultPath} === 'string' ? dyn_${varName}.${b.resultPath} : JSON.stringify(dyn_${varName}.${b.resultPath});\n`;
                 }
               }
             }
-            js += `      var body = JSON.stringify(bodyObj);\n`;
+            // Apply template substitution
+            const escapedTemplate = JSON.stringify(cfg.payloadTemplate || '{}');
+            js += `      var bodyTemplate = ${escapedTemplate};\n`;
+            js += `      var body = bodyTemplate.replace(/\\{\\{(\\w+)\\}\\}/g, function(_, key) {\n`;
+            js += `        var val = __fields[key];\n`;
+            js += `        if (val === undefined) return '{{' + key + '}}';\n`;
+            js += `        return val;\n`;
+            js += `      });\n`;
             js += `      console.error('[Submit] body:', body);\n`;
+            // Build headers
             js += `      var headers = { 'Content-Type': 'application/json' };\n`;
-            js += `      try {\n`;
-            js += `        console.error('[Submit] getting token...');\n`;
-            js += `        var tokenData = await withTimeout(TWK.generateToken(), 10000, 'generateToken');\n`;
-            js += `        var token = tokenData.result && tokenData.result.token ? tokenData.result.token : '';\n`;
-            js += `        if (token) headers['Authorization'] = 'Bearer ' + token;\n`;
-            js += `        console.error('[Submit] token ok');\n`;
-            js += `      } catch(tokenErr) { console.error('[Submit] Token error (continuing):', tokenErr); }\n`;
-            js += `      if (SECRET_KEY) {\n`;
-            js += `        console.error('[Submit] signing...');\n`;
-            js += `        var signed = await withTimeout(hashRequest(body), 5000, 'hashRequest');\n`;
-            js += `        headers['signature'] = signed.signature;\n`;
-            js += `        headers['timestamp'] = signed.timestamp;\n`;
-            js += `        headers['nonce'] = signed.nonce;\n`;
-            js += `      }\n`;
+            if (cfg.headers && cfg.headers.length > 0) {
+              for (const h of cfg.headers) {
+                if (!h.key) continue;
+                const escapedVal = JSON.stringify(h.value || '');
+                if (h.value.includes('{{')) {
+                  js += `      headers[${JSON.stringify(h.key)}] = ${escapedVal}.replace(/\\{\\{(\\w+)\\}\\}/g, function(_, key) { return __fields[key] || ''; });\n`;
+                } else {
+                  js += `      headers[${JSON.stringify(h.key)}] = ${escapedVal};\n`;
+                }
+              }
+            }
+            const method = cfg.method || 'POST';
+            js += `      console.error('[Submit] headers:', JSON.stringify(headers));\n`;
             js += `      console.error('[Submit] fetching ${cfg.apiUrl}...');\n`;
             js += `      var resp = await withTimeout(fetch('${cfg.apiUrl}', {\n`;
-            js += `        method: 'POST',\n`;
+            js += `        method: '${method}',\n`;
             js += `        headers: headers,\n`;
             js += `        body: body\n`;
             js += `      }), 30000, 'fetch');\n`;
@@ -781,7 +774,12 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
   private generateHtml(page: Page, allPages: Page[]): string {
     let body = '';
     for (const el of page.elements) {
-      body += this.elementToHtml(el) + '\n';
+      const pos = el.position;
+      if (pos) {
+        body += `  <div style="position:absolute;left:${pos.x}px;top:${pos.y}px;max-width:calc(100% - ${pos.x}px)">\n  ${this.elementToHtml(el)}\n  </div>\n`;
+      } else {
+        body += this.elementToHtml(el) + '\n';
+      }
     }
 
     const hasDropdowns = page.elements.some(e => e.type === 'dropdown' || e.type === 'date-picker' || e.type === 'media-select');

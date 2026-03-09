@@ -160,18 +160,136 @@
   }
 }
 
-.request-preview {
+.payload-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.reset-btn {
+  background: none;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--accent);
+    color: var(--accent-text);
+  }
+}
+
+.payload-editor {
+  width: 100%;
+  min-height: 120px;
+  padding: 10px 12px;
   background: var(--bg-primary, #0d0d0f);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 10px 12px;
   font-size: 11px;
   font-family: 'SF Mono', 'Fira Code', monospace;
   color: var(--accent-text);
-  overflow-x: auto;
-  white-space: pre;
-  margin: 0;
   line-height: 1.6;
+  resize: vertical;
+  tab-size: 2;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}
+
+.payload-hint {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin: 4px 0 0 0;
+
+  code {
+    background: var(--bg-secondary);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+}
+
+.header-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+
+  .submit-section__title {
+    margin-bottom: 0;
+  }
+}
+
+.add-header-btn {
+  background: none;
+  border: 1px solid var(--border-subtle);
+  color: var(--accent-text);
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    border-color: var(--accent);
+    background: var(--accent-subtle);
+  }
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.header-key, .header-value {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  border-radius: var(--radius-sm);
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}
+
+.header-key {
+  max-width: 40%;
+}
+
+.header-remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--danger, #ef4444);
+  }
+}
+
+.empty-headers {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0;
+  padding: 8px 0;
 }
 
 .option-action {
