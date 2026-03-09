@@ -83,6 +83,7 @@ export class Toolbar {
       getGalleryMulti: function() { return Promise.resolve({ result: [] }); },
       getRawData: function() { return Promise.resolve({ result: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==' }); },
       scanCode: function() { return Promise.resolve({ result: 'mock-qr-code' }); },
+      getUserUnPaidViolations: function() { return Promise.resolve({ result: { violations: [{ manufacturer: 'فورد', plate_number: '2018 J  U  L', street_speed: '0', total_fine_amount: '150', vehicle_model: 'فوكس', vehicle_speed: '0', vehicle_type: 'PRIVATE', violation_city: 'رياض', violation_date_time: ' 12:30 م', violation_number: '1006651', violation_status: 'PAID VIOLATION', violation_type: 'IMPROPER USE OF THE HORN' }, { manufacturer: 'فورد', plate_number: '2018 J  U  L', street_speed: '0', total_fine_amount: '100', vehicle_model: 'فوكس', vehicle_speed: '0', vehicle_type: 'PRIVATE', violation_city: 'رياض', violation_date_time: ' 12:30 م', violation_number: '1006651', violation_status: 'PAID VIOLATION', violation_type: 'Using Unauthorized Devices or Improper Stickers or Signs' }] }}); },
       getDeviceInfo: function() { return Promise.resolve({ result: { device_model: 'Preview', os_version: '1.0', appearance: '${appearance}', app_language: '${lang}' }}); }`;
   }
 }
