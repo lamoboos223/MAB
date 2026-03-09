@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    image: miniapps-builder
+    ports:
+      - "4200:4200"
+    volumes:
+      # Mount source for live reload (optional; remove if you prefer rebuild-only)
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
