@@ -1,9 +1,29 @@
 @if (element; as el) {
+  <!-- i18n toggle (show for elements with translatable text) -->
+  @if (['text', 'button', 'input', 'dropdown', 'radio', 'checkbox', 'date-picker', 'media-select'].includes(el.type)) {
+    <div class="i18n-toggle">
+      <label class="toggle-label">
+        <input type="checkbox" [ngModel]="el.i18nEnabled" (ngModelChange)="toggleI18n($event)">
+        <span>Multi-language (EN/AR)</span>
+      </label>
+    </div>
+  }
+
   @switch (el.type) {
     @case ('text') {
       <div class="field">
-        <label>Content</label>
+        <label>{{ el.i18nEnabled ? 'Content (English)' : 'Content' }}</label>
         <textarea [ngModel]="el.staticContent" (ngModelChange)="updateContent($event)" rows="4"></textarea>
+      </div>
+      @if (el.i18nEnabled) {
+        <div class="field ar-field">
+          <label>Content (Arabic)</label>
+          <textarea dir="rtl" [ngModel]="el.i18n?.ar?.staticContent ?? ''" (ngModelChange)="updateArContent($event)" rows="4"></textarea>
+        </div>
+      }
+      <div class="field">
+        <label>Icon</label>
+        <app-icon-picker [value]="el.settings['icon'] || ''" (valueChange)="updateSetting('icon', $event)"></app-icon-picker>
       </div>
       <div class="field">
         <label>Heading Level</label>
@@ -21,16 +41,55 @@
 
     @case ('button') {
       <div class="field">
-        <label>Button Label</label>
+        <label>{{ el.i18nEnabled ? 'Button Label (English)' : 'Button Label' }}</label>
         <input type="text" [ngModel]="el.staticContent" (ngModelChange)="updateContent($event)">
       </div>
+      @if (el.i18nEnabled) {
+        <div class="field ar-field">
+          <label>Button Label (Arabic)</label>
+          <input dir="rtl" type="text" [ngModel]="el.i18n?.ar?.staticContent ?? ''" (ngModelChange)="updateArContent($event)">
+        </div>
+      }
+      <div class="field">
+        <label>Icon</label>
+        <app-icon-picker [value]="el.settings['icon'] || ''" (valueChange)="updateSetting('icon', $event)"></app-icon-picker>
+      </div>
+      <label class="switch-row">
+        <span class="switch-row__label">Validate required fields</span>
+        <span class="switch" [class.switch--on]="el.settings['validateRequired'] === 'true'" (click)="updateSetting('validateRequired', el.settings['validateRequired'] === 'true' ? 'false' : 'true')">
+          <span class="switch__knob"></span>
+        </span>
+      </label>
     }
 
     @case ('image') {
       <div class="field">
-        <label>Image URL</label>
-        <input type="text" [ngModel]="el.staticContent" (ngModelChange)="updateContent($event)" placeholder="https://...">
+        <label>Image Source</label>
+        <div class="image-source">
+          <button type="button" class="image-source__btn" [class.image-source__btn--active]="el.settings['imageSource'] !== 'upload'" (click)="updateSetting('imageSource', 'url')">URL</button>
+          <button type="button" class="image-source__btn" [class.image-source__btn--active]="el.settings['imageSource'] === 'upload'" (click)="updateSetting('imageSource', 'upload')">Upload</button>
+        </div>
       </div>
+      @if (el.settings['imageSource'] === 'upload') {
+        <div class="field">
+          <label>Upload Image</label>
+          <div class="image-upload" (click)="imageFileInput.click()" (dragover)="$event.preventDefault()" (drop)="onImageDrop($event)">
+            @if (el.staticContent) {
+              <img class="image-upload__preview" [src]="el.staticContent" alt="Preview" />
+              <button type="button" class="image-upload__remove" (click)="removeImage($event)">x</button>
+            } @else {
+              <i class="pi pi-upload image-upload__icon"></i>
+              <span class="image-upload__text">Click or drop image</span>
+            }
+          </div>
+          <input #imageFileInput type="file" accept="image/*" (change)="onImageSelected($event)" hidden />
+        </div>
+      } @else {
+        <div class="field">
+          <label>Image URL</label>
+          <input type="text" [ngModel]="el.staticContent" (ngModelChange)="updateContent($event)" placeholder="https://...">
+        </div>
+      }
       <div class="field">
         <label>Alt Text</label>
         <input type="text" [ngModel]="el.settings['alt'] || ''" (ngModelChange)="updateSetting('alt', $event)">
@@ -43,9 +102,15 @@
 
     @case ('input') {
       <div class="field">
-        <label>Label</label>
+        <label>{{ el.i18nEnabled ? 'Label (English)' : 'Label' }}</label>
         <input type="text" [ngModel]="el.settings['label'] || ''" (ngModelChange)="updateSetting('label', $event)">
       </div>
+      @if (el.i18nEnabled) {
+        <div class="field ar-field">
+          <label>Label (Arabic)</label>
+          <input dir="rtl" type="text" [ngModel]="el.i18n?.ar?.settings?.['label'] ?? ''" (ngModelChange)="updateArSetting('label', $event)">
+        </div>
+      }
       <div class="field">
         <label>Input Type</label>
         <select [ngModel]="el.settings['inputType'] || 'text'" (ngModelChange)="updateSetting('inputType', $event)">
@@ -56,31 +121,117 @@
         </select>
       </div>
       <div class="field">
-        <label>Placeholder</label>
+        <label>{{ el.i18nEnabled ? 'Placeholder (English)' : 'Placeholder' }}</label>
         <input type="text" [ngModel]="el.settings['placeholder'] || ''" (ngModelChange)="updateSetting('placeholder', $event)">
       </div>
+      @if (el.i18nEnabled) {
+        <div class="field ar-field">
+          <label>Placeholder (Arabic)</label>
+          <input dir="rtl" type="text" [ngModel]="el.i18n?.ar?.settings?.['placeholder'] ?? ''" (ngModelChange)="updateArSetting('placeholder', $event)">
+        </div>
+      }
+      <label class="switch-row">
+        <span class="switch-row__label">Required</span>
+        <span class="switch" [class.switch--on]="el.settings['required'] === 'true'" (click)="updateSetting('required', el.settings['required'] === 'true' ? 'false' : 'true')">
+          <span class="switch__knob"></span>
+        </span>
+      </label>
+      <label class="switch-row">
+        <span class="switch-row__label">Multi-line</span>
+        <span class="switch" [class.switch--on]="!!el.settings['inputHeight'] && +el.settings['inputHeight'] > 40" (click)="updateSetting('inputHeight', (!!el.settings['inputHeight'] && +el.settings['inputHeight'] > 40) ? '0' : '80')">
+          <span class="switch__knob"></span>
+        </span>
+      </label>
     }
 
     @case ('dropdown') {
       <div class="field">
-        <label>Label</label>
+        <label>{{ el.i18nEnabled ? 'Label (English)' : 'Label' }}</label>
         <input type="text" [ngModel]="el.settings['label'] || ''" (ngModelChange)="updateSetting('label', $event)">
       </div>
+      @if (el.i18nEnabled) {
+        <div class="field ar-field">
+          <label>Label (Arabic)</label>
+          <input dir="rtl" type="text" [ngModel]="el.i18n?.ar?.settings?.['label'] ?? ''" (ngModelChange)="updateArSetting('label', $event)">
+        </div>
+      }
       <ng-container *ngTemplateOutlet="optionsList"></ng-container>
     }
 
     @case ('radio') {
       <div class="field">
-        <label>Label</label>
+        <label>{{ el.i18nEnabled ? 'Label (English)' : 'Label' }}</label>
         <input type="text" [ngModel]="el.settings['label'] || ''" (ngModelChange)="updateSetting('label', $event)">
       </div>
+      @if (el.i18nEnabled) {
+        <div class="field ar-field">
+          <label>Label (Arabic)</label>
+          <input dir="rtl" type="text" [ngModel]="el.i18n?.ar?.settings?.['label'] ?? ''" (ngModelChange)="updateArSetting('label', $event)">
+        </div>
+      }
       <ng-container *ngTemplateOutlet="optionsList"></ng-container>
     }
 
     @case ('checkbox') {
       <div class="field">
-        <label>Label</label>
+        <label>{{ el.i18nEnabled ? 'Label (English)' : 'Label' }}</label>
         <input type="text" [ngModel]="el.settings['label'] || ''" (ngModelChange)="updateSetting('label', $event)">
+      </div>
+      @if (el.i18nEnabled) {
+        <div class="field ar-field">
+          <label>Label (Arabic)</label>
+          <input dir="rtl" type="text" [ngModel]="el.i18n?.ar?.settings?.['label'] ?? ''" (ngModelChange)="updateArSetting('label', $event)">
+        </div>
+      }
+      <ng-container *ngTemplateOutlet="optionsList"></ng-container>
+    }
+
+
+    @case ('date-picker') {
+      <div class="field">
+        <label>{{ el.i18nEnabled ? 'Label (English)' : 'Label' }}</label>
+        <input type="text" [ngModel]="el.settings['label'] || ''" (ngModelChange)="updateSetting('label', $event)">
+      </div>
+      @if (el.i18nEnabled) {
+        <div class="field ar-field">
+          <label>Label (Arabic)</label>
+          <input dir="rtl" type="text" [ngModel]="el.i18n?.ar?.settings?.['label'] ?? ''" (ngModelChange)="updateArSetting('label', $event)">
+        </div>
+      }
+      <div class="field">
+        <label>Date Format</label>
+        <select [ngModel]="el.settings['dateFormat'] || 'yyyy-MM-dd'" (ngModelChange)="updateSetting('dateFormat', $event)">
+          <option value="yyyy-MM-dd">yyyy-MM-dd</option>
+          <option value="dd/MM/yyyy">dd/MM/yyyy</option>
+          <option value="MM/dd/yyyy">MM/dd/yyyy</option>
+          <option value="dd-MM-yyyy">dd-MM-yyyy</option>
+          <option value="dd.MM.yyyy">dd.MM.yyyy</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Min Date</label>
+        <input type="date" [ngModel]="el.settings['minDate'] || ''" (ngModelChange)="updateSetting('minDate', $event)">
+      </div>
+      <div class="field">
+        <label>Max Date</label>
+        <input type="date" [ngModel]="el.settings['maxDate'] || ''" (ngModelChange)="updateSetting('maxDate', $event)">
+      </div>
+    }
+
+    @case ('media-select') {
+      <div class="field">
+        <label>{{ el.i18nEnabled ? 'Label (English)' : 'Label' }}</label>
+        <input type="text" [ngModel]="el.settings['label'] || ''" (ngModelChange)="updateSetting('label', $event)">
+      </div>
+      @if (el.i18nEnabled) {
+        <div class="field ar-field">
+          <label>Label (Arabic)</label>
+          <input dir="rtl" type="text" [ngModel]="el.i18n?.ar?.settings?.['label'] ?? ''" (ngModelChange)="updateArSetting('label', $event)">
+        </div>
+      }
+      <div class="field">
+        <label>Trigger Text</label>
+        <input type="text" [ngModel]="el.settings['triggerText'] || ''" (ngModelChange)="updateSetting('triggerText', $event)">
       </div>
       <ng-container *ngTemplateOutlet="optionsList"></ng-container>
     }
@@ -111,14 +262,36 @@
 <ng-template #optionsList>
   @if (element; as el) {
     <div class="options-section">
-      <label class="section-label">Options</label>
+      <label class="section-label">{{ el.i18nEnabled ? 'Options (English)' : 'Options' }}</label>
       @for (option of el.options; track $index) {
         <div class="option-row">
+          <button type="button" class="option-icon-btn" [class.option-icon-btn--active]="option.icon" (click)="optionIconIndex = optionIconIndex === $index ? -1 : $index" title="Set icon">
+            @if (option.icon) {
+              <i class="pi pi-{{ option.icon }}"></i>
+            } @else {
+              <i class="pi pi-image" style="opacity: 0.3"></i>
+            }
+          </button>
           <input type="text" [ngModel]="option.label" (ngModelChange)="updateOptionLabel($index, $event)">
           <button class="remove-btn" (click)="removeOption($index)" title="Remove option">x</button>
         </div>
+        @if (optionIconIndex === $index) {
+          <div class="option-icon-picker">
+            <app-icon-picker [value]="option.icon || ''" (valueChange)="updateOptionIcon($index, $event); optionIconIndex = -1"></app-icon-picker>
+          </div>
+        }
       }
       <button class="add-btn" (click)="addOption()">+ Add Option</button>
     </div>
+    @if (el.i18nEnabled) {
+      <div class="options-section ar-options">
+        <label class="section-label">Options (Arabic)</label>
+        @for (option of el.options; track $index) {
+          <div class="option-row">
+            <input dir="rtl" type="text" [ngModel]="el.i18n?.ar?.options?.[$index]?.label ?? ''" (ngModelChange)="updateArOptionLabel($index, $event)">
+          </div>
+        }
+      </div>
+    }
   }
 </ng-template>

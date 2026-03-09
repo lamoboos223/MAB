@@ -1,0 +1,57 @@
+<div class="picker-wrapper">
+  <div class="picker-trigger" [class.open]="open" [class.has-value]="value" (click)="toggle()">
+    @if (value) {
+      <span class="selected-value">{{ displayText }}</span>
+      <button class="clear-btn" (click)="clear($event)">&times;</button>
+    } @else {
+      <span class="placeholder-text">{{ placeholder }}</span>
+    }
+    <span class="chevron">&#9662;</span>
+  </div>
+
+  @if (open) {
+    <div class="picker-dropdown">
+      <div class="search-box">
+        <input
+          type="text"
+          [(ngModel)]="search"
+          placeholder="Search..."
+          (click)="$event.stopPropagation()"
+          autofocus
+        />
+      </div>
+      <div class="options-list">
+        @if (showNavigate && (!search || 'navigate to page'.includes(search.toLowerCase()))) {
+          <div class="option navigate-option" (click)="select('__navigate__')">
+            <span class="fn-name">Navigate to Page</span>
+            <span class="fn-desc">Go to another page</span>
+          </div>
+        }
+        @if (showSubmit && (!search || 'submit to api'.includes(search.toLowerCase()))) {
+          <div class="option navigate-option" (click)="select('__submit__')">
+            <span class="fn-name">Submit to API</span>
+            <span class="fn-desc">POST form data to backend</span>
+          </div>
+        }
+        @for (category of categories; track category) {
+          @if (filteredFunctions(category).length > 0) {
+            <div class="category-header">{{ category }}</div>
+            @for (fn of filteredFunctions(category); track fn.name) {
+              <div
+                class="option"
+                [class.selected]="fn.name === value"
+                (click)="select(fn.name)"
+              >
+                <span class="fn-name">{{ fn.name }}</span>
+                <span class="fn-desc">{{ fn.description }}</span>
+              </div>
+            }
+          }
+        }
+        @if (!hasResults) {
+          <div class="no-results">No functions found</div>
+        }
+      </div>
+    </div>
+  }
+</div>

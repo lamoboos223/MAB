@@ -15,9 +15,13 @@ export class ThemeService {
   }
 
   toggle(): void {
-    this.theme.set(this.theme() === 'dark' ? 'light' : 'dark');
+    this.setTheme(this.theme() === 'dark' ? 'light' : 'dark');
+  }
+
+  setTheme(theme: Theme): void {
+    this.theme.set(theme);
     this.applyTheme();
-    localStorage.setItem('theme', this.theme());
+    localStorage.setItem('theme', theme);
   }
 
   private applyTheme(): void {

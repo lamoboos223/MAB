@@ -2,12 +2,13 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BuilderService } from '../../../services/builder.service';
 import { TwkFunctionsService } from '../../../services/twk-functions.service';
-import { TwkBinding, ElementOption } from '../../../models/element.model';
+import { TwkBinding, ElementOption, SubmitConfig, FieldMapping } from '../../../models/element.model';
+import { FunctionPicker } from '../../function-picker/function-picker';
 
 @Component({
   selector: 'app-data-tab',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, FunctionPicker],
   templateUrl: './data-tab.html',
   styleUrl: './data-tab.scss'
 })
@@ -18,7 +19,7 @@ export class DataTab {
 
   get element() { return this.builder.selectedElement(); }
   get supportsDataSource(): boolean { return ['text', 'image', 'dropdown', 'radio', 'checkbox', 'map'].includes(this.element?.type ?? ''); }
-  get supportsItemActions(): boolean { return ['dropdown', 'radio', 'checkbox'].includes(this.element?.type ?? ''); }
+  get supportsItemActions(): boolean { return ['dropdown', 'radio', 'checkbox', 'media-select'].includes(this.element?.type ?? ''); }
   get supportsButtonAction(): boolean { return this.element?.type === 'button'; }
 
   getFunctionsForCategory(category: string) { return this.twkService.getByCategory(category); }
@@ -41,15 +42,109 @@ export class DataTab {
     this.builder.updateElement(el.id, { dynamicBinding: { ...el.dynamicBinding, params } });
   }
 
+  get isSubmitMode(): boolean {
+    return this.element?.submitConfig !== undefined;
+  }
+
+  get availableFields(): FieldMapping[] {
+    return this.builder.getAllMappableFields();
+  }
+
   setButtonAction(functionName: string): void {
     const el = this.element; if (!el) return;
     if (functionName === '__navigate__') {
-      this.builder.updateElement(el.id, { dynamicBinding: undefined, pageNavigateTo: '' });
+      this.builder.updateElement(el.id, { dynamicBinding: undefined, pageNavigateTo: '', submitConfig: undefined });
+      return;
+    }
+    if (functionName === '__submit__') {
+      const fields = this.builder.getAllMappableFields();
+      this.builder.updateElement(el.id, {
+        dynamicBinding: undefined,
+        pageNavigateTo: undefined,
+        submitConfig: {
+          apiUrl: '',
+          fieldMappings: fields.map(f => ({ ...f })),
+          successPage: '',
+          errorMessage: 'Submission failed. Please try again.'
+        }
+      });
       return;
     }
     const fn = this.twkService.getByName(functionName);
     if (!fn) return;
-    this.builder.updateElement(el.id, { dynamicBinding: { functionName: fn.name, params: {}, resultPath: fn.returns.path }, pageNavigateTo: undefined });
+    this.builder.updateElement(el.id, { dynamicBinding: { functionName: fn.name, params: {}, resultPath: fn.returns.path }, pageNavigateTo: undefined, submitConfig: undefined });
+  }
+
+  updateApiUrl(url: string): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, apiUrl: url } });
+  }
+
+  updateSuccessPage(pageId: string): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, successPage: pageId } });
+  }
+
+  updateErrorMessage(msg: string): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, errorMessage: msg } });
+  }
+
+  toggleFieldMapping(index: number, included: boolean): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    const mappings = [...el.submitConfig.fieldMappings];
+    if (included) {
+      const available = this.availableFields;
+      if (available[index]) {
+        mappings.push({ ...available[index] });
+      }
+    } else {
+      const field = this.availableFields[index];
+      const idx = mappings.findIndex(m => m.elementId === field.elementId);
+      if (idx >= 0) mappings.splice(idx, 1);
+    }
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, fieldMappings: mappings } });
+  }
+
+  isFieldIncluded(elementId: string): boolean {
+    return this.element?.submitConfig?.fieldMappings.some(m => m.elementId === elementId) ?? false;
+  }
+
+  getFieldKeyName(elementId: string): string {
+    return this.element?.submitConfig?.fieldMappings.find(m => m.elementId === elementId)?.keyName ?? '';
+  }
+
+  updateFieldKeyName(elementId: string, keyName: string): void {
+    const el = this.element; if (!el?.submitConfig) return;
+    const mappings = el.submitConfig.fieldMappings.map(m =>
+      m.elementId === elementId ? { ...m, keyName } : m
+    );
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, fieldMappings: mappings } });
+  }
+
+  getFieldTypeBadge(source: string): string {
+    const map: Record<string, string> = {
+      input: 'Input', dynamic: 'TWK', dropdown: 'Dropdown', radio: 'Radio',
+      checkbox: 'Checkbox', 'date-picker': 'Date', 'media-select': 'Media', map: 'Map'
+    };
+    return map[source] || source;
+  }
+
+  get requestPreview(): string {
+    const el = this.element;
+    if (!el?.submitConfig) return '{}';
+    const obj: Record<string, string> = {};
+    for (const m of el.submitConfig.fieldMappings) {
+      const placeholders: Record<string, string> = {
+        input: '"..."', dynamic: '"<TWK>"', dropdown: '"selected_value"',
+        radio: '"selected_option"', checkbox: '["val1", "val2"]',
+        'date-picker': '"2025-01-15"', 'media-select': '["base64..."]',
+        map: '{"lat": 24.71, "lng": 46.67}'
+      };
+      obj[m.keyName || '?'] = placeholders[m.source] || '"..."';
+    }
+    const lines = Object.entries(obj).map(([k, v]) => `  "${k}": ${v}`);
+    return `{\n${lines.join(',\n')}\n}`;
   }
 
   setPageNavigateTo(pageId: string): void {

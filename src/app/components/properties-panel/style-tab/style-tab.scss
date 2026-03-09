@@ -1,3 +1,19 @@
+.theme-hint {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: 6px 10px;
+  margin-bottom: 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+
+  strong {
+    color: var(--accent-text);
+    text-transform: capitalize;
+  }
+}
+
 .style-group {
   margin-bottom: 12px;
 

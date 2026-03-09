@@ -35,6 +35,16 @@
   transition: all 0.15s;
 }
 
+.import-btn {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: 1px solid var(--border-primary);
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+}
+
 .preview-btn {
   background: var(--btn-secondary-bg);
   color: var(--btn-secondary-text);
@@ -52,6 +62,57 @@
   &:hover {
     background: var(--accent-hover);
   }
+}
+
+.lang-select {
+  padding: 7px 10px;
+  background: var(--btn-secondary-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}
+
+.secret-key-input {
+  padding: 7px 10px;
+  width: 100px;
+  background: var(--btn-secondary-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  transition: all 0.15s;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    width: 140px;
+  }
+
+  &::placeholder { color: var(--text-muted); }
+}
+
+.debug-btn {
+  background: var(--btn-secondary-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary);
+
+  &:hover { background: var(--bg-tertiary); }
+  &--active { background: #dc2626; color: white; border-color: #dc2626; }
+  &--active:hover { background: #b91c1c; }
 }
 
 .theme-toggle {

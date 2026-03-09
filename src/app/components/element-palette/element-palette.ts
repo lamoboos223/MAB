@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { BuilderService } from '../../services/builder.service';
+import { ThemeService } from '../../services/theme.service';
 import { ElementType } from '../../models/element.model';
 
 interface PaletteItem {
@@ -15,7 +16,8 @@ interface PaletteItem {
   styleUrl: './element-palette.scss',
 })
 export class ElementPalette {
-  private builder = inject(BuilderService);
+  builder = inject(BuilderService);
+  private themeService = inject(ThemeService);
 
   elements: PaletteItem[] = [
     { type: 'text', label: 'Text', icon: 'T' },
@@ -25,11 +27,20 @@ export class ElementPalette {
     { type: 'dropdown', label: 'Dropdown', icon: 'D' },
     { type: 'radio', label: 'Radio', icon: 'R' },
     { type: 'checkbox', label: 'Checkbox', icon: 'C' },
+    { type: 'date-picker', label: 'Date', icon: 'DP' },
+    { type: 'media-select', label: 'Media', icon: 'MS' },
     { type: 'map', label: 'Map', icon: 'M' },
     { type: 'divider', label: 'Divider', icon: '--' }
   ];
 
   addElement(type: ElementType): void {
     this.builder.addElement(type);
+  }
+
+  setThemeMode(mode: 'light' | 'dark' | 'auto'): void {
+    this.builder.appThemeMode.set(mode);
+    if (mode === 'light' || mode === 'dark') {
+      this.themeService.setTheme(mode);
+    }
   }
 }

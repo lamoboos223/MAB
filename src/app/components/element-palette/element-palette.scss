@@ -1,5 +1,8 @@
 .palette-container {
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .palette-title {
@@ -45,4 +48,76 @@
   font-size: 11px;
   color: var(--text-secondary);
   font-weight: 500;
+}
+
+.settings-section {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.theme-switcher {
+  display: flex;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.theme-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 10px 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  position: relative;
+
+  .theme-icon {
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 20%;
+    height: 60%;
+    width: 1px;
+    background: var(--border-subtle);
+  }
+
+  &:hover {
+    color: var(--text-secondary);
+    background: var(--accent-subtle);
+  }
+
+  &.active {
+    background: var(--accent);
+    color: #fff;
+
+    &::after {
+      display: none;
+    }
+  }
+
+  & + .active::before {
+    display: none;
+  }
+}
+
+.theme-hint {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  text-align: center;
+  margin-top: 8px;
+  font-style: italic;
 }

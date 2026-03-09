@@ -1,0 +1,116 @@
+.icon-picker {
+  position: relative;
+}
+
+.icon-picker__trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  font-family: inherit;
+
+  &:hover { border-color: var(--accent); }
+
+  .pi { font-size: 14px; }
+}
+
+.icon-picker__name {
+  flex: 1;
+  text-align: left;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.icon-picker__placeholder {
+  flex: 1;
+  text-align: left;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.icon-picker__clear {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 12px;
+  padding: 0 4px;
+  line-height: 1;
+
+  &:hover { color: var(--danger); }
+}
+
+.icon-picker__dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 200;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.icon-picker__search {
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 12px;
+  outline: none;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.icon-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  padding: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.icon-picker__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 16px;
+  transition: all 0.1s;
+
+  &:hover {
+    background: var(--accent-subtle);
+    color: var(--accent-text);
+  }
+
+  &--active {
+    background: var(--accent);
+    color: white;
+  }
+}
+
+.icon-picker__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}

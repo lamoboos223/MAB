@@ -7,6 +7,8 @@ export type ElementType =
   | 'radio'
   | 'checkbox'
   | 'map'
+  | 'date-picker'
+  | 'media-select'
   | 'divider';
 
 export interface ElementStyle {
@@ -32,7 +34,30 @@ export interface TwkBinding {
 export interface ElementOption {
   label: string;
   value: string;
+  image?: string;
+  icon?: string;
   action?: TwkBinding;
+}
+
+export interface I18nTranslation {
+  staticContent?: string;
+  settings?: Record<string, string>;
+  options?: { label: string }[];
+}
+
+export interface FieldMapping {
+  elementId: string;
+  elementLabel: string;
+  pageName: string;
+  keyName: string;
+  source: 'input' | 'dynamic' | 'dropdown' | 'radio' | 'checkbox' | 'date-picker' | 'media-select' | 'map';
+}
+
+export interface SubmitConfig {
+  apiUrl: string;
+  fieldMappings: FieldMapping[];
+  successPage: string;
+  errorMessage: string;
 }
 
 export interface BuilderElement {
@@ -46,4 +71,8 @@ export interface BuilderElement {
   options: ElementOption[];
   settings: Record<string, string>;
   pageNavigateTo?: string;
+  i18nEnabled?: boolean;
+  i18n?: { ar: I18nTranslation };
+  darkStyles?: ElementStyle;
+  submitConfig?: SubmitConfig;
 }

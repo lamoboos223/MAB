@@ -1,0 +1,27 @@
+<div class="icon-picker">
+  <button type="button" class="icon-picker__trigger" (click)="toggle()">
+    @if (value) {
+      <i class="pi" [ngClass]="'pi-' + value"></i>
+      <span class="icon-picker__name">{{ value }}</span>
+      <button type="button" class="icon-picker__clear" (click)="clear($event)">x</button>
+    } @else {
+      <span class="icon-picker__placeholder">No icon</span>
+    }
+  </button>
+
+  @if (open) {
+    <div class="icon-picker__dropdown">
+      <input class="icon-picker__search" type="text" [(ngModel)]="search" placeholder="Search icons..." autofocus />
+      <div class="icon-picker__grid">
+        @for (icon of filteredIcons; track icon) {
+          <button type="button" class="icon-picker__item" [class.icon-picker__item--active]="value === icon" (click)="select(icon)" [title]="icon">
+            <i class="pi" [ngClass]="'pi-' + icon"></i>
+          </button>
+        }
+        @if (filteredIcons.length === 0) {
+          <span class="icon-picker__empty">No icons found</span>
+        }
+      </div>
+    </div>
+  }
+</div>

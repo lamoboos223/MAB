@@ -8,4 +8,41 @@
       </div>
     }
   </div>
+
+  <div class="settings-section">
+    <h3 class="palette-title">App Theme</h3>
+    <div class="theme-switcher">
+      <button
+        class="theme-option"
+        [class.active]="builder.appThemeMode() === 'light'"
+        (click)="setThemeMode('light')"
+      >
+        <span class="theme-icon">&#9788;</span>
+        <span>Light</span>
+      </button>
+      <button
+        class="theme-option"
+        [class.active]="builder.appThemeMode() === 'dark'"
+        (click)="setThemeMode('dark')"
+      >
+        <span class="theme-icon">&#9790;</span>
+        <span>Dark</span>
+      </button>
+      <button
+        class="theme-option"
+        [class.active]="builder.appThemeMode() === 'auto'"
+        (click)="setThemeMode('auto')"
+      >
+        <span class="theme-icon">&#9684;</span>
+        <span>Auto</span>
+      </button>
+    </div>
+    <p class="theme-hint">
+      @switch (builder.appThemeMode()) {
+        @case ('light') { Always light theme }
+        @case ('dark') { Always dark theme }
+        @case ('auto') { Matches user's device theme }
+      }
+    </p>
+  </div>
 </div>

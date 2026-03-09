@@ -17,16 +17,11 @@
       @if (el.dataSource === 'dynamic') {
         <div class="field">
           <label>TWK Function</label>
-          <select [ngModel]="el.dynamicBinding?.functionName || ''" (ngModelChange)="setDynamicFunction($event)">
-            <option value="">-- Select Function --</option>
-            @for (category of categories; track category) {
-              <optgroup [label]="category">
-                @for (fn of getFunctionsForCategory(category); track fn.name) {
-                  <option [value]="fn.name">{{ fn.name }}</option>
-                }
-              </optgroup>
-            }
-          </select>
+          <app-function-picker
+            [value]="el.dynamicBinding?.functionName || ''"
+            placeholder="Select function..."
+            (valueChange)="setDynamicFunction($event)"
+          ></app-function-picker>
         </div>
 
         @if (el.dynamicBinding; as binding) {
@@ -51,20 +46,16 @@
       <h4>Button Action</h4>
       <div class="field">
         <label>Action</label>
-        <select [ngModel]="el.pageNavigateTo !== undefined ? '__navigate__' : (el.dynamicBinding?.functionName || '')" (ngModelChange)="setButtonAction($event)">
-          <option value="">-- Select Action --</option>
-          <option value="__navigate__">Navigate to Page</option>
-          @for (category of categories; track category) {
-            <optgroup [label]="category">
-              @for (fn of getFunctionsForCategory(category); track fn.name) {
-                <option [value]="fn.name">{{ fn.name }}</option>
-              }
-            </optgroup>
-          }
-        </select>
+        <app-function-picker
+          [value]="el.submitConfig ? '__submit__' : (el.pageNavigateTo !== undefined ? '__navigate__' : (el.dynamicBinding?.functionName || ''))"
+          [showNavigate]="true"
+          [showSubmit]="true"
+          placeholder="Select action..."
+          (valueChange)="setButtonAction($event)"
+        ></app-function-picker>
       </div>
 
-      @if (el.pageNavigateTo !== undefined) {
+      @if (el.pageNavigateTo !== undefined && !el.submitConfig) {
         <div class="field">
           <label>Target Page</label>
           <select [ngModel]="el.pageNavigateTo" (ngModelChange)="setPageNavigateTo($event)">
@@ -76,13 +67,68 @@
         </div>
       }
 
-      @if (el.dynamicBinding; as binding) {
-        @for (param of twkService.getByName(binding.functionName)?.params ?? []; track param.name) {
-          <div class="field">
-            <label>{{ param.name }} <span class="param-type">({{ param.type }}{{ param.required ? ', required' : '' }})</span></label>
-            <input type="text" [ngModel]="binding.params[param.name] || ''" (ngModelChange)="setFunctionParam(param.name, $event)">
-          </div>
+      @if (!el.submitConfig) {
+        @if (el.dynamicBinding; as binding) {
+          @for (param of twkService.getByName(binding.functionName)?.params ?? []; track param.name) {
+            <div class="field">
+              <label>{{ param.name }} <span class="param-type">({{ param.type }}{{ param.required ? ', required' : '' }})</span></label>
+              <input type="text" [ngModel]="binding.params[param.name] || ''" (ngModelChange)="setFunctionParam(param.name, $event)">
+            </div>
+          }
         }
+      }
+
+      @if (el.submitConfig; as cfg) {
+        <div class="field">
+          <label>API URL</label>
+          <input type="text" [ngModel]="cfg.apiUrl" (ngModelChange)="updateApiUrl($event)" placeholder="https://api.example.com/endpoint">
+        </div>
+
+        <div class="submit-section">
+          <label class="submit-section__title">Request Body Mapping</label>
+          <div class="mapping-list">
+            @for (field of availableFields; track field.elementId) {
+              <div class="mapping-row">
+                <label class="mapping-check">
+                  <input type="checkbox" [checked]="isFieldIncluded(field.elementId)" (change)="toggleFieldMapping($index, $any($event.target).checked)">
+                </label>
+                <div class="mapping-info">
+                  <span class="mapping-label">{{ field.elementLabel }}</span>
+                  <span class="mapping-meta">
+                    <span class="mapping-type">{{ getFieldTypeBadge(field.source) }}</span>
+                    <span class="mapping-page">{{ field.pageName }}</span>
+                  </span>
+                </div>
+                @if (isFieldIncluded(field.elementId)) {
+                  <input class="mapping-key" type="text"
+                    [ngModel]="getFieldKeyName(field.elementId)"
+                    (ngModelChange)="updateFieldKeyName(field.elementId, $event)"
+                    placeholder="key_name">
+                }
+              </div>
+            }
+          </div>
+
+          @if (cfg.fieldMappings.length > 0) {
+            <label class="submit-section__title">Request Preview</label>
+            <pre class="request-preview">{{ requestPreview }}</pre>
+          }
+        </div>
+
+        <div class="field">
+          <label>On Success - Go to Page</label>
+          <select [ngModel]="cfg.successPage" (ngModelChange)="updateSuccessPage($event)">
+            <option value="">-- Select Page --</option>
+            @for (page of builder.pages(); track page.id) {
+              <option [value]="page.id">{{ page.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Error Message</label>
+          <input type="text" [ngModel]="cfg.errorMessage" (ngModelChange)="updateErrorMessage($event)">
+        </div>
       }
     </section>
   }
@@ -94,16 +140,11 @@
       @for (option of el.options; track $index) {
         <div class="option-action">
           <span class="option-label">{{ option.label }}</span>
-          <select [ngModel]="option.action?.functionName || ''" (ngModelChange)="setOptionAction($index, $event)">
-            <option value="">-- No Action --</option>
-            @for (category of categories; track category) {
-              <optgroup [label]="category">
-                @for (fn of getFunctionsForCategory(category); track fn.name) {
-                  <option [value]="fn.name">{{ fn.name }}</option>
-                }
-              </optgroup>
-            }
-          </select>
+          <app-function-picker
+            [value]="option.action?.functionName || ''"
+            placeholder="No action"
+            (valueChange)="setOptionAction($index, $event)"
+          ></app-function-picker>
         </div>
       }
     </section>

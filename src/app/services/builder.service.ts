@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { BuilderElement, ElementType, ElementStyle } from '../models/element.model';
+import { BuilderElement, ElementType, ElementStyle, FieldMapping } from '../models/element.model';
 import { Page } from '../models/page.model';
 
 @Injectable({ providedIn: 'root' })
@@ -9,7 +9,11 @@ export class BuilderService {
   ]);
 
   activePageId = signal<string>('');
+  activeLang = signal<'en' | 'ar'>('en');
+  appThemeMode = signal<'light' | 'dark' | 'auto'>('auto');
   selectedElementId = signal<string | null>(null);
+  secretKey = signal<string>('MY_HMAC_SECRET_2025');
+  debugMode = signal<boolean>(false);
 
   activePage = computed(() => {
     const pages = this.pages();
@@ -159,6 +163,16 @@ export class BuilderService {
           { label: 'Option 2', value: 'option2' }
         ];
         break;
+      case 'date-picker':
+        base.settings = { label: 'Select Date', dateFormat: 'yyyy-MM-dd', minDate: '', maxDate: '' };
+        break;
+      case 'media-select':
+        base.settings = { label: 'Select Media', triggerText: 'Tap to add media' };
+        base.options = [
+          { label: 'Take Photo', value: 'take_photo' },
+          { label: 'From Gallery', value: 'from_gallery' }
+        ];
+        break;
       case 'map':
         base.settings = { lat: '24.7136', lng: '46.6753', zoom: '13' };
         break;
@@ -168,6 +182,74 @@ export class BuilderService {
     }
 
     return base;
+  }
+
+  getAllMappableFields(): FieldMapping[] {
+    const fields: FieldMapping[] = [];
+    const toKey = (s: string) => (s || 'field').toLowerCase().replace(/\s+/g, '_');
+    for (const page of this.pages()) {
+      for (const el of page.elements) {
+        const label = el.settings['label'] || el.staticContent || '';
+        switch (el.type) {
+          case 'input':
+            fields.push({ elementId: el.id, elementLabel: label || 'Untitled', pageName: page.name, keyName: toKey(label), source: 'input' });
+            break;
+          case 'dropdown':
+            if (el.dataSource !== 'dynamic') {
+              fields.push({ elementId: el.id, elementLabel: label || 'Dropdown', pageName: page.name, keyName: toKey(label || 'dropdown'), source: 'dropdown' });
+            }
+            break;
+          case 'radio':
+            fields.push({ elementId: el.id, elementLabel: label || 'Radio', pageName: page.name, keyName: toKey(label || 'radio'), source: 'radio' });
+            break;
+          case 'checkbox':
+            fields.push({ elementId: el.id, elementLabel: label || 'Checkbox', pageName: page.name, keyName: toKey(label || 'checkbox'), source: 'checkbox' });
+            break;
+          case 'date-picker':
+            fields.push({ elementId: el.id, elementLabel: label || 'Date', pageName: page.name, keyName: toKey(label || 'date'), source: 'date-picker' });
+            break;
+          case 'media-select':
+            fields.push({ elementId: el.id, elementLabel: label || 'Media', pageName: page.name, keyName: toKey(label || 'media'), source: 'media-select' });
+            break;
+          case 'map':
+            fields.push({ elementId: el.id, elementLabel: 'Map Coordinates', pageName: page.name, keyName: 'coordinates', source: 'map' });
+            break;
+        }
+        if (el.dataSource === 'dynamic' && el.dynamicBinding) {
+          fields.push({
+            elementId: el.id,
+            elementLabel: `${el.dynamicBinding.functionName}()`,
+            pageName: page.name,
+            keyName: el.dynamicBinding.functionName.replace(/^get/, '').replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, ''),
+            source: 'dynamic'
+          });
+        }
+      }
+    }
+    return fields;
+  }
+
+  clipboard: BuilderElement | null = null;
+
+  copyElement(elementId: string): void {
+    const page = this.activePage();
+    if (!page) return;
+    const el = page.elements.find(e => e.id === elementId);
+    if (el) this.clipboard = structuredClone(el);
+  }
+
+  pasteElement(): void {
+    if (!this.clipboard) return;
+    const clone = structuredClone(this.clipboard);
+    clone.id = this.generateId();
+    const pages = this.pages().map(p => {
+      if (p.id === this.activePageId()) {
+        return { ...p, elements: [...p.elements, clone] };
+      }
+      return p;
+    });
+    this.pages.set(pages);
+    this.selectedElementId.set(clone.id);
   }
 
   private generateId(): string {
