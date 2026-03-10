@@ -13,6 +13,10 @@
     </div>
   }
 
+  @if (element.visibilityCondition) {
+    <div class="el-condition-badge" title="Has visibility condition">?</div>
+  }
+
   @switch (element.type) {
     @case ('text') {
       <div class="el-text">
@@ -147,6 +151,18 @@
     }
     @case ('divider') {
       <hr class="el-divider" />
+    }
+    @case ('alert') {
+      @if (editing) {
+        <input class="inline-edit" [value]="editValue" (input)="editValue = $any($event.target).value" (blur)="finishEdit()" (keydown)="onEditKeydown($event)" autofocus />
+      } @else {
+        <div class="el-alert" [class.el-alert--no-icon]="element.settings['showIcon'] === 'false'">
+          @if (element.settings['showIcon'] !== 'false' && element.settings['icon']) {
+            <i class="pi pi-{{ element.settings['icon'] }} el-alert__icon"></i>
+          }
+          <span class="el-alert__text">{{ displayContent }}</span>
+        </div>
+      }
     }
   }
 </div>

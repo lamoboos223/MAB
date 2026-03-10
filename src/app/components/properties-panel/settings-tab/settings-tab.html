@@ -1,6 +1,6 @@
 @if (element; as el) {
   <!-- i18n toggle (show for elements with translatable text) -->
-  @if (['text', 'button', 'input', 'dropdown', 'radio', 'checkbox', 'date-picker', 'media-select'].includes(el.type)) {
+  @if (['text', 'button', 'input', 'dropdown', 'radio', 'checkbox', 'date-picker', 'media-select', 'alert'].includes(el.type)) {
     <div class="i18n-toggle">
       <label class="toggle-label">
         <input type="checkbox" [ngModel]="el.i18nEnabled" (ngModelChange)="toggleI18n($event)">
@@ -256,7 +256,106 @@
         Use the Style tab to customize the divider appearance.
       </div>
     }
+    @case ('alert') {
+      <div class="field">
+        <label>Variant</label>
+        <select [ngModel]="el.settings['variant'] || 'warning'" (ngModelChange)="onVariantChange($event)">
+          <option value="info">Info</option>
+          <option value="warning">Warning</option>
+          <option value="success">Success</option>
+          <option value="error">Error</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>{{ el.i18nEnabled ? 'Message (English)' : 'Message' }}</label>
+        <textarea [ngModel]="el.staticContent" (ngModelChange)="updateContent($event)" rows="3"></textarea>
+      </div>
+      @if (el.i18nEnabled) {
+        <div class="field ar-field">
+          <label>Message (Arabic)</label>
+          <textarea dir="rtl" [ngModel]="el.i18n?.ar?.staticContent ?? ''" (ngModelChange)="updateArContent($event)" rows="3"></textarea>
+        </div>
+      }
+      <div class="field">
+        <label>Icon</label>
+        <app-icon-picker [value]="el.settings['icon'] || ''" (valueChange)="updateSetting('icon', $event)"></app-icon-picker>
+      </div>
+      <label class="switch-row">
+        <span class="switch-row__label">Show Icon</span>
+        <span class="switch" [class.switch--on]="el.settings['showIcon'] !== 'false'" (click)="updateSetting('showIcon', el.settings['showIcon'] === 'false' ? 'true' : 'false')">
+          <span class="switch__knob"></span>
+        </span>
+      </label>
+    }
   }
+
+  <!-- Visibility Condition (all elements) -->
+  <div class="condition-section">
+    <label class="section-label">Visibility Condition</label>
+    @if (el.visibilityCondition) {
+      <div class="field">
+        <label>Source</label>
+        <select [ngModel]="el.visibilityCondition.source" (ngModelChange)="updateConditionSource($event)">
+          <option value="element">Another Element</option>
+          <option value="function">TWK Function</option>
+        </select>
+      </div>
+      @if (el.visibilityCondition.source === 'element') {
+        <div class="field">
+          <label>Element</label>
+          <select [ngModel]="el.visibilityCondition.elementId || ''" (ngModelChange)="updateConditionField('elementId', $event)">
+            <option value="">-- Select Element --</option>
+            @for (other of getOtherElements(); track other.id) {
+              <option [value]="other.id">{{ other.settings['label'] || other.staticContent || other.type }} ({{ other.type }})</option>
+            }
+          </select>
+        </div>
+      }
+      @if (el.visibilityCondition.source === 'function') {
+        <div class="field">
+          <label>TWK Function</label>
+          <app-function-picker
+            [value]="el.visibilityCondition.functionBinding?.functionName || ''"
+            placeholder="Select function..."
+            (valueChange)="setConditionFunction($event)"
+          ></app-function-picker>
+        </div>
+        @if (el.visibilityCondition.functionBinding; as binding) {
+          @for (param of twkService.getByName(binding.functionName)?.params ?? []; track param.name) {
+            <div class="field">
+              <label>{{ param.name }}</label>
+              <input type="text" [ngModel]="binding.params[param.name] || ''" (ngModelChange)="setConditionFunctionParam(param.name, $event)">
+            </div>
+          }
+          <div class="field">
+            <label>Result Path</label>
+            <input type="text" [ngModel]="binding.resultPath" (ngModelChange)="updateConditionBindingField('resultPath', $event)">
+          </div>
+        }
+      }
+      <div class="field">
+        <label>Operator</label>
+        <select [ngModel]="el.visibilityCondition.operator" (ngModelChange)="updateConditionField('operator', $event)">
+          <option value="equals">Equals</option>
+          <option value="not_equals">Not Equals</option>
+          <option value="contains">Contains</option>
+          <option value="empty">Is Empty</option>
+          <option value="not_empty">Is Not Empty</option>
+          <option value="greater_than">Greater Than</option>
+          <option value="less_than">Less Than</option>
+        </select>
+      </div>
+      @if (!['empty', 'not_empty'].includes(el.visibilityCondition.operator)) {
+        <div class="field">
+          <label>Value</label>
+          <input type="text" [ngModel]="el.visibilityCondition.value || ''" (ngModelChange)="updateConditionField('value', $event)">
+        </div>
+      }
+      <button class="remove-btn" style="margin-top:4px" (click)="removeCondition()">Remove Condition</button>
+    } @else {
+      <button class="add-btn" (click)="addCondition()">+ Add Condition</button>
+    }
+  </div>
 }
 
 <ng-template #optionsList>

@@ -233,6 +233,8 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
       js += `}\n\n`;
     }
 
+    const hasConditions = pages.some(p => p.elements.some(e => e.visibilityCondition));
+
     js += `document.addEventListener('DOMContentLoaded', function() {\n`;
 
     if (hasRequiredFields) {
@@ -279,6 +281,78 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
     // Generate the i18n translations function
     if (hasI18n) {
       js += this.generateI18nFunction(pages);
+    }
+
+    if (hasConditions) {
+      js += `  // Visibility condition evaluation\n`;
+      js += `  function evalCondition(cond) {\n`;
+      js += `    var val = '';\n`;
+      js += `    if (cond.source === 'element' && cond.elementId) {\n`;
+      js += `      var srcEl = document.getElementById(cond.elementId);\n`;
+      js += `      if (srcEl) {\n`;
+      js += `        if (srcEl.tagName === 'INPUT' || srcEl.tagName === 'TEXTAREA' || srcEl.tagName === 'SELECT') val = srcEl.value;\n`;
+      js += `        else if (srcEl.querySelector('.custom-dropdown__value')) val = srcEl.querySelector('.custom-dropdown__value').value;\n`;
+      js += `        else if (srcEl.querySelector('input[type="radio"]:checked')) val = srcEl.querySelector('input[type="radio"]:checked').value;\n`;
+      js += `        else if (srcEl.querySelectorAll('input[type="checkbox"]:checked').length) val = Array.from(srcEl.querySelectorAll('input[type="checkbox"]:checked')).map(function(c){return c.value}).join(',');\n`;
+      js += `        else val = srcEl.textContent || '';\n`;
+      js += `      }\n`;
+      js += `    }\n`;
+      js += `    var op = cond.operator, cv = cond.value || '';\n`;
+      js += `    switch(op) {\n`;
+      js += `      case 'equals': return val === cv;\n`;
+      js += `      case 'not_equals': return val !== cv;\n`;
+      js += `      case 'contains': return val.indexOf(cv) >= 0;\n`;
+      js += `      case 'empty': return !val || !val.trim();\n`;
+      js += `      case 'not_empty': return !!val && !!val.trim();\n`;
+      js += `      case 'greater_than': return parseFloat(val) > parseFloat(cv);\n`;
+      js += `      case 'less_than': return parseFloat(val) < parseFloat(cv);\n`;
+      js += `      default: return true;\n`;
+      js += `    }\n`;
+      js += `  }\n`;
+      js += `  function checkConditions() {\n`;
+      js += `    document.querySelectorAll('[data-condition]').forEach(function(el) {\n`;
+      js += `      try {\n`;
+      js += `        var cond = JSON.parse(el.getAttribute('data-condition'));\n`;
+      js += `        el.style.display = evalCondition(cond) ? '' : 'none';\n`;
+      js += `      } catch(e) {}\n`;
+      js += `    });\n`;
+      js += `  }\n`;
+      js += `  document.addEventListener('input', checkConditions);\n`;
+      js += `  document.addEventListener('change', checkConditions);\n`;
+
+      // Evaluate function-based conditions on page load
+      for (const page of pages) {
+        for (const el of page.elements) {
+          if (el.visibilityCondition?.source === 'function' && el.visibilityCondition.functionBinding) {
+            const b = el.visibilityCondition.functionBinding;
+            const params = Object.values(b.params).filter(v => v).map(v => `'${v}'`).join(', ');
+            js += `  TWK.${b.functionName}(${params}).then(function(data) {\n`;
+            js += `    var val = String(data.${b.resultPath} || '');\n`;
+            js += `    document.querySelectorAll('[data-condition]').forEach(function(el) {\n`;
+            js += `      try {\n`;
+            js += `        var c = JSON.parse(el.getAttribute('data-condition'));\n`;
+            js += `        if (c.source === 'function' && c.functionBinding && c.functionBinding.functionName === '${b.functionName}') {\n`;
+            js += `          var op = c.operator, cv = c.value || '';\n`;
+            js += `          var show = false;\n`;
+            js += `          switch(op) {\n`;
+            js += `            case 'equals': show = val === cv; break;\n`;
+            js += `            case 'not_equals': show = val !== cv; break;\n`;
+            js += `            case 'contains': show = val.indexOf(cv) >= 0; break;\n`;
+            js += `            case 'empty': show = !val || !val.trim(); break;\n`;
+            js += `            case 'not_empty': show = !!val && !!val.trim(); break;\n`;
+            js += `            case 'greater_than': show = parseFloat(val) > parseFloat(cv); break;\n`;
+            js += `            case 'less_than': show = parseFloat(val) < parseFloat(cv); break;\n`;
+            js += `          }\n`;
+            js += `          el.style.display = show ? '' : 'none';\n`;
+            js += `        }\n`;
+            js += `      } catch(e) {}\n`;
+            js += `    });\n`;
+            js += `  }).catch(function(err) { console.error('Condition ${b.functionName}:', err); });\n`;
+          }
+        }
+      }
+
+      js += `  checkConditions();\n`;
     }
 
     for (const page of pages) {
@@ -776,9 +850,14 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
     for (const el of page.elements) {
       const pos = el.position;
       if (pos) {
-        body += `  <div style="position:absolute;left:${pos.x}px;top:${pos.y}px;max-width:calc(100% - ${pos.x}px)">\n  ${this.elementToHtml(el)}\n  </div>\n`;
+        const hideStyle = el.visibilityCondition ? 'display:none;' : '';
+        body += `  <div style="${hideStyle}position:absolute;left:${pos.x}px;top:${pos.y}px;max-width:calc(100% - ${pos.x}px)"${el.visibilityCondition ? ` data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}"` : ''}>\n  ${this.elementToHtml(el)}\n  </div>\n`;
       } else {
-        body += this.elementToHtml(el) + '\n';
+        if (el.visibilityCondition) {
+          body += `  <div data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}" style="display:none">\n  ${this.elementToHtml(el)}\n  </div>\n`;
+        } else {
+          body += this.elementToHtml(el) + '\n';
+        }
       }
     }
 
@@ -905,6 +984,13 @@ ${body}${sheetHtml}
       }
       case 'divider':
         return `  <hr id="${el.id}">`;
+      case 'alert': {
+        const icon = el.settings['icon'] ? `<i class="pi pi-${el.settings['icon']}" style="flex-shrink:0;font-size:18px;opacity:0.85"></i> ` : '';
+        const showIcon = el.settings['showIcon'] !== 'false';
+        const style = this.styleObjectToCss(el.styles);
+        const styleAttr = style ? ` style="${style};display:flex;align-items:center;gap:10px;border-radius:12px"` : ' style="display:flex;align-items:center;gap:10px;border-radius:12px"';
+        return `  <div class="alert" id="${el.id}"${styleAttr}>${showIcon ? icon : ''}<span>${this.escapeHtml(el.staticContent)}</span></div>`;
+      }
       default:
         return '';
     }

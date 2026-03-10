@@ -2,18 +2,21 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
 import { BuilderService } from '../../../services/builder.service';
-import { I18nTranslation } from '../../../models/element.model';
+import { I18nTranslation, VisibilityCondition, TwkBinding } from '../../../models/element.model';
 import { IconPicker } from '../../icon-picker/icon-picker';
+import { TwkFunctionsService } from '../../../services/twk-functions.service';
+import { FunctionPicker } from '../../function-picker/function-picker';
 
 @Component({
   selector: 'app-settings-tab',
   standalone: true,
-  imports: [FormsModule, NgTemplateOutlet, IconPicker],
+  imports: [FormsModule, NgTemplateOutlet, IconPicker, FunctionPicker],
   templateUrl: './settings-tab.html',
   styleUrl: './settings-tab.scss'
 })
 export class SettingsTab {
   builder = inject(BuilderService);
+  twkService = inject(TwkFunctionsService);
 
   optionIconIndex = -1;
 
@@ -132,6 +135,33 @@ export class SettingsTab {
     this.builder.updateElement(el.id, { i18n: { ar: { ...ar, settings } } });
   }
 
+  onVariantChange(variant: string): void {
+    const el = this.element;
+    if (!el) return;
+
+    const variantStyles: Record<string, { backgroundColor: string; color: string; border: string }> = {
+      info:    { backgroundColor: '#dbeafe', color: '#1e40af', border: '1px solid #93c5fd' },
+      warning: { backgroundColor: '#fef3c7', color: '#92400e', border: '1px solid #fcd34d' },
+      success: { backgroundColor: '#dcfce7', color: '#166534', border: '1px solid #86efac' },
+      error:   { backgroundColor: '#fee2e2', color: '#991b1b', border: '1px solid #fca5a5' }
+    };
+
+    const variantIcons: Record<string, string> = {
+      info: 'info-circle',
+      warning: 'exclamation-triangle',
+      success: 'check-circle',
+      error: 'times-circle'
+    };
+
+    const styles = variantStyles[variant] ?? variantStyles['warning'];
+    const icon = variantIcons[variant] ?? 'exclamation-triangle';
+
+    this.builder.updateElement(el.id, {
+      settings: { ...el.settings, variant, icon },
+      styles: { ...el.styles, ...styles }
+    });
+  }
+
   updateArOptionLabel(index: number, label: string): void {
     const el = this.element;
     if (!el) return;
@@ -139,5 +169,84 @@ export class SettingsTab {
     const options = [...(ar.options ?? el.options.map(() => ({ label: '' })))];
     options[index] = { label };
     this.builder.updateElement(el.id, { i18n: { ar: { ...ar, options } } });
+  }
+
+  getOtherElements(): { id: string; type: string; settings: Record<string, string>; staticContent: string }[] {
+    const el = this.element;
+    if (!el) return [];
+    const page = this.builder.activePage();
+    return page ? page.elements.filter(e => e.id !== el.id) : [];
+  }
+
+  addCondition(): void {
+    const el = this.element;
+    if (!el) return;
+    const condition: VisibilityCondition = {
+      source: 'element',
+      operator: 'equals',
+      value: ''
+    };
+    this.builder.updateElement(el.id, { visibilityCondition: condition });
+  }
+
+  removeCondition(): void {
+    const el = this.element;
+    if (!el) return;
+    this.builder.updateElement(el.id, { visibilityCondition: undefined } as any);
+  }
+
+  updateConditionSource(source: 'element' | 'function'): void {
+    const el = this.element;
+    if (!el || !el.visibilityCondition) return;
+    const condition: VisibilityCondition = {
+      ...el.visibilityCondition,
+      source,
+      elementId: source === 'element' ? '' : undefined,
+      functionBinding: source === 'function' ? { functionName: '', params: {}, resultPath: 'result' } : undefined
+    };
+    this.builder.updateElement(el.id, { visibilityCondition: condition });
+  }
+
+  updateConditionField(field: string, value: string): void {
+    const el = this.element;
+    if (!el || !el.visibilityCondition) return;
+    this.builder.updateElement(el.id, {
+      visibilityCondition: { ...el.visibilityCondition, [field]: value }
+    });
+  }
+
+  setConditionFunction(functionName: string): void {
+    const el = this.element;
+    if (!el || !el.visibilityCondition) return;
+    const fn = this.twkService.getByName(functionName);
+    const binding: TwkBinding = {
+      functionName,
+      params: {},
+      resultPath: fn?.returns?.path || 'result'
+    };
+    this.builder.updateElement(el.id, {
+      visibilityCondition: { ...el.visibilityCondition, functionBinding: binding }
+    });
+  }
+
+  setConditionFunctionParam(paramName: string, value: string): void {
+    const el = this.element;
+    if (!el || !el.visibilityCondition?.functionBinding) return;
+    const binding = {
+      ...el.visibilityCondition.functionBinding,
+      params: { ...el.visibilityCondition.functionBinding.params, [paramName]: value }
+    };
+    this.builder.updateElement(el.id, {
+      visibilityCondition: { ...el.visibilityCondition, functionBinding: binding }
+    });
+  }
+
+  updateConditionBindingField(field: string, value: string): void {
+    const el = this.element;
+    if (!el || !el.visibilityCondition?.functionBinding) return;
+    const binding = { ...el.visibilityCondition.functionBinding, [field]: value };
+    this.builder.updateElement(el.id, {
+      visibilityCondition: { ...el.visibilityCondition, functionBinding: binding }
+    });
   }
 }
