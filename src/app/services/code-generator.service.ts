@@ -358,6 +358,39 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
       }
 
       js += `  checkConditions();\n`;
+
+      // Geofence conditions
+      const hasGeofence = pages.some(p => p.elements.some(e => e.visibilityCondition?.source === 'geofence'));
+      if (hasGeofence) {
+        js += `  // Geofence evaluation\n`;
+        js += `  function haversineDistance(lat1, lon1, lat2, lon2) {\n`;
+        js += `    var R = 6371e3;\n`;
+        js += `    var toRad = function(d) { return d * Math.PI / 180; };\n`;
+        js += `    var dLat = toRad(lat2 - lat1);\n`;
+        js += `    var dLon = toRad(lon2 - lon1);\n`;
+        js += `    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);\n`;
+        js += `    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));\n`;
+        js += `  }\n`;
+        js += `  if (typeof TWK !== 'undefined' && TWK.getUserLocation) {\n`;
+        js += `    TWK.getUserLocation().then(function(data) {\n`;
+        js += `      var loc = data.result;\n`;
+        js += `      if (!loc || !loc.latitude) return;\n`;
+        js += `      var userLat = parseFloat(loc.latitude);\n`;
+        js += `      var userLng = parseFloat(loc.longitude);\n`;
+        js += `      document.querySelectorAll('[data-condition]').forEach(function(el) {\n`;
+        js += `        try {\n`;
+        js += `          var c = JSON.parse(el.getAttribute('data-condition'));\n`;
+        js += `          if (c.source !== 'geofence') return;\n`;
+        js += `          var dist = haversineDistance(userLat, userLng, parseFloat(c.geofenceLat), parseFloat(c.geofenceLng));\n`;
+        js += `          var radius = parseFloat(c.geofenceRadius) || 500;\n`;
+        js += `          var inside = dist <= radius;\n`;
+        js += `          var show = c.operator === 'equals' ? inside : !inside;\n`;
+        js += `          el.style.display = show ? '' : 'none';\n`;
+        js += `        } catch(e) {}\n`;
+        js += `      });\n`;
+        js += `    }).catch(function(err) { console.error('getUserLocation:', err); });\n`;
+        js += `  }\n`;
+      }
     }
 
     for (const page of pages) {
