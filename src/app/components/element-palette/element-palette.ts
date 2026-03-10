@@ -30,7 +30,8 @@ export class ElementPalette {
     { type: 'date-picker', label: 'Date', icon: 'DP' },
     { type: 'media-select', label: 'Media', icon: 'MS' },
     { type: 'map', label: 'Map', icon: 'M' },
-    { type: 'divider', label: 'Divider', icon: '--' }
+    { type: 'divider', label: 'Divider', icon: '--' },
+    { type: 'alert', label: 'Alert', icon: '!' }
   ];
 
   addElement(type: ElementType): void {

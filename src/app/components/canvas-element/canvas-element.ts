@@ -86,6 +86,9 @@ export class CanvasElement {
     if (this.element.type === 'button') {
       return this.element.staticContent;
     }
+    if (this.element.type === 'alert') {
+      return this.element.staticContent;
+    }
     if (['input', 'dropdown', 'radio', 'checkbox', 'date-picker', 'media-select'].includes(this.element.type)) {
       return this.element.settings['label'] || '';
     }
@@ -113,7 +116,7 @@ export class CanvasElement {
     if (!this.editing) return;
     this.editing = false;
     const type = this.element.type;
-    if (type === 'text' || type === 'button') {
+    if (type === 'text' || type === 'button' || type === 'alert') {
       this.builder.updateElement(this.element.id, { staticContent: this.editValue });
     } else if (['input', 'dropdown', 'radio', 'checkbox', 'date-picker', 'media-select'].includes(type)) {
       this.builder.updateElement(this.element.id, {

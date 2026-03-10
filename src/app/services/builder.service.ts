@@ -175,6 +175,17 @@ export class BuilderService {
       case 'divider':
         base.styles = { border: '1px solid #3f3f46' };
         break;
+      case 'alert':
+        base.staticContent = 'This is an alert message';
+        base.settings = { variant: 'warning', icon: 'exclamation-triangle', showIcon: 'true' };
+        base.styles = {
+          backgroundColor: '#fef3c7',
+          color: '#92400e',
+          border: '1px solid #fcd34d',
+          borderRadius: '12px',
+          padding: '12px 16px'
+        };
+        break;
     }
 
     return base;

@@ -46,6 +46,9 @@
       }
     }
     @case ('input') {
+      @if (element.settings['hidden'] === 'true') {
+        <div class="el-hidden-ghost">Hidden: {{ displayLabel }}</div>
+      } @else {
       @if (editing) {
         <input class="inline-edit" [value]="editValue" (input)="editValue = $any($event.target).value" (blur)="finishEdit()" (keydown)="onEditKeydown($event)" autofocus />
       } @else {
@@ -58,6 +61,7 @@
       }
       @if (isSelected) {
         <div class="resize-handle" (mousedown)="startResize($event)" (touchstart)="startResize($event)"></div>
+      }
       }
     }
     @case ('dropdown') {

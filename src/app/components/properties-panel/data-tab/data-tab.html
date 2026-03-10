@@ -87,12 +87,14 @@
         <div class="field">
           <label>Method</label>
           <select [ngModel]="cfg.method || 'POST'" (ngModelChange)="updateMethod($event)">
+            <option value="GET">GET</option>
             <option value="POST">POST</option>
             <option value="PUT">PUT</option>
             <option value="PATCH">PATCH</option>
           </select>
         </div>
 
+        @if (cfg.method !== 'GET') {
         <div class="submit-section">
           <label class="submit-section__title">Request Body Mapping</label>
           <div class="mapping-list">
@@ -130,6 +132,7 @@
           ></textarea>
           <p class="payload-hint">Use <code>{{ '{' }}{{ '{' }}field_name{{ '}' }}{{ '}' }}</code> for dynamic values</p>
         </div>
+        }
 
         <div class="submit-section">
           <div class="header-section-title">

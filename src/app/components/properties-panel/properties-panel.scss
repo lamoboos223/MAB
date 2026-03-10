@@ -120,3 +120,46 @@
   letter-spacing: 0.5px;
   flex-shrink: 0;
 }
+
+.element-list__select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: left;
+  padding: 0;
+}
+
+.element-list__clone {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  opacity: 0;
+
+  .element-list__item:hover & {
+    opacity: 1;
+  }
+
+  &:hover {
+    background: var(--accent-subtle);
+    color: var(--accent-text);
+    border-color: var(--accent);
+  }
+}

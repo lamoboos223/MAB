@@ -416,7 +416,9 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
             js += `    var btn = this;\n`;
             js += `    var originalText = btn.textContent;\n`;
             js += `    btn.disabled = true; btn.textContent = 'Submitting...';\n`;
+            const method = cfg.method || 'POST';
             js += `    try {\n`;
+            if (method !== 'GET') {
             // Build field values for template substitution
             js += `      var __fields = {};\n`;
             for (const m of cfg.fieldMappings) {
@@ -464,6 +466,7 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
             js += `        return val;\n`;
             js += `      });\n`;
             js += `      console.error('[Submit] body:', body);\n`;
+            }
             // Build headers
             js += `      var headers = { 'Content-Type': 'application/json' };\n`;
             if (cfg.headers && cfg.headers.length > 0) {
@@ -477,14 +480,20 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
                 }
               }
             }
-            const method = cfg.method || 'POST';
             js += `      console.error('[Submit] headers:', JSON.stringify(headers));\n`;
             js += `      console.error('[Submit] fetching ${cfg.apiUrl}...');\n`;
-            js += `      var resp = await withTimeout(fetch('${cfg.apiUrl}', {\n`;
-            js += `        method: '${method}',\n`;
-            js += `        headers: headers,\n`;
-            js += `        body: body\n`;
-            js += `      }), 30000, 'fetch');\n`;
+            if (method === 'GET') {
+              js += `      var resp = await withTimeout(fetch('${cfg.apiUrl}', {\n`;
+              js += `        method: 'GET',\n`;
+              js += `        headers: headers\n`;
+              js += `      }), 30000, 'fetch');\n`;
+            } else {
+              js += `      var resp = await withTimeout(fetch('${cfg.apiUrl}', {\n`;
+              js += `        method: '${method}',\n`;
+              js += `        headers: headers,\n`;
+              js += `        body: body\n`;
+              js += `      }), 30000, 'fetch');\n`;
+            }
             js += `      console.error('[Submit] response status:', resp.status);\n`;
             js += `      if (!resp.ok) throw new Error('HTTP ' + resp.status);\n`;
             js += `      var respText = await resp.text();\n`;
@@ -905,12 +914,19 @@ ${body}${sheetHtml}
         const isRequired = el.settings['required'] === 'true';
         const star = isRequired ? ' <span class="required-star">*</span>' : '';
         const reqAttr = isRequired ? ' required' : '';
+        const disabledAttr = el.settings['disabled'] === 'true' ? ' disabled' : '';
         const label = `  <label class="el-label">${this.escapeHtml(el.settings['label'] || '')}${star}</label>\n`;
         const errorDiv = isRequired ? `\n  <div class="field-error" id="${el.id}-error">This field is required</div>` : '';
+        let result: string;
         if (isArea) {
-          return label + `  <textarea id="${el.id}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}" style="height:${h}px"${reqAttr}></textarea>${errorDiv}`;
+          result = label + `  <textarea id="${el.id}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}" style="height:${h}px"${reqAttr}${disabledAttr}></textarea>${errorDiv}`;
+        } else {
+          result = label + `  <input id="${el.id}" type="${el.settings['inputType'] || 'text'}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}"${reqAttr}${disabledAttr}>${errorDiv}`;
         }
-        return label + `  <input id="${el.id}" type="${el.settings['inputType'] || 'text'}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}"${reqAttr}>${errorDiv}`;
+        if (el.settings['hidden'] === 'true') {
+          return `  <div style="display:none">${result}</div>`;
+        }
+        return result;
       }
       case 'dropdown': {
         let html = `  <label class="el-label">${this.escapeHtml(el.settings['label'] || '')}</label>\n`;

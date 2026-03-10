@@ -254,6 +254,28 @@
   }
 }
 
+.el-hidden-ghost {
+  padding: 8px 12px;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 5px,
+    rgba(128, 128, 128, 0.05) 5px,
+    rgba(128, 128, 128, 0.05) 10px
+  );
+  border: 1px dashed var(--text-tertiary);
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-style: italic;
+  opacity: 0.6;
+}
+
+.el-input--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .el-condition-badge {
   position: absolute;
   top: -6px;

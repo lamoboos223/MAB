@@ -28,9 +28,16 @@ export class PropertiesPanel {
     'date-picker': '📅',
     'media-select': '📎',
     divider: '—',
+    alert: '⚠',
   };
 
   getElementIcon(type: string): string {
     return this.iconMap[type] || '•';
+  }
+
+  cloneElement(elementId: string, event: Event): void {
+    event.stopPropagation();
+    this.builder.copyElement(elementId);
+    this.builder.pasteElement();
   }
 }

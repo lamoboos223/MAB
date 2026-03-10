@@ -9,7 +9,8 @@ export type ElementType =
   | 'map'
   | 'date-picker'
   | 'media-select'
-  | 'divider';
+  | 'divider'
+  | 'alert';
 
 export interface ElementStyle {
   fontSize?: string;
@@ -29,6 +30,14 @@ export interface TwkBinding {
   functionName: string;
   params: Record<string, string>;
   resultPath: string;
+}
+
+export interface VisibilityCondition {
+  source: 'element' | 'function';
+  elementId?: string;
+  functionBinding?: TwkBinding;
+  operator: 'equals' | 'not_equals' | 'contains' | 'empty' | 'not_empty' | 'greater_than' | 'less_than';
+  value?: string;
 }
 
 export interface ElementOption {
@@ -84,4 +93,5 @@ export interface BuilderElement {
   darkStyles?: ElementStyle;
   submitConfig?: SubmitConfig;
   position?: { x: number; y: number };
+  visibilityCondition?: VisibilityCondition;
 }
