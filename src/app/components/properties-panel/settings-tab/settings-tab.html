@@ -1,6 +1,6 @@
 @if (element; as el) {
   <!-- i18n toggle (show for elements with translatable text) -->
-  @if (['text', 'button', 'input', 'dropdown', 'radio', 'checkbox', 'date-picker', 'media-select', 'alert'].includes(el.type)) {
+  @if (['text', 'button', 'input', 'dropdown', 'radio', 'checkbox', 'date-picker', 'media-select', 'alert', 'table'].includes(el.type)) {
     <div class="i18n-toggle">
       <label class="toggle-label">
         <input type="checkbox" [ngModel]="el.i18nEnabled" (ngModelChange)="toggleI18n($event)">
@@ -298,6 +298,38 @@
           <span class="switch__knob"></span>
         </span>
       </label>
+    }
+    @case ('table') {
+      <div class="field">
+        <label>Columns</label>
+        <input type="number" min="1" max="10" [ngModel]="el.settings['columns'] || '3'" (ngModelChange)="onTableResize(el.settings['rows'] || '3', $event)">
+      </div>
+      <div class="field">
+        <label>Rows</label>
+        <input type="number" min="1" max="20" [ngModel]="el.settings['rows'] || '3'" (ngModelChange)="onTableResize($event, el.settings['columns'] || '3')">
+      </div>
+      <label class="switch-row">
+        <span class="switch-row__label">Header Row</span>
+        <span class="switch" [class.switch--on]="el.settings['headerRow'] === 'true'" (click)="updateSetting('headerRow', el.settings['headerRow'] === 'true' ? 'false' : 'true')">
+          <span class="switch__knob"></span>
+        </span>
+      </label>
+      <div class="table-editor">
+        <label class="section-label">Cell Data</label>
+        @for (row of el.tableData || []; track $index; let rowIdx = $index) {
+          <div class="table-editor__row">
+            <span class="table-editor__row-label">{{ rowIdx === 0 && el.settings['headerRow'] === 'true' ? 'H' : 'R' }}{{ rowIdx + 1 }}</span>
+            @for (cell of row; track $index; let colIdx = $index) {
+              <input class="table-editor__cell" type="text" [ngModel]="cell" (ngModelChange)="updateTableCell(rowIdx, colIdx, $event)" [placeholder]="'R' + (rowIdx+1) + 'C' + (colIdx+1)">
+            }
+          </div>
+        }
+      </div>
+    }
+    @case ('container') {
+      <div class="hint">
+        Use the Style tab to customize background color, padding, border radius, and size.
+      </div>
     }
   }
 

@@ -241,6 +241,35 @@ export class SettingsTab {
     });
   }
 
+  onTableResize(rows: string, columns: string): void {
+    const el = this.element;
+    if (!el) return;
+    const r = Math.max(1, Math.min(20, parseInt(rows, 10) || 3));
+    const c = Math.max(1, Math.min(10, parseInt(columns, 10) || 3));
+    const oldData = el.tableData || [];
+    const newData: string[][] = [];
+    for (let i = 0; i < r; i++) {
+      const row: string[] = [];
+      for (let j = 0; j < c; j++) {
+        row.push(oldData[i]?.[j] ?? '');
+      }
+      newData.push(row);
+    }
+    this.builder.updateElement(el.id, {
+      settings: { ...el.settings, rows: String(r), columns: String(c) },
+      tableData: newData
+    });
+  }
+
+  updateTableCell(rowIdx: number, colIdx: number, value: string): void {
+    const el = this.element;
+    if (!el || !el.tableData) return;
+    const newData = el.tableData.map((row, ri) =>
+      ri === rowIdx ? row.map((cell, ci) => ci === colIdx ? value : cell) : [...row]
+    );
+    this.builder.updateElement(el.id, { tableData: newData });
+  }
+
   updateConditionBindingField(field: string, value: string): void {
     const el = this.element;
     if (!el || !el.visibilityCondition?.functionBinding) return;
