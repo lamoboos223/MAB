@@ -168,5 +168,33 @@
         </div>
       }
     }
+    @case ('table') {
+      <div class="el-table-wrapper">
+        <table class="el-table">
+          @for (row of element.tableData || []; track $index; let rowIdx = $index) {
+            @if (rowIdx === 0 && element.settings['headerRow'] === 'true') {
+              <thead>
+                <tr>
+                  @for (cell of row; track $index) {
+                    <th>{{ cell }}</th>
+                  }
+                </tr>
+              </thead>
+            } @else {
+              <tr>
+                @for (cell of row; track $index) {
+                  <td>{{ cell }}</td>
+                }
+              </tr>
+            }
+          }
+        </table>
+      </div>
+    }
+    @case ('container') {
+      <div class="el-container">
+        <span class="el-container__label">Container</span>
+      </div>
+    }
   }
 </div>
