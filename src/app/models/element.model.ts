@@ -10,7 +10,9 @@ export type ElementType =
   | 'date-picker'
   | 'media-select'
   | 'divider'
-  | 'alert';
+  | 'alert'
+  | 'table'
+  | 'container';
 
 export interface ElementStyle {
   fontSize?: string;
@@ -33,11 +35,14 @@ export interface TwkBinding {
 }
 
 export interface VisibilityCondition {
-  source: 'element' | 'function';
+  source: 'element' | 'function' | 'geofence';
   elementId?: string;
   functionBinding?: TwkBinding;
   operator: 'equals' | 'not_equals' | 'contains' | 'empty' | 'not_empty' | 'greater_than' | 'less_than';
   value?: string;
+  geofenceLat?: string;
+  geofenceLng?: string;
+  geofenceRadius?: string;
 }
 
 export interface ElementOption {
@@ -94,4 +99,5 @@ export interface BuilderElement {
   submitConfig?: SubmitConfig;
   position?: { x: number; y: number };
   visibilityCondition?: VisibilityCondition;
+  tableData?: string[][];
 }

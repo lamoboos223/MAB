@@ -29,6 +29,8 @@ export class PropertiesPanel {
     'media-select': '📎',
     divider: '—',
     alert: '⚠',
+    table: '▦',
+    container: '□',
   };
 
   getElementIcon(type: string): string {

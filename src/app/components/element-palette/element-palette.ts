@@ -31,7 +31,9 @@ export class ElementPalette {
     { type: 'media-select', label: 'Media', icon: 'MS' },
     { type: 'map', label: 'Map', icon: 'M' },
     { type: 'divider', label: 'Divider', icon: '--' },
-    { type: 'alert', label: 'Alert', icon: '!' }
+    { type: 'alert', label: 'Alert', icon: '!' },
+    { type: 'table', label: 'Table', icon: 'T#' },
+    { type: 'container', label: 'Div', icon: '[ ]' }
   ];
 
   addElement(type: ElementType): void {
