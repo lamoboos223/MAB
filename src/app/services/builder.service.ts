@@ -186,6 +186,25 @@ export class BuilderService {
           padding: '12px 16px'
         };
         break;
+      case 'table':
+        base.settings = { rows: '3', columns: '3', headerRow: 'true' };
+        base.tableData = [
+          ['Header 1', 'Header 2', 'Header 3'],
+          ['Row 1', 'Data', 'Data'],
+          ['Row 2', 'Data', 'Data']
+        ];
+        base.styles = { border: '1px solid #e4e4e7', borderRadius: '8px' };
+        break;
+      case 'container':
+        base.staticContent = '';
+        base.styles = {
+          backgroundColor: '#f4f4f5',
+          borderRadius: '8px',
+          padding: '16px',
+          width: '100%',
+          height: '150px'
+        };
+        break;
     }
 
     return base;
