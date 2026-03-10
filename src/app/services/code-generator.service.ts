@@ -159,6 +159,11 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
 .toast--visible { bottom: 40px; }
 `;
 
+    css += `.data-table { width: 100%; border-collapse: collapse; }\n`;
+    css += `.data-table th, .data-table td { padding: 8px 12px; border: 1px solid var(--border, #e4e4e7); text-align: left; font-size: 14px; }\n`;
+    css += `.data-table th { background: rgba(0,0,0,0.03); font-weight: 600; }\n`;
+    css += `.container-block { box-sizing: border-box; }\n`;
+
     if (hasI18n) {
       css += `[dir="rtl"] { font-family: 'Arial', -apple-system, sans-serif; }\n`;
       css += `[dir="rtl"] select, [dir="rtl"] input { text-align: right; }\n`;
@@ -387,6 +392,23 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
               js += `      container.appendChild(opt);\n`;
               js += `    });\n`;
             }
+            js += `  }).catch(function(err) { console.error('${b.functionName}:', err); });\n\n`;
+          } else if (el.type === 'table') {
+            js += `  ${call}.then(function(data) {\n`;
+            js += `    var items = data.${b.resultPath};\n`;
+            js += `    var table = document.getElementById('${el.id}');\n`;
+            js += `    if (!table || !Array.isArray(items)) return;\n`;
+            js += `    var hasHeader = ${el.settings['headerRow'] === 'true'};\n`;
+            js += `    var html = '';\n`;
+            js += `    items.forEach(function(row, i) {\n`;
+            js += `      if (!Array.isArray(row)) row = Object.values(row);\n`;
+            js += `      if (i === 0 && hasHeader) {\n`;
+            js += `        html += '<thead><tr>' + row.map(function(c) { return '<th>' + c + '</th>'; }).join('') + '</tr></thead>';\n`;
+            js += `      } else {\n`;
+            js += `        html += '<tr>' + row.map(function(c) { return '<td>' + c + '</td>'; }).join('') + '</tr>';\n`;
+            js += `      }\n`;
+            js += `    });\n`;
+            js += `    table.innerHTML = html;\n`;
             js += `  }).catch(function(err) { console.error('${b.functionName}:', err); });\n\n`;
           }
         }
@@ -1006,6 +1028,32 @@ ${body}${sheetHtml}
         const style = this.styleObjectToCss(el.styles);
         const styleAttr = style ? ` style="${style};display:flex;align-items:center;gap:10px;border-radius:12px"` : ' style="display:flex;align-items:center;gap:10px;border-radius:12px"';
         return `  <div class="alert" id="${el.id}"${styleAttr}>${showIcon ? icon : ''}<span>${this.escapeHtml(el.staticContent)}</span></div>`;
+      }
+      case 'table': {
+        const hasHeader = el.settings['headerRow'] === 'true';
+        const data = el.tableData || [];
+        let html = `  <table class="data-table" id="${el.id}">\n`;
+        for (let i = 0; i < data.length; i++) {
+          if (i === 0 && hasHeader) {
+            html += `    <thead><tr>`;
+            for (const cell of data[i]) {
+              html += `<th>${this.escapeHtml(cell)}</th>`;
+            }
+            html += `</tr></thead>\n`;
+          } else {
+            html += `    <tr>`;
+            for (const cell of data[i]) {
+              html += `<td>${this.escapeHtml(cell)}</td>`;
+            }
+            html += `</tr>\n`;
+          }
+        }
+        html += `  </table>`;
+        return html;
+      }
+      case 'container': {
+        const style = this.styleObjectToCss(el.styles);
+        return `  <div class="container-block" id="${el.id}"${style ? ` style="${style}"` : ''}></div>`;
       }
       default:
         return '';
