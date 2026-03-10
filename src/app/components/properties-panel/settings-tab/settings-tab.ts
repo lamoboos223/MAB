@@ -195,14 +195,18 @@ export class SettingsTab {
     this.builder.updateElement(el.id, { visibilityCondition: undefined } as any);
   }
 
-  updateConditionSource(source: 'element' | 'function'): void {
+  updateConditionSource(source: 'element' | 'function' | 'geofence'): void {
     const el = this.element;
     if (!el || !el.visibilityCondition) return;
     const condition: VisibilityCondition = {
       ...el.visibilityCondition,
       source,
       elementId: source === 'element' ? '' : undefined,
-      functionBinding: source === 'function' ? { functionName: '', params: {}, resultPath: 'result' } : undefined
+      functionBinding: source === 'function' ? { functionName: '', params: {}, resultPath: 'result' } : undefined,
+      geofenceLat: source === 'geofence' ? '24.7136' : undefined,
+      geofenceLng: source === 'geofence' ? '46.6753' : undefined,
+      geofenceRadius: source === 'geofence' ? '500' : undefined,
+      operator: source === 'geofence' ? 'equals' : el.visibilityCondition.operator
     };
     this.builder.updateElement(el.id, { visibilityCondition: condition });
   }

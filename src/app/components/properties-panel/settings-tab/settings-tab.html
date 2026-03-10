@@ -342,6 +342,7 @@
         <select [ngModel]="el.visibilityCondition.source" (ngModelChange)="updateConditionSource($event)">
           <option value="element">Another Element</option>
           <option value="function">TWK Function</option>
+          <option value="geofence">Geofence (Location)</option>
         </select>
       </div>
       @if (el.visibilityCondition.source === 'element') {
@@ -377,19 +378,40 @@
           </div>
         }
       }
+      @if (el.visibilityCondition.source === 'geofence') {
+        <div class="field">
+          <label>Center Latitude</label>
+          <input type="text" [ngModel]="el.visibilityCondition.geofenceLat || ''" (ngModelChange)="updateConditionField('geofenceLat', $event)" placeholder="e.g. 24.7136">
+        </div>
+        <div class="field">
+          <label>Center Longitude</label>
+          <input type="text" [ngModel]="el.visibilityCondition.geofenceLng || ''" (ngModelChange)="updateConditionField('geofenceLng', $event)" placeholder="e.g. 46.6753">
+        </div>
+        <div class="field">
+          <label>Radius (meters)</label>
+          <input type="number" [ngModel]="el.visibilityCondition.geofenceRadius || ''" (ngModelChange)="updateConditionField('geofenceRadius', $event)" placeholder="e.g. 500">
+        </div>
+      }
       <div class="field">
         <label>Operator</label>
-        <select [ngModel]="el.visibilityCondition.operator" (ngModelChange)="updateConditionField('operator', $event)">
-          <option value="equals">Equals</option>
-          <option value="not_equals">Not Equals</option>
-          <option value="contains">Contains</option>
-          <option value="empty">Is Empty</option>
-          <option value="not_empty">Is Not Empty</option>
-          <option value="greater_than">Greater Than</option>
-          <option value="less_than">Less Than</option>
-        </select>
+        @if (el.visibilityCondition.source === 'geofence') {
+          <select [ngModel]="el.visibilityCondition.operator" (ngModelChange)="updateConditionField('operator', $event)">
+            <option value="equals">Inside Radius</option>
+            <option value="not_equals">Outside Radius</option>
+          </select>
+        } @else {
+          <select [ngModel]="el.visibilityCondition.operator" (ngModelChange)="updateConditionField('operator', $event)">
+            <option value="equals">Equals</option>
+            <option value="not_equals">Not Equals</option>
+            <option value="contains">Contains</option>
+            <option value="empty">Is Empty</option>
+            <option value="not_empty">Is Not Empty</option>
+            <option value="greater_than">Greater Than</option>
+            <option value="less_than">Less Than</option>
+          </select>
+        }
       </div>
-      @if (!['empty', 'not_empty'].includes(el.visibilityCondition.operator)) {
+      @if (!['empty', 'not_empty'].includes(el.visibilityCondition.operator) && el.visibilityCondition.source !== 'geofence') {
         <div class="field">
           <label>Value</label>
           <input type="text" [ngModel]="el.visibilityCondition.value || ''" (ngModelChange)="updateConditionField('value', $event)">
