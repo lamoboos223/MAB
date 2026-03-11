@@ -111,6 +111,9 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
 .map-container iframe { width: 100%; height: 250px; border: 0; }
 .map-interaction-blocker { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 .map-geofence-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.map-zoom-controls { position: absolute; top: 10px; left: 10px; display: flex; flex-direction: column; gap: 4px; z-index: 3; }
+.map-zoom-btn { width: 32px; height: 32px; border-radius: 4px; border: none; background: white; box-shadow: 0 1px 4px rgba(0,0,0,0.3); font-size: 18px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #333; padding: 0; }
+.map-zoom-btn:active { background: #e0e0e0; }
 button:disabled { opacity: 0.5; cursor: not-allowed; }
 /* Bottom sheet overlay */
 .bottom-sheet-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
@@ -244,6 +247,65 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     const hasConditions = pages.some(p => p.elements.some(e => e.visibilityCondition));
 
     js += `document.addEventListener('DOMContentLoaded', function() {\n`;
+
+    // Map zoom controls and geofence circle rendering
+    const allMapElements = pages.flatMap(p => p.elements).filter(e => e.type === 'map');
+    const allGeofences = pages.flatMap(p => p.elements).filter(e => e.visibilityCondition?.source === 'geofence');
+    if (allMapElements.length > 0) {
+      js += `  // Map zoom and geofence circles\n`;
+      if (allGeofences.length > 0) {
+        js += `  var __geofences = [\n`;
+        for (const gf of allGeofences) {
+          const vc = gf.visibilityCondition!;
+          js += `    { lat: ${vc.geofenceLat || '24.7136'}, lng: ${vc.geofenceLng || '46.6753'}, radius: ${vc.geofenceRadius || '500'} },\n`;
+        }
+        js += `  ];\n`;
+        js += `  function drawGeofenceCircles(mapId) {\n`;
+        js += `    var container = document.getElementById(mapId);\n`;
+        js += `    var svg = document.getElementById(mapId + '-svg');\n`;
+        js += `    if (!container || !svg) return;\n`;
+        js += `    var mapLat = parseFloat(container.getAttribute('data-lat'));\n`;
+        js += `    var mapLng = parseFloat(container.getAttribute('data-lng'));\n`;
+        js += `    var zoom = parseFloat(container.getAttribute('data-zoom'));\n`;
+        js += `    var w = container.offsetWidth;\n`;
+        js += `    var h = container.offsetHeight || 250;\n`;
+        js += `    var metersPerPx = 156543.03 * Math.cos(mapLat * Math.PI / 180) / Math.pow(2, zoom);\n`;
+        js += `    var circles = '';\n`;
+        js += `    __geofences.forEach(function(gf) {\n`;
+        js += `      var r = gf.radius / metersPerPx;\n`;
+        js += `      var dx = (gf.lng - mapLng) * 111320 * Math.cos(mapLat * Math.PI / 180) / metersPerPx;\n`;
+        js += `      var dy = (gf.lat - mapLat) * 110574 / metersPerPx;\n`;
+        js += `      var cx = w / 2 + dx;\n`;
+        js += `      var cy = h / 2 - dy;\n`;
+        js += `      circles += '<circle cx=\"' + cx.toFixed(1) + '\" cy=\"' + cy.toFixed(1) + '\" r=\"' + r.toFixed(1) + '\" fill=\"rgba(66,133,244,0.15)\" stroke=\"rgba(66,133,244,0.8)\" stroke-width=\"2\"/>';\n`;
+        js += `    });\n`;
+        js += `    svg.innerHTML = circles;\n`;
+        js += `  }\n`;
+      }
+      js += `  function updateMapZoom(mapId, dir) {\n`;
+      js += `    var container = document.getElementById(mapId);\n`;
+      js += `    if (!container) return;\n`;
+      js += `    var z = parseInt(container.getAttribute('data-zoom'), 10);\n`;
+      js += `    z = dir === 'in' ? Math.min(z + 1, 20) : Math.max(z - 1, 1);\n`;
+      js += `    container.setAttribute('data-zoom', z);\n`;
+      js += `    var lat = container.getAttribute('data-lat');\n`;
+      js += `    var lng = container.getAttribute('data-lng');\n`;
+      js += `    var iframe = document.getElementById(mapId + '-iframe');\n`;
+      js += `    if (iframe) iframe.src = 'https://maps.google.com/maps?q=' + lat + ',' + lng + '&z=' + z + '&output=embed';\n`;
+      if (allGeofences.length > 0) {
+        js += `    drawGeofenceCircles(mapId);\n`;
+      }
+      js += `  }\n`;
+      js += `  document.querySelectorAll('.map-zoom-btn').forEach(function(btn) {\n`;
+      js += `    btn.addEventListener('click', function() { updateMapZoom(btn.getAttribute('data-map'), btn.getAttribute('data-dir')); });\n`;
+      js += `  });\n`;
+      if (allGeofences.length > 0) {
+        for (const mapEl of allMapElements) {
+          js += `  drawGeofenceCircles('${mapEl.id}');\n`;
+        }
+      }
+      js += `\n`;
+    }
 
     if (hasRequiredFields) {
       js += `  // Clear validation errors on input\n`;
@@ -1030,31 +1092,16 @@ ${body}${sheetHtml}
         const lng = el.settings['lng'] || '46.6753';
         const zoom = el.settings['zoom'] || '13';
         const geofences = (pageElements || []).filter(e => e.visibilityCondition?.source === 'geofence');
-        let mapHtml = `  <div class="map-container" id="${el.id}">\n    <iframe id="${el.id}-iframe" src="https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed"></iframe>\n`;
+        let mapHtml = `  <div class="map-container" id="${el.id}" data-lat="${lat}" data-lng="${lng}" data-zoom="${zoom}">\n`;
+        mapHtml += `    <iframe id="${el.id}-iframe" src="https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed"></iframe>\n`;
         if (geofences.length > 0) {
-          const mapLat = parseFloat(lat);
-          const z = parseInt(zoom, 10);
-          const metersPerPixel = 156543.03 * Math.cos(mapLat * Math.PI / 180) / Math.pow(2, z);
-          // Block iframe interaction so circles stay aligned
           mapHtml += `    <div class="map-interaction-blocker"></div>\n`;
-          mapHtml += `    <svg class="map-geofence-overlay" viewBox="0 0 375 250">\n`;
-          for (const gf of geofences) {
-            const vc = gf.visibilityCondition!;
-            const gfLat = parseFloat(vc.geofenceLat || lat);
-            const gfLng = parseFloat(vc.geofenceLng || lng);
-            const radius = parseFloat(vc.geofenceRadius || '500');
-            const pixelRadius = radius / metersPerPixel;
-            // Offset from map center in pixels
-            const mapLng = parseFloat(lng);
-            const latRad = mapLat * Math.PI / 180;
-            const dxMeters = (gfLng - mapLng) * (111320 * Math.cos(latRad));
-            const dyMeters = (gfLat - mapLat) * 110574;
-            const cx = 375 / 2 + dxMeters / metersPerPixel;
-            const cy = 250 / 2 - dyMeters / metersPerPixel;
-            mapHtml += `      <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${pixelRadius.toFixed(1)}" fill="rgba(66,133,244,0.15)" stroke="rgba(66,133,244,0.8)" stroke-width="2"/>\n`;
-          }
-          mapHtml += `    </svg>\n`;
+          mapHtml += `    <svg class="map-geofence-overlay" id="${el.id}-svg"></svg>\n`;
         }
+        mapHtml += `    <div class="map-zoom-controls">\n`;
+        mapHtml += `      <button type="button" class="map-zoom-btn" data-map="${el.id}" data-dir="in">+</button>\n`;
+        mapHtml += `      <button type="button" class="map-zoom-btn" data-map="${el.id}" data-dir="out">&minus;</button>\n`;
+        mapHtml += `    </div>\n`;
         mapHtml += `  </div>`;
         return mapHtml;
       }
