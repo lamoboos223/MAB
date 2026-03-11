@@ -201,8 +201,8 @@ export class BuilderService {
           backgroundColor: '#f4f4f5',
           borderRadius: '8px',
           padding: '16px',
-          width: '100%',
-          height: '150px'
+          width: '80px',
+          height: '100px'
         };
         break;
     }

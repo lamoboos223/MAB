@@ -71,9 +71,9 @@ export class Toolbar {
   private generateMockTwk(): string {
     const appearance = this.themeService.theme() === 'light' ? '1' : '2';
     const lang = this.previewLang;
-    return `getUserFullName: function() { return Promise.resolve({ result: { full_name: 'Test User' }}); },
-      getUserId: function() { return Promise.resolve({ result: { user_id: '1234567890' }}); },
-      getUserMobileNumber: function() { return Promise.resolve({ result: { mobile_number: '0501234567' }}); },
+    return `getUserFullName: function() { return Promise.resolve({ result: { full_name: 'Lama Alosaimi' }}); },
+      getUserId: function() { return Promise.resolve({ result: { user_id: '1091234787' }}); },
+      getUserMobileNumber: function() { return Promise.resolve({ result: { mobile_number: '0558734567' }}); },
       getUserNationality: function() { return Promise.resolve({ result: { nationality_name: 'Saudi Arabia' }}); },
       getUserLocation: function() { return Promise.resolve({ result: { latitude: 24.7136, longitude: 46.6753 }}); },
       generateToken: function() { return Promise.resolve({ result: { token: 'mock-jwt-token-for-preview' }}); },

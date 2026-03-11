@@ -8,7 +8,9 @@
       "Bash(npx ng:*)",
       "Bash(ng build:*)",
       "Bash(ng serve:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(wc:*)",
+      "Bash(python3:*)"
     ]
   }
 }

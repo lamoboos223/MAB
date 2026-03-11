@@ -107,8 +107,11 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
 .cal-day--selected:hover { background: var(--accent-hover); }
 .cal-day--disabled { opacity: 0.25; pointer-events: none; }
 .cal-day--empty { pointer-events: none; }
-.map-container { width: 100%; border-radius: 10px; overflow: hidden; }
+.map-container { width: 100%; border-radius: 10px; overflow: hidden; position: relative; }
 .map-container iframe { width: 100%; height: 250px; border: 0; }
+.map-interaction-blocker { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+.map-geofence-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 /* Bottom sheet overlay */
 .bottom-sheet-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
 .bottom-sheet-overlay--open { opacity: 1; pointer-events: auto; }
@@ -385,7 +388,13 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
         js += `          var radius = parseFloat(c.geofenceRadius) || 500;\n`;
         js += `          var inside = dist <= radius;\n`;
         js += `          var show = c.operator === 'equals' ? inside : !inside;\n`;
-        js += `          el.style.display = show ? '' : 'none';\n`;
+        js += `          var btn = el.querySelector('button');\n`;
+        js += `          if (btn) {\n`;
+        js += `            el.style.display = '';\n`;
+        js += `            btn.disabled = !show;\n`;
+        js += `          } else {\n`;
+        js += `            el.style.display = show ? '' : 'none';\n`;
+        js += `          }\n`;
         js += `        } catch(e) {}\n`;
         js += `      });\n`;
         js += `    }).catch(function(err) { console.error('getUserLocation:', err); });\n`;
@@ -915,12 +924,12 @@ input.input-error, textarea.input-error { border-color: #ef4444; }
       const pos = el.position;
       if (pos) {
         const hideStyle = el.visibilityCondition ? 'display:none;' : '';
-        body += `  <div style="${hideStyle}position:absolute;left:${pos.x}px;top:${pos.y}px;max-width:calc(100% - ${pos.x}px)"${el.visibilityCondition ? ` data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}"` : ''}>\n  ${this.elementToHtml(el)}\n  </div>\n`;
+        body += `  <div style="${hideStyle}position:absolute;left:${pos.x}px;top:${pos.y}px;max-width:calc(100% - ${pos.x}px)"${el.visibilityCondition ? ` data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}"` : ''}>\n  ${this.elementToHtml(el, page.elements)}\n  </div>\n`;
       } else {
         if (el.visibilityCondition) {
-          body += `  <div data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}" style="display:none">\n  ${this.elementToHtml(el)}\n  </div>\n`;
+          body += `  <div data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}" style="display:none">\n  ${this.elementToHtml(el, page.elements)}\n  </div>\n`;
         } else {
-          body += this.elementToHtml(el) + '\n';
+          body += this.elementToHtml(el, page.elements) + '\n';
         }
       }
     }
@@ -952,7 +961,7 @@ ${body}${sheetHtml}
     return icon ? `<i class="pi pi-${icon}"></i> ` : '';
   }
 
-  private elementToHtml(el: BuilderElement): string {
+  private elementToHtml(el: BuilderElement, pageElements?: BuilderElement[]): string {
     const elIcon = this.iconHtml(el.settings['icon']);
     switch (el.type) {
       case 'text': {
@@ -1020,7 +1029,34 @@ ${body}${sheetHtml}
         const lat = el.settings['lat'] || '24.7136';
         const lng = el.settings['lng'] || '46.6753';
         const zoom = el.settings['zoom'] || '13';
-        return `  <div class="map-container" id="${el.id}">\n    <iframe id="${el.id}-iframe" src="https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed"></iframe>\n  </div>`;
+        const geofences = (pageElements || []).filter(e => e.visibilityCondition?.source === 'geofence');
+        let mapHtml = `  <div class="map-container" id="${el.id}">\n    <iframe id="${el.id}-iframe" src="https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed"></iframe>\n`;
+        if (geofences.length > 0) {
+          const mapLat = parseFloat(lat);
+          const z = parseInt(zoom, 10);
+          const metersPerPixel = 156543.03 * Math.cos(mapLat * Math.PI / 180) / Math.pow(2, z);
+          // Block iframe interaction so circles stay aligned
+          mapHtml += `    <div class="map-interaction-blocker"></div>\n`;
+          mapHtml += `    <svg class="map-geofence-overlay" viewBox="0 0 375 250">\n`;
+          for (const gf of geofences) {
+            const vc = gf.visibilityCondition!;
+            const gfLat = parseFloat(vc.geofenceLat || lat);
+            const gfLng = parseFloat(vc.geofenceLng || lng);
+            const radius = parseFloat(vc.geofenceRadius || '500');
+            const pixelRadius = radius / metersPerPixel;
+            // Offset from map center in pixels
+            const mapLng = parseFloat(lng);
+            const latRad = mapLat * Math.PI / 180;
+            const dxMeters = (gfLng - mapLng) * (111320 * Math.cos(latRad));
+            const dyMeters = (gfLat - mapLat) * 110574;
+            const cx = 375 / 2 + dxMeters / metersPerPixel;
+            const cy = 250 / 2 - dyMeters / metersPerPixel;
+            mapHtml += `      <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${pixelRadius.toFixed(1)}" fill="rgba(66,133,244,0.15)" stroke="rgba(66,133,244,0.8)" stroke-width="2"/>\n`;
+          }
+          mapHtml += `    </svg>\n`;
+        }
+        mapHtml += `  </div>`;
+        return mapHtml;
       }
       case 'date-picker': {
         const fmt = el.settings['dateFormat'] || 'yyyy-MM-dd';
