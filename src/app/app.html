@@ -1,9 +1,11 @@
 <div class="builder-layout">
   <app-toolbar class="toolbar"></app-toolbar>
   <div class="main-content">
-    <app-element-palette class="palette"></app-element-palette>
+    <app-element-palette class="palette" [style.width.px]="paletteWidth"></app-element-palette>
+    <div class="resize-handle" (mousedown)="onResizeStart($event, 'palette')"></div>
     <app-canvas class="canvas"></app-canvas>
-    <app-properties-panel class="properties"></app-properties-panel>
+    <div class="resize-handle" (mousedown)="onResizeStart($event, 'properties')"></div>
+    <app-properties-panel class="properties" [style.width.px]="propertiesWidth"></app-properties-panel>
   </div>
   <app-page-tabs class="page-tabs"></app-page-tabs>
 </div>
