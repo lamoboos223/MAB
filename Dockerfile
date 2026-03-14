@@ -1,4 +1,4 @@
-# Build and run the Angular app (dev server)
+# Build and run the Angular app (dev server) + CORS proxy
 FROM node:22-alpine
 
 WORKDIR /app
@@ -12,8 +12,8 @@ RUN npm ci
 # Copy application source
 COPY . .
 
-# Expose Angular dev server port
-EXPOSE 4200
+# Expose Angular dev server and CORS proxy ports
+EXPOSE 4200 4201
 
-# Run dev server; --host 0.0.0.0 so it's reachable from outside the container
-CMD ["npm", "start", "--", "--host", "0.0.0.0"]
+# Run CORS proxy in background, then Angular dev server
+CMD sh -c "node cors-proxy.mjs & npm start -- --host 0.0.0.0"

@@ -1,4 +1,4 @@
-<div class="modal-backdrop" (click)="close.emit()">
+<div class="modal-backdrop" [class.modal-backdrop--with-console]="debugMode" (click)="close.emit()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <span>Preview</span>
@@ -9,3 +9,25 @@
     </div>
   </div>
 </div>
+
+@if (debugMode) {
+  <div class="debug-console" (click)="$event.stopPropagation()">
+    <div class="debug-console__header">
+      <span class="debug-console__title">Console</span>
+      <button class="debug-console__clear" (click)="clearLogs()">Clear</button>
+    </div>
+    <div class="debug-console__logs">
+      @for (log of debugLogs; track $index) {
+        <div class="debug-console__entry" [class.debug-console__entry--error]="log.error">
+          <span class="debug-console__time">{{ log.time }}</span>
+          <span class="debug-console__msg">{{ log.message }}</span>
+          @if (log.error) {
+            <span class="debug-console__err"> — {{ log.error }}</span>
+          }
+        </div>
+      } @empty {
+        <div class="debug-console__empty">No logs yet. Interact with the app to see debug output.</div>
+      }
+    </div>
+  </div>
+}

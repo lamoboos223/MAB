@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { BuilderService } from '../../services/builder.service';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-preview-modal',
@@ -11,23 +13,71 @@ export class PreviewModal implements AfterViewInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
   @ViewChild('previewFrame') previewFrame!: ElementRef<HTMLIFrameElement>;
 
-  private navigationListener: ((event: MessageEvent) => void) | null = null;
+  private builder = inject(BuilderService);
+  private messageListener: ((event: MessageEvent) => void) | null = null;
+
+  debugLogs: { time: string; message: string; error: string }[] = [];
+
+  get debugMode(): boolean {
+    return this.builder.debugMode();
+  }
 
   ngAfterViewInit(): void {
     this.loadPage('index.html');
 
-    // Listen for navigation messages from the iframe
-    this.navigationListener = (event: MessageEvent) => {
-      if (event.data?.type === 'navigate' && event.data.page) {
+    this.messageListener = (event: MessageEvent) => {
+      if (!event.data?.type) return;
+
+      if (event.data.type === 'navigate' && event.data.page) {
         this.loadPage(event.data.page);
+      } else if (event.data.type === 'debug-log') {
+        this.addLog(event.data.message, event.data.error);
+      } else if (event.data.type === 'fetch-request') {
+        this.proxyFetch(event.data);
       }
     };
-    window.addEventListener('message', this.navigationListener);
+    window.addEventListener('message', this.messageListener);
   }
 
   ngOnDestroy(): void {
-    if (this.navigationListener) {
-      window.removeEventListener('message', this.navigationListener);
+    if (this.messageListener) {
+      window.removeEventListener('message', this.messageListener);
+    }
+  }
+
+  clearLogs(): void {
+    this.debugLogs = [];
+  }
+
+  private addLog(message: string, error: string): void {
+    const time = new Date().toLocaleTimeString();
+    this.debugLogs.unshift({ time, message, error });
+  }
+
+  private async proxyFetch(req: { id: number; url: string; method: string; headers: Record<string, string>; body: string | null }): Promise<void> {
+    const iframe = this.previewFrame.nativeElement;
+    try {
+      // Route through local CORS proxy to avoid browser CORS restrictions
+      const proxyUrl = `http://localhost:4201/${encodeURIComponent(req.url)}`;
+      const resp = await fetch(proxyUrl, {
+        method: req.method,
+        headers: req.headers,
+        body: req.body
+      });
+      const body = await resp.text();
+      iframe.contentWindow?.postMessage({
+        type: 'fetch-response',
+        id: req.id,
+        ok: resp.ok,
+        status: resp.status,
+        body
+      }, '*');
+    } catch (err: any) {
+      iframe.contentWindow?.postMessage({
+        type: 'fetch-response',
+        id: req.id,
+        error: err.message || 'Network error'
+      }, '*');
     }
   }
 
@@ -35,14 +85,9 @@ export class PreviewModal implements AfterViewInit, OnDestroy {
     const html = this.pages[fileName];
     if (!html) return;
 
-    // Inject a navigation interceptor that catches link clicks and location changes
     const interceptor = `
 <script>
 (function() {
-  // Intercept window.location.href assignments
-  var originalDescriptor = Object.getOwnPropertyDescriptor(window, 'location');
-
-  // Override link clicks and location changes
   document.addEventListener('click', function(e) {
     var link = e.target.closest('a');
     if (link && link.href) {
@@ -51,16 +96,8 @@ export class PreviewModal implements AfterViewInit, OnDestroy {
       window.parent.postMessage({ type: 'navigate', page: page }, '*');
     }
   });
-
-  // Patch window.location.href setter for button navigation
-  var _origHref = window.location.href;
-  setInterval(function() {
-    // Can't override location directly, so we intercept via the generated JS
-  }, 100);
 })();
 
-// Override window.location.href in generated code
-var _realLocation = window.location;
 Object.defineProperty(window, '_navigateTo', {
   value: function(page) {
     window.parent.postMessage({ type: 'navigate', page: page }, '*');
@@ -68,7 +105,6 @@ Object.defineProperty(window, '_navigateTo', {
 });
 </script>`;
 
-    // Replace window.location.href navigations with postMessage calls
     const patchedHtml = html
       .replace(/window\.location\.href\s*=\s*'([^']+)'/g, "window.parent.postMessage({ type: 'navigate', page: '$1' }, '*')")
       .replace('</head>', interceptor + '\n</head>');

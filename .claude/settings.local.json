@@ -10,7 +10,10 @@
       "Bash(ng serve:*)",
       "Bash(curl:*)",
       "Bash(wc:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -r \"proxy\" node_modules/@angular/build/src/builders/dev-server/ --include=\"*.js\" -l 2>/dev/null | head -5)",
+      "Bash(ls node_modules/.package-lock.json 2>/dev/null; npm ls concurrently 2>&1 | head -5)"
     ]
   }
 }

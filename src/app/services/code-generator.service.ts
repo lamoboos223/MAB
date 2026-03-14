@@ -208,24 +208,35 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     let js = '';
 
     if (debugMode) {
-      js += `// Debug mode\n`;
-      js += `var __debugPanel = null;\n`;
+      js += `// Debug mode — relay logs to parent\n`;
       js += `var __origConsoleError = console.error.bind(console);\n`;
       js += `function debugLog(msg, err) {\n`;
       js += `  __origConsoleError(msg, err || '');\n`;
-      js += `  if (!__debugPanel) {\n`;
-      js += `    __debugPanel = document.createElement('div');\n`;
-      js += `    __debugPanel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:40vh;overflow-y:auto;background:#1a0000;border-top:2px solid #ef4444;z-index:9999;padding:8px 12px;font-family:monospace;font-size:12px;';\n`;
-      js += `    document.body.appendChild(__debugPanel);\n`;
-      js += `  }\n`;
-      js += `  var entry = document.createElement('div');\n`;
-      js += `  entry.style.cssText = 'color:#fca5a5;padding:4px 0;border-bottom:1px solid #350000;word-break:break-all;';\n`;
-      js += `  var time = new Date().toLocaleTimeString();\n`;
-      js += `  entry.textContent = '[' + time + '] ' + msg + (err ? ' — ' + (err.message || err) : '');\n`;
-      js += `  __debugPanel.insertBefore(entry, __debugPanel.firstChild);\n`;
+      js += `  window.parent.postMessage({ type: 'debug-log', message: '' + msg, error: err ? '' + (err.message || err) : '' }, '*');\n`;
       js += `}\n`;
       js += `window.onerror = function(msg, src, line, col, err) { debugLog('Uncaught: ' + msg, err); };\n`;
       js += `window.addEventListener('unhandledrejection', function(e) { debugLog('Unhandled Promise', e.reason); });\n\n`;
+
+      // Proxy fetch through parent to avoid CORS issues in preview iframe
+      js += `// Fetch proxy — relay through parent window to avoid CORS\n`;
+      js += `var __fetchId = 0;\n`;
+      js += `var __fetchCallbacks = {};\n`;
+      js += `window.addEventListener('message', function(e) {\n`;
+      js += `  if (e.data && e.data.type === 'fetch-response' && __fetchCallbacks[e.data.id]) {\n`;
+      js += `    __fetchCallbacks[e.data.id](e.data);\n`;
+      js += `    delete __fetchCallbacks[e.data.id];\n`;
+      js += `  }\n`;
+      js += `});\n`;
+      js += `function __proxyFetch(url, opts) {\n`;
+      js += `  var id = ++__fetchId;\n`;
+      js += `  return new Promise(function(resolve, reject) {\n`;
+      js += `    __fetchCallbacks[id] = function(data) {\n`;
+      js += `      if (data.error) { reject(new Error(data.error)); }\n`;
+      js += `      else { resolve({ ok: data.ok, status: data.status, text: function() { return Promise.resolve(data.body); }, json: function() { return Promise.resolve(JSON.parse(data.body)); } }); }\n`;
+      js += `    };\n`;
+      js += `    window.parent.postMessage({ type: 'fetch-request', id: id, url: url, method: (opts && opts.method) || 'GET', headers: (opts && opts.headers) || {}, body: (opts && opts.body) || null }, '*');\n`;
+      js += `  });\n`;
+      js += `}\n\n`;
     }
 
     if (hasSubmit) {
@@ -886,6 +897,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     js += `});\n`;
     if (debugMode) {
       js = js.replace(/console\.error\(/g, 'debugLog(');
+      js = js.replace(/\bfetch\(/g, '__proxyFetch(');
     }
     return js;
   }

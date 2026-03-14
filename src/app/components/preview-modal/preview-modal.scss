@@ -9,6 +9,10 @@
   align-items: center;
   justify-content: center;
   z-index: 1000;
+
+  &--with-console {
+    bottom: 15vh;
+  }
 }
 
 .modal-content {
@@ -55,4 +59,91 @@
   border: 1px solid var(--border-primary);
   border-radius: 20px;
   background: var(--bg-primary);
+}
+
+// Fixed bottom debug console — separate from the modal
+.debug-console {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 16vh;
+  z-index: 1001;
+  background: #1e1e1e;
+  border-top: 2px solid #3e3e3e;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 12px;
+    background: #2d2d2d;
+    border-bottom: 1px solid #3e3e3e;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ccc;
+  }
+
+  &__clear {
+    background: none;
+    border: 1px solid #555;
+    color: #aaa;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+      color: #fff;
+      border-color: #888;
+    }
+  }
+
+  &__logs {
+    overflow-y: auto;
+    flex: 1;
+    padding: 4px 0;
+  }
+
+  &__entry {
+    padding: 3px 12px;
+    font-size: 12px;
+    color: #d4d4d4;
+    border-bottom: 1px solid #2a2a2a;
+    word-break: break-all;
+    display: flex;
+    gap: 8px;
+
+    &--error {
+      color: #f48771;
+      background: rgba(244, 135, 113, 0.05);
+    }
+  }
+
+  &__time {
+    color: #888;
+    white-space: nowrap;
+  }
+
+  &__msg {
+    color: inherit;
+  }
+
+  &__err {
+    color: #f48771;
+  }
+
+  &__empty {
+    padding: 12px;
+    color: #666;
+    font-size: 12px;
+    text-align: center;
+  }
 }
