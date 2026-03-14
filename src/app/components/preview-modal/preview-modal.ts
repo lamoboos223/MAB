@@ -1,10 +1,31 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { BuilderService } from '../../services/builder.service';
 import { inject } from '@angular/core';
+
+interface DeviceProfile {
+  name: string;
+  group: 'iOS' | 'Android';
+  width: number;
+  height: number;
+}
+
+const DEVICES: DeviceProfile[] = [
+  { name: 'iPhone SE', group: 'iOS', width: 375, height: 667 },
+  { name: 'iPhone 14', group: 'iOS', width: 390, height: 844 },
+  { name: 'iPhone 14 Pro Max', group: 'iOS', width: 430, height: 932 },
+  { name: 'iPhone 15', group: 'iOS', width: 393, height: 852 },
+  { name: 'iPhone 16', group: 'iOS', width: 393, height: 852 },
+  { name: 'iPhone 17', group: 'iOS', width: 393, height: 852 },
+  { name: 'Galaxy S21', group: 'Android', width: 360, height: 800 },
+  { name: 'Pixel 7', group: 'Android', width: 412, height: 915 },
+  { name: 'Galaxy S24 Ultra', group: 'Android', width: 412, height: 920 },
+];
 
 @Component({
   selector: 'app-preview-modal',
   standalone: true,
+  imports: [FormsModule],
   templateUrl: './preview-modal.html',
   styleUrl: './preview-modal.scss'
 })
@@ -16,10 +37,21 @@ export class PreviewModal implements AfterViewInit, OnDestroy {
   private builder = inject(BuilderService);
   private messageListener: ((event: MessageEvent) => void) | null = null;
 
+  devices = DEVICES;
+  selectedDeviceIndex = 0;
   debugLogs: { time: string; message: string; error: string }[] = [];
 
   get debugMode(): boolean {
     return this.builder.debugMode();
+  }
+
+  get device(): DeviceProfile {
+    return this.devices[this.selectedDeviceIndex];
+  }
+
+  onDeviceChange(): void {
+    // Reload current page into the resized iframe
+    this.loadPage('index.html');
   }
 
   ngAfterViewInit(): void {
@@ -57,7 +89,6 @@ export class PreviewModal implements AfterViewInit, OnDestroy {
   private async proxyFetch(req: { id: number; url: string; method: string; headers: Record<string, string>; body: string | null }): Promise<void> {
     const iframe = this.previewFrame.nativeElement;
     try {
-      // Route through local CORS proxy to avoid browser CORS restrictions
       const proxyUrl = `http://localhost:4201/${encodeURIComponent(req.url)}`;
       const resp = await fetch(proxyUrl, {
         method: req.method,

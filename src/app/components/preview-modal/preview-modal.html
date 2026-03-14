@@ -2,10 +2,19 @@
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <span>Preview</span>
+      <div class="device-selector">
+        <select [(ngModel)]="selectedDeviceIndex" (ngModelChange)="onDeviceChange()">
+          @for (d of devices; track $index) {
+            <option [ngValue]="$index">{{ d.group }} — {{ d.name }} ({{ d.width }}x{{ d.height }})</option>
+          }
+        </select>
+      </div>
       <button class="close-btn" (click)="close.emit()">x</button>
     </div>
     <div class="phone-preview">
-      <iframe #previewFrame class="preview-iframe"></iframe>
+      <iframe #previewFrame class="preview-iframe"
+        [style.width.px]="device.width"
+        [style.height.px]="device.height"></iframe>
     </div>
   </div>
 </div>

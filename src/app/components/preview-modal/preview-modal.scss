@@ -11,7 +11,7 @@
   z-index: 1000;
 
   &--with-console {
-    bottom: 15vh;
+    bottom: 16vh;
   }
 }
 
@@ -21,6 +21,9 @@
   border: 1px solid var(--border-primary);
   overflow: hidden;
   box-shadow: var(--shadow-lg);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
@@ -32,6 +35,27 @@
   color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
+  gap: 12px;
+}
+
+.device-selector {
+  flex: 1;
+
+  select {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 12px;
+    cursor: pointer;
+
+    &:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+  }
 }
 
 .close-btn {
@@ -51,14 +75,16 @@
   padding: 16px;
   display: flex;
   justify-content: center;
+  overflow: auto;
+  flex: 1;
 }
 
 .preview-iframe {
-  width: 375px;
-  height: 667px;
   border: 1px solid var(--border-primary);
   border-radius: 20px;
   background: var(--bg-primary);
+  flex-shrink: 0;
+  transition: width 0.2s ease, height 0.2s ease;
 }
 
 // Fixed bottom debug console — separate from the modal

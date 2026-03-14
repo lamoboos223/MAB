@@ -998,7 +998,9 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       const pos = el.position;
       if (pos) {
         const hideStyle = el.visibilityCondition ? 'display:none;' : '';
-        body += `  <div style="${hideStyle}position:absolute;left:${pos.x}px;top:${pos.y}px;max-width:calc(100% - ${pos.x}px)"${el.visibilityCondition ? ` data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}"` : ''}>\n  ${this.elementToHtml(el, page.elements)}\n  </div>\n`;
+        const leftVw = parseFloat((pos.x / CodeGeneratorService.CANVAS_WIDTH * 100).toFixed(2));
+        const topVw = parseFloat((pos.y / CodeGeneratorService.CANVAS_WIDTH * 100).toFixed(2));
+        body += `  <div style="${hideStyle}position:absolute;left:${leftVw}vw;top:${topVw}vw;max-width:calc(100% - ${leftVw}vw)"${el.visibilityCondition ? ` data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}"` : ''}>\n  ${this.elementToHtml(el, page.elements)}\n  </div>\n`;
       } else {
         if (el.visibilityCondition) {
           body += `  <div data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}" style="display:none">\n  ${this.elementToHtml(el, page.elements)}\n  </div>\n`;
@@ -1057,7 +1059,8 @@ ${body}${sheetHtml}
         const errorDiv = isRequired ? `\n  <div class="field-error" id="${el.id}-error">This field is required</div>` : '';
         let result: string;
         if (isArea) {
-          result = label + `  <textarea id="${el.id}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}" style="height:${h}px"${reqAttr}${disabledAttr}></textarea>${errorDiv}`;
+          const hVw = parseFloat((h / CodeGeneratorService.CANVAS_WIDTH * 100).toFixed(2));
+          result = label + `  <textarea id="${el.id}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}" style="height:${hVw}vw"${reqAttr}${disabledAttr}></textarea>${errorDiv}`;
         } else {
           result = label + `  <input id="${el.id}" type="${el.settings['inputType'] || 'text'}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}"${reqAttr}${disabledAttr}>${errorDiv}`;
         }
@@ -1192,6 +1195,15 @@ ${body}${sheetHtml}
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  private static readonly CANVAS_WIDTH = 375;
+
+  private pxToVw(pxValue: string): string {
+    const match = pxValue.match(/^(\d+(?:\.\d+)?)px$/);
+    if (!match) return pxValue;
+    const vw = (parseFloat(match[1]) / CodeGeneratorService.CANVAS_WIDTH * 100);
+    return `${parseFloat(vw.toFixed(2))}vw`;
+  }
+
   private styleObjectToCss(styles: ElementStyle): string {
     const map: Record<string, string> = {
       fontSize: 'font-size', fontWeight: 'font-weight', color: 'color',
@@ -1199,10 +1211,13 @@ ${body}${sheetHtml}
       margin: 'margin', borderRadius: 'border-radius', border: 'border',
       width: 'width', height: 'height'
     };
+    const responsiveKeys = new Set(['width', 'height', 'fontSize', 'padding', 'margin', 'borderRadius']);
     const parts: string[] = [];
     for (const [key, cssKey] of Object.entries(map)) {
-      const val = (styles as any)[key];
-      if (val) parts.push(`${cssKey}: ${val}`);
+      let val = (styles as any)[key];
+      if (!val) continue;
+      if (responsiveKeys.has(key)) val = this.pxToVw(val);
+      parts.push(`${cssKey}: ${val}`);
     }
     return parts.join('; ');
   }
