@@ -76,6 +76,20 @@ export class ImportService {
       const child = children[i] as HTMLElement;
       if (skip.has(child)) continue;
 
+      // Positioned wrapper div: extract position and parse inner element
+      if (child.tagName === 'DIV' && child.style.position === 'absolute') {
+        const position = this.parsePosition(child);
+        const innerChildren = Array.from(child.children).filter(
+          el => el.tagName !== 'SCRIPT'
+        ) as HTMLElement[];
+        const parsed = this.parseChildren(innerChildren, page, skip);
+        for (const el of parsed) {
+          if (position) el.position = position;
+          page.elements.push(el);
+        }
+        continue;
+      }
+
       // Label + input/select pair
       if (child.tagName === 'LABEL' && child.classList.contains('el-label')) {
         const next = children[i + 1] as HTMLElement | undefined;
@@ -527,15 +541,17 @@ export class ImportService {
       'height': 'height'
     };
 
+    const vwProps = new Set(['width', 'height', 'fontSize', 'padding', 'margin', 'borderRadius']);
     const styles: Record<string, string> = {};
     const parts = rulesStr.split(';').map(s => s.trim()).filter(Boolean);
     for (const part of parts) {
       const colonIdx = part.indexOf(':');
       if (colonIdx === -1) continue;
       const prop = part.substring(0, colonIdx).trim();
-      const val = part.substring(colonIdx + 1).trim();
+      let val = part.substring(colonIdx + 1).trim();
       const jsKey = cssToJs[prop];
       if (jsKey && val) {
+        if (vwProps.has(jsKey)) val = this.vwToPx(val);
         styles[jsKey] = val;
       }
     }
@@ -576,6 +592,81 @@ export class ImportService {
     if (!i) return '';
     const cls = Array.from(i.classList).find(c => c.startsWith('pi-') && c !== 'pi');
     return cls ? cls.replace('pi-', '') : '';
+  }
+
+  private static readonly CANVAS_WIDTH = 375;
+
+  private parsePosition(wrapper: HTMLElement): { x: number; y: number } | undefined {
+    const left = wrapper.style.left;
+    const top = wrapper.style.top;
+    if (!left && !top) return undefined;
+    return {
+      x: this.cssValueToPx(left),
+      y: this.cssValueToPx(top)
+    };
+  }
+
+  private cssValueToPx(val: string): number {
+    if (!val) return 0;
+    const vwMatch = val.match(/^([\d.]+)vw$/);
+    if (vwMatch) return Math.round(parseFloat(vwMatch[1]) / 100 * ImportService.CANVAS_WIDTH);
+    return parseInt(val, 10) || 0;
+  }
+
+  private vwToPx(val: string): string {
+    const vwMatch = val.match(/^([\d.]+)vw$/);
+    if (vwMatch) return Math.round(parseFloat(vwMatch[1]) / 100 * ImportService.CANVAS_WIDTH) + 'px';
+    return val;
+  }
+
+  private parseChildren(children: HTMLElement[], page: Page, skip: Set<Element>): BuilderElement[] {
+    const elements: BuilderElement[] = [];
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      if (skip.has(child)) continue;
+
+      if (child.tagName === 'LABEL' && child.classList.contains('el-label')) {
+        const next = children[i + 1] as HTMLElement | undefined;
+        if (next) {
+          const nextTag = next.tagName.toLowerCase();
+          if (nextTag === 'input' || nextTag === 'select' || nextTag === 'textarea') {
+            skip.add(next);
+            let element;
+            if (nextTag === 'input' && (next as HTMLInputElement).type === 'date') {
+              element = this.parseDatePicker(next, next.id || this.generateId());
+            } else if (nextTag === 'textarea') {
+              element = this.parseTextarea(next, next.id || this.generateId());
+            } else if (nextTag === 'input') {
+              element = this.parseInput(next, next.id || this.generateId());
+            } else {
+              element = this.parseSelect(next, next.id || this.generateId());
+            }
+            element.settings['label'] = child.textContent?.trim() || '';
+            elements.push(element);
+            continue;
+          }
+          if (next.classList.contains('custom-dropdown')) {
+            skip.add(next);
+            const element = this.parseCustomDropdown(next, next.id || this.generateId());
+            element.settings['label'] = child.textContent?.trim() || '';
+            elements.push(element);
+            continue;
+          }
+          if (next.classList.contains('img-picker')) {
+            skip.add(next);
+            const element = this.parseMediaSelect(next, next.id || this.generateId());
+            element.settings['label'] = child.textContent?.trim() || '';
+            elements.push(element);
+            continue;
+          }
+        }
+        continue;
+      }
+
+      const element = this.parseElement(child);
+      if (element) elements.push(element);
+    }
+    return elements;
   }
 
   private createBase(id: string, type: ElementType): BuilderElement {
