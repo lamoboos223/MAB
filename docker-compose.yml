@@ -2,6 +2,7 @@ services:
   app:
     build: .
     image: miniapps-builder
+    container_name: Mini-App-Builder
     ports:
       - "4200:4200"
       - "4201:4201"

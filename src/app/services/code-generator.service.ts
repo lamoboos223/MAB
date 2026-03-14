@@ -548,6 +548,13 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
               js += `      if (!field.value || !field.value.trim()) { allValid = false; field.classList.add('input-error'); if (errorEl) errorEl.classList.add('field-error--visible'); }\n`;
               js += `      else { field.classList.remove('input-error'); if (errorEl) errorEl.classList.remove('field-error--visible'); }\n`;
               js += `    });\n`;
+              js += `    var patternFields = document.querySelectorAll('[data-pattern]');\n`;
+              js += `    patternFields.forEach(function(field) {\n`;
+              js += `      var patternErrorEl = document.getElementById(field.id + '-pattern-error');\n`;
+              js += `      var regex = new RegExp(field.getAttribute('data-pattern'));\n`;
+              js += `      if (field.value && !regex.test(field.value)) { allValid = false; field.classList.add('input-error'); if (patternErrorEl) patternErrorEl.classList.add('field-error--visible'); }\n`;
+              js += `      else { field.classList.remove('input-error'); if (patternErrorEl) patternErrorEl.classList.remove('field-error--visible'); }\n`;
+              js += `    });\n`;
               js += `    if (!allValid) return;\n`;
             }
             js += `    var btn = this;\n`;
@@ -658,6 +665,13 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
               js += `      var errorEl = document.getElementById(field.id + '-error');\n`;
               js += `      if (!field.value || !field.value.trim()) { allValid = false; field.classList.add('input-error'); if (errorEl) errorEl.classList.add('field-error--visible'); }\n`;
               js += `      else { field.classList.remove('input-error'); if (errorEl) errorEl.classList.remove('field-error--visible'); }\n`;
+              js += `    });\n`;
+              js += `    var patternFields = document.querySelectorAll('[data-pattern]');\n`;
+              js += `    patternFields.forEach(function(field) {\n`;
+              js += `      var patternErrorEl = document.getElementById(field.id + '-pattern-error');\n`;
+              js += `      var regex = new RegExp(field.getAttribute('data-pattern'));\n`;
+              js += `      if (field.value && !regex.test(field.value)) { allValid = false; field.classList.add('input-error'); if (patternErrorEl) patternErrorEl.classList.add('field-error--visible'); }\n`;
+              js += `      else { field.classList.remove('input-error'); if (patternErrorEl) patternErrorEl.classList.remove('field-error--visible'); }\n`;
               js += `    });\n`;
               js += `    if (!allValid) return;\n`;
             }
@@ -1055,14 +1069,20 @@ ${body}${sheetHtml}
         const star = isRequired ? ' <span class="required-star">*</span>' : '';
         const reqAttr = isRequired ? ' required' : '';
         const disabledAttr = el.settings['disabled'] === 'true' ? ' disabled' : '';
+        const regexPattern = el.settings['regexPattern'] || '';
+        const regexError = el.settings['regexError'] || 'Invalid format';
+        const patternAttr = regexPattern ? ` data-pattern="${this.escapeHtml(regexPattern)}" data-pattern-error="${this.escapeHtml(regexError)}"` : '';
         const label = `  <label class="el-label">${this.escapeHtml(el.settings['label'] || '')}${star}</label>\n`;
-        const errorDiv = isRequired ? `\n  <div class="field-error" id="${el.id}-error">This field is required</div>` : '';
+        let errorDiv = isRequired ? `\n  <div class="field-error" id="${el.id}-error">This field is required</div>` : '';
+        if (regexPattern) {
+          errorDiv += `\n  <div class="field-error" id="${el.id}-pattern-error">${this.escapeHtml(regexError)}</div>`;
+        }
         let result: string;
         if (isArea) {
           const hVw = parseFloat((h / CodeGeneratorService.CANVAS_WIDTH * 100).toFixed(2));
-          result = label + `  <textarea id="${el.id}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}" style="height:${hVw}vw"${reqAttr}${disabledAttr}></textarea>${errorDiv}`;
+          result = label + `  <textarea id="${el.id}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}" style="height:${hVw}vw"${reqAttr}${patternAttr}${disabledAttr}></textarea>${errorDiv}`;
         } else {
-          result = label + `  <input id="${el.id}" type="${el.settings['inputType'] || 'text'}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}"${reqAttr}${disabledAttr}>${errorDiv}`;
+          result = label + `  <input id="${el.id}" type="${el.settings['inputType'] || 'text'}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}"${reqAttr}${patternAttr}${disabledAttr}>${errorDiv}`;
         }
         if (el.settings['hidden'] === 'true') {
           return `  <div style="display:none">${result}</div>`;

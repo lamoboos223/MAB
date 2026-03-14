@@ -307,6 +307,11 @@ export class ImportService {
     if (inputEl.hasAttribute('required')) {
       element.settings['required'] = 'true';
     }
+    const pattern = inputEl.getAttribute('data-pattern');
+    if (pattern) {
+      element.settings['regexPattern'] = pattern;
+      element.settings['regexError'] = inputEl.getAttribute('data-pattern-error') || 'Invalid format';
+    }
     return element;
   }
 
@@ -325,6 +330,11 @@ export class ImportService {
     };
     if (textareaEl.hasAttribute('required')) {
       element.settings['required'] = 'true';
+    }
+    const pattern = textareaEl.getAttribute('data-pattern');
+    if (pattern) {
+      element.settings['regexPattern'] = pattern;
+      element.settings['regexError'] = textareaEl.getAttribute('data-pattern-error') || 'Invalid format';
     }
     return element;
   }

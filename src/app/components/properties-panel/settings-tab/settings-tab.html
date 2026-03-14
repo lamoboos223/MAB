@@ -136,6 +136,16 @@
           <span class="switch__knob"></span>
         </span>
       </label>
+      <div class="field">
+        <label>Regex Pattern</label>
+        <input type="text" [ngModel]="el.settings['regexPattern'] || ''" (ngModelChange)="updateSetting('regexPattern', $event)" placeholder="e.g. ^[a-zA-Z]+$">
+      </div>
+      @if (el.settings['regexPattern']) {
+        <div class="field">
+          <label>Regex Error Message</label>
+          <input type="text" [ngModel]="el.settings['regexError'] || ''" (ngModelChange)="updateSetting('regexError', $event)" placeholder="Invalid format">
+        </div>
+      }
       <label class="switch-row">
         <span class="switch-row__label">Multi-line</span>
         <span class="switch" [class.switch--on]="!!el.settings['inputHeight'] && +el.settings['inputHeight'] > 40" (click)="updateSetting('inputHeight', (!!el.settings['inputHeight'] && +el.settings['inputHeight'] > 40) ? '0' : '80')">

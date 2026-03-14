@@ -6,7 +6,7 @@ build:
 	docker build -t miniapps-builder .
 
 run:
-	docker run -it -p 4200:4200 -p 4201:4201 miniapps-builder
+	docker run -it --name Mini-App-Builder -p 4200:4200 -p 4201:4201 miniapps-builder
 
 # Docker Compose
 up:
