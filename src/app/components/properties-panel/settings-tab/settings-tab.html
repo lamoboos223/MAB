@@ -55,6 +55,18 @@
         <app-icon-picker [value]="el.settings['icon'] || ''" (valueChange)="updateSetting('icon', $event)"></app-icon-picker>
       </div>
       <label class="switch-row">
+        <span class="switch-row__label">Toggleable</span>
+        <span class="switch" [class.switch--on]="el.settings['toggleable'] === 'true'" (click)="updateSetting('toggleable', el.settings['toggleable'] === 'true' ? 'false' : 'true')">
+          <span class="switch__knob"></span>
+        </span>
+      </label>
+      @if (el.settings['toggleable'] === 'true') {
+        <div class="field">
+          <label>Toggle Group</label>
+          <input type="text" [ngModel]="el.settings['toggleGroup'] || ''" (ngModelChange)="updateSetting('toggleGroup', $event)" placeholder="e.g. gender (same name = only one active)">
+        </div>
+      }
+      <label class="switch-row">
         <span class="switch-row__label">Validate required fields</span>
         <span class="switch" [class.switch--on]="el.settings['validateRequired'] === 'true'" (click)="updateSetting('validateRequired', el.settings['validateRequired'] === 'true' ? 'false' : 'true')">
           <span class="switch__knob"></span>
@@ -144,6 +156,20 @@
         <div class="field">
           <label>Regex Error Message</label>
           <input type="text" [ngModel]="el.settings['regexError'] || ''" (ngModelChange)="updateSetting('regexError', $event)" placeholder="Invalid format">
+        </div>
+      }
+      <div class="field">
+        <label>Min Length</label>
+        <input type="number" min="0" [ngModel]="el.settings['minLength'] || ''" (ngModelChange)="updateSetting('minLength', $event)" placeholder="e.g. 3">
+      </div>
+      <div class="field">
+        <label>Max Length</label>
+        <input type="number" min="0" [ngModel]="el.settings['maxLength'] || ''" (ngModelChange)="updateSetting('maxLength', $event)" placeholder="e.g. 50">
+      </div>
+      @if (el.settings['minLength'] || el.settings['maxLength']) {
+        <div class="field">
+          <label>Length Error Message</label>
+          <input type="text" [ngModel]="el.settings['lengthError'] || ''" (ngModelChange)="updateSetting('lengthError', $event)" [placeholder]="getDefaultLengthError(el)">
         </div>
       }
       <label class="switch-row">
@@ -252,9 +278,18 @@
         </div>
       }
       <div class="field">
-        <label>Trigger Text</label>
-        <input type="text" [ngModel]="el.settings['triggerText'] || ''" (ngModelChange)="updateSetting('triggerText', $event)">
+        <label>Trigger Style</label>
+        <select [ngModel]="el.settings['triggerStyle'] || 'default'" (ngModelChange)="updateSetting('triggerStyle', $event)">
+          <option value="default">Default (Full width)</option>
+          <option value="compact">Compact (+)</option>
+        </select>
       </div>
+      @if (el.settings['triggerStyle'] !== 'compact') {
+        <div class="field">
+          <label>Trigger Text</label>
+          <input type="text" [ngModel]="el.settings['triggerText'] || ''" (ngModelChange)="updateSetting('triggerText', $event)">
+        </div>
+      }
       <ng-container *ngTemplateOutlet="optionsList"></ng-container>
     }
 
@@ -409,6 +444,11 @@
             <option value="equals">Inside Radius</option>
             <option value="not_equals">Outside Radius</option>
           </select>
+        } @else if (isSelectedConditionElementButton()) {
+          <select [ngModel]="el.visibilityCondition.operator" (ngModelChange)="updateConditionField('operator', $event)">
+            <option value="button_active">Button is Active</option>
+            <option value="button_not_active">Button is Not Active</option>
+          </select>
         } @else {
           <select [ngModel]="el.visibilityCondition.operator" (ngModelChange)="updateConditionField('operator', $event)">
             <option value="equals">Equals</option>
@@ -421,7 +461,7 @@
           </select>
         }
       </div>
-      @if (!['empty', 'not_empty'].includes(el.visibilityCondition.operator) && el.visibilityCondition.source !== 'geofence') {
+      @if (!['empty', 'not_empty', 'button_active', 'button_not_active'].includes(el.visibilityCondition.operator) && el.visibilityCondition.source !== 'geofence') {
         <div class="field">
           <label>Value</label>
           <input type="text" [ngModel]="el.visibilityCondition.value || ''" (ngModelChange)="updateConditionField('value', $event)">

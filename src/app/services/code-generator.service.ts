@@ -22,14 +22,14 @@ export class CodeGeneratorService {
     const dark = {
       bg: '#0f0f11', text: '#fafafa', textSecondary: '#d4d4d8', textMuted: '#a1a1aa',
       inputBg: '#18181b', inputBorder: '#3f3f46', border: '#27272a',
-      accent: '#8b5cf6', accentHover: '#7c3aed',
+      accent: '#1b7a5f', accentHover: '#114b47',
       dropdownTriggerBg: 'rgba(255,255,255,0.06)', dropdownPanelBg: '#1e1e22',
       dropdownHoverBg: 'rgba(255,255,255,0.08)', dropdownActiveBg: 'rgba(255,255,255,0.12)',
     };
     const light = {
       bg: '#ffffff', text: '#18181b', textSecondary: '#52525b', textMuted: '#a1a1aa',
       inputBg: '#ffffff', inputBorder: '#d4d4d8', border: '#e4e4e7',
-      accent: '#7c3aed', accentHover: '#6d28d9',
+      accent: '#114b47', accentHover: '#0d3a37',
       dropdownTriggerBg: 'rgba(0,0,0,0.02)', dropdownPanelBg: '#ffffff',
       dropdownHoverBg: 'rgba(0,0,0,0.04)', dropdownActiveBg: 'rgba(0,0,0,0.06)',
     };
@@ -75,6 +75,7 @@ button {
   transition: background 0.15s;
 }
 button:active { background: var(--accent-hover); }
+button.active { background: var(--accent-hover); box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
 img { max-width: 100%; border-radius: 10px; }
 hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
 .radio-group label, .checkbox-group label {
@@ -160,6 +161,9 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .img-picker__item--removing { animation: imgSlideDown 0.3s ease forwards; }
 @keyframes imgSlideDown { to { opacity: 0; transform: translateY(30px) scale(0.9); } }
 .img-picker__options { display: none; }
+.img-picker--compact { display: inline-flex; flex-direction: column; }
+.img-picker__trigger--compact { width: 100%; height: 100%; padding: 0; border: 1px solid var(--input-border); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: var(--input-bg); cursor: pointer; transition: background-color 0.2s; box-sizing: border-box; }
+.img-picker__trigger--compact:hover, .img-picker__trigger--compact:active { background-color: var(--dropdown-hover-bg); }
 /* Toast */
 .toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; z-index: 2000; transition: bottom 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
 .toast--visible { bottom: 40px; }
@@ -379,6 +383,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       js += `      }\n`;
       js += `    }\n`;
       js += `    var op = cond.operator, cv = cond.value || '';\n`;
+      js += `    if (op === 'button_active' || op === 'button_not_active') {\n`;
+      js += `      var btn = cond.elementId ? document.getElementById(cond.elementId) : null;\n`;
+      js += `      var isActive = btn && btn.getAttribute('data-active') === 'true';\n`;
+      js += `      return op === 'button_active' ? isActive : !isActive;\n`;
+      js += `    }\n`;
       js += `    switch(op) {\n`;
       js += `      case 'equals': return val === cv;\n`;
       js += `      case 'not_equals': return val !== cv;\n`;
@@ -528,6 +537,36 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
           }
         }
 
+        // Toggle button handler
+        if (el.type === 'button' && el.settings['toggleable'] === 'true') {
+          const group = el.settings['toggleGroup'] || '';
+          js += `  // Toggle button: ${el.id}\n`;
+          js += `  (function() {\n`;
+          js += `    var btn = document.getElementById('${el.id}');\n`;
+          js += `    if (!btn) return;\n`;
+          js += `    btn.setAttribute('data-active', 'false');\n`;
+          if (group) {
+            js += `    btn.setAttribute('data-toggle-group', '${group}');\n`;
+          }
+          js += `    btn.addEventListener('click', function() {\n`;
+          js += `      var isActive = btn.getAttribute('data-active') === 'true';\n`;
+          if (group) {
+            js += `      if (!isActive) {\n`;
+            js += `        document.querySelectorAll('[data-toggle-group="${group}"]').forEach(function(other) {\n`;
+            js += `          other.setAttribute('data-active', 'false');\n`;
+            js += `          other.classList.remove('active');\n`;
+            js += `        });\n`;
+            js += `      }\n`;
+          }
+          js += `      btn.setAttribute('data-active', String(!isActive));\n`;
+          js += `      btn.classList.toggle('active');\n`;
+          if (hasConditions) {
+            js += `      checkConditions();\n`;
+          }
+          js += `    });\n`;
+          js += `  })();\n\n`;
+        }
+
         if (el.type === 'button') {
           const validate = el.settings['validateRequired'] === 'true';
           const hasAction = !!el.pageNavigateTo || !!el.dynamicBinding;
@@ -554,6 +593,19 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
               js += `      var regex = new RegExp(field.getAttribute('data-pattern'));\n`;
               js += `      if (field.value && !regex.test(field.value)) { allValid = false; field.classList.add('input-error'); if (patternErrorEl) patternErrorEl.classList.add('field-error--visible'); }\n`;
               js += `      else { field.classList.remove('input-error'); if (patternErrorEl) patternErrorEl.classList.remove('field-error--visible'); }\n`;
+              js += `    });\n`;
+              js += `    var lengthFields = document.querySelectorAll('[data-min-length], [data-max-length]');\n`;
+              js += `    lengthFields.forEach(function(field) {\n`;
+              js += `      if (field.getAttribute('data-twk-set') === 'true') return;\n`;
+              js += `      var lengthErrorEl = document.getElementById(field.id + '-length-error');\n`;
+              js += `      var minLen = field.getAttribute('data-min-length');\n`;
+              js += `      var maxLen = field.getAttribute('data-max-length');\n`;
+              js += `      var len = (field.value || '').length;\n`;
+              js += `      var invalid = false;\n`;
+              js += `      if (minLen && len < parseInt(minLen, 10) && len > 0) invalid = true;\n`;
+              js += `      if (maxLen && len > parseInt(maxLen, 10)) invalid = true;\n`;
+              js += `      if (invalid) { allValid = false; field.classList.add('input-error'); if (lengthErrorEl) lengthErrorEl.classList.add('field-error--visible'); }\n`;
+              js += `      else { field.classList.remove('input-error'); if (lengthErrorEl) lengthErrorEl.classList.remove('field-error--visible'); }\n`;
               js += `    });\n`;
               js += `    if (!allValid) return;\n`;
             }
@@ -672,6 +724,19 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
               js += `      var regex = new RegExp(field.getAttribute('data-pattern'));\n`;
               js += `      if (field.value && !regex.test(field.value)) { allValid = false; field.classList.add('input-error'); if (patternErrorEl) patternErrorEl.classList.add('field-error--visible'); }\n`;
               js += `      else { field.classList.remove('input-error'); if (patternErrorEl) patternErrorEl.classList.remove('field-error--visible'); }\n`;
+              js += `    });\n`;
+              js += `    var lengthFields = document.querySelectorAll('[data-min-length], [data-max-length]');\n`;
+              js += `    lengthFields.forEach(function(field) {\n`;
+              js += `      if (field.getAttribute('data-twk-set') === 'true') return;\n`;
+              js += `      var lengthErrorEl = document.getElementById(field.id + '-length-error');\n`;
+              js += `      var minLen = field.getAttribute('data-min-length');\n`;
+              js += `      var maxLen = field.getAttribute('data-max-length');\n`;
+              js += `      var len = (field.value || '').length;\n`;
+              js += `      var invalid = false;\n`;
+              js += `      if (minLen && len < parseInt(minLen, 10) && len > 0) invalid = true;\n`;
+              js += `      if (maxLen && len > parseInt(maxLen, 10)) invalid = true;\n`;
+              js += `      if (invalid) { allValid = false; field.classList.add('input-error'); if (lengthErrorEl) lengthErrorEl.classList.add('field-error--visible'); }\n`;
+              js += `      else { field.classList.remove('input-error'); if (lengthErrorEl) lengthErrorEl.classList.remove('field-error--visible'); }\n`;
               js += `    });\n`;
               js += `    if (!allValid) return;\n`;
             }
@@ -1072,17 +1137,30 @@ ${body}${sheetHtml}
         const regexPattern = el.settings['regexPattern'] || '';
         const regexError = el.settings['regexError'] || 'Invalid format';
         const patternAttr = regexPattern ? ` data-pattern="${this.escapeHtml(regexPattern)}" data-pattern-error="${this.escapeHtml(regexError)}"` : '';
+        const minLen = el.settings['minLength'] || '';
+        const maxLen = el.settings['maxLength'] || '';
+        let lengthAttr = '';
+        if (minLen) lengthAttr += ` data-min-length="${minLen}"`;
+        if (maxLen) lengthAttr += ` data-max-length="${maxLen}"`;
+        let defaultLengthMsg = '';
+        if (minLen && maxLen) defaultLengthMsg = `Must be between ${minLen} and ${maxLen} characters`;
+        else if (minLen) defaultLengthMsg = `Must be at least ${minLen} characters`;
+        else if (maxLen) defaultLengthMsg = `Must be at most ${maxLen} characters`;
+        const lengthErrorMsg = el.settings['lengthError'] || defaultLengthMsg;
         const label = `  <label class="el-label">${this.escapeHtml(el.settings['label'] || '')}${star}</label>\n`;
         let errorDiv = isRequired ? `\n  <div class="field-error" id="${el.id}-error">This field is required</div>` : '';
         if (regexPattern) {
           errorDiv += `\n  <div class="field-error" id="${el.id}-pattern-error">${this.escapeHtml(regexError)}</div>`;
         }
+        if (minLen || maxLen) {
+          errorDiv += `\n  <div class="field-error" id="${el.id}-length-error">${this.escapeHtml(lengthErrorMsg)}</div>`;
+        }
         let result: string;
         if (isArea) {
           const hVw = parseFloat((h / CodeGeneratorService.CANVAS_WIDTH * 100).toFixed(2));
-          result = label + `  <textarea id="${el.id}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}" style="height:${hVw}vw"${reqAttr}${patternAttr}${disabledAttr}></textarea>${errorDiv}`;
+          result = label + `  <textarea id="${el.id}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}" style="height:${hVw}vw"${reqAttr}${patternAttr}${lengthAttr}${disabledAttr}></textarea>${errorDiv}`;
         } else {
-          result = label + `  <input id="${el.id}" type="${el.settings['inputType'] || 'text'}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}"${reqAttr}${patternAttr}${disabledAttr}>${errorDiv}`;
+          result = label + `  <input id="${el.id}" type="${el.settings['inputType'] || 'text'}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}"${reqAttr}${patternAttr}${lengthAttr}${disabledAttr}>${errorDiv}`;
         }
         if (el.settings['hidden'] === 'true') {
           return `  <div style="display:none">${result}</div>`;
@@ -1152,12 +1230,19 @@ ${body}${sheetHtml}
         return html;
       }
       case 'media-select': {
+        const isCompact = el.settings['triggerStyle'] === 'compact';
         let html = `  <label class="el-label">${this.escapeHtml(el.settings['label'] || '')}</label>\n`;
-        html += `  <div class="img-picker" id="${el.id}">\n`;
-        html += `    <div class="img-picker__trigger">\n`;
-        html += `      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>\n`;
-        html += `      <span class="img-picker__text">${this.escapeHtml(el.settings['triggerText'] || 'Tap to add media')}</span>\n`;
-        html += `    </div>\n`;
+        html += `  <div class="img-picker${isCompact ? ' img-picker--compact' : ''}" id="${el.id}">\n`;
+        if (isCompact) {
+          html += `    <div class="img-picker__trigger img-picker__trigger--compact">\n`;
+          html += `      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>\n`;
+          html += `    </div>\n`;
+        } else {
+          html += `    <div class="img-picker__trigger">\n`;
+          html += `      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>\n`;
+          html += `      <span class="img-picker__text">${this.escapeHtml(el.settings['triggerText'] || 'Tap to add media')}</span>\n`;
+          html += `    </div>\n`;
+        }
         html += `    <div class="img-picker__options">`;
         for (const opt of el.options) {
           html += `\n      <button type="button" class="img-picker__option" data-value="${opt.value}"`;

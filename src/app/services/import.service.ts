@@ -150,6 +150,9 @@ export class ImportService {
       const element = this.createBase(id, 'button');
       const icon = this.parseIcon(el);
       if (icon) element.settings['icon'] = icon;
+      if (el.hasAttribute('data-active')) {
+        element.settings['toggleable'] = 'true';
+      }
       // Remove icon element text from content
       const iEl = el.querySelector('i.pi');
       if (iEl) iEl.remove();
@@ -312,6 +315,10 @@ export class ImportService {
       element.settings['regexPattern'] = pattern;
       element.settings['regexError'] = inputEl.getAttribute('data-pattern-error') || 'Invalid format';
     }
+    const minLength = inputEl.getAttribute('data-min-length') || inputEl.getAttribute('minlength');
+    if (minLength) element.settings['minLength'] = minLength;
+    const maxLength = inputEl.getAttribute('data-max-length') || inputEl.getAttribute('maxlength');
+    if (maxLength) element.settings['maxLength'] = maxLength;
     return element;
   }
 
@@ -336,18 +343,24 @@ export class ImportService {
       element.settings['regexPattern'] = pattern;
       element.settings['regexError'] = textareaEl.getAttribute('data-pattern-error') || 'Invalid format';
     }
+    const minLength = textareaEl.getAttribute('data-min-length') || textareaEl.getAttribute('minlength');
+    if (minLength) element.settings['minLength'] = minLength;
+    const maxLength = textareaEl.getAttribute('data-max-length') || textareaEl.getAttribute('maxlength');
+    if (maxLength) element.settings['maxLength'] = maxLength;
     return element;
   }
 
   private parseMediaSelect(el: HTMLElement, id: string): BuilderElement {
     const element = this.createBase(id, 'media-select');
     const prev = el.previousElementSibling as HTMLElement | null;
+    const isCompact = !!el.querySelector('.img-picker__trigger--compact');
     const triggerText = el.querySelector('.img-picker__text')?.textContent?.trim() || 'Tap to add media';
     element.settings = {
       label: prev?.tagName === 'LABEL' && prev.classList.contains('el-label')
         ? prev.textContent?.trim() || ''
         : 'Select Media',
-      triggerText
+      triggerText,
+      ...(isCompact ? { triggerStyle: 'compact' } : {})
     };
     const optBtns = el.querySelectorAll('.img-picker__option');
     element.options = Array.from(optBtns).map((btn: any) => {

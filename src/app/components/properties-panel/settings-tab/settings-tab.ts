@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgTemplateOutlet } from '@angular/common';
 import { BuilderService } from '../../../services/builder.service';
-import { I18nTranslation, VisibilityCondition, TwkBinding } from '../../../models/element.model';
+import { BuilderElement, I18nTranslation, VisibilityCondition, TwkBinding } from '../../../models/element.model';
 import { IconPicker } from '../../icon-picker/icon-picker';
 import { TwkFunctionsService } from '../../../services/twk-functions.service';
 import { FunctionPicker } from '../../function-picker/function-picker';
@@ -214,9 +214,18 @@ export class SettingsTab {
   updateConditionField(field: string, value: string): void {
     const el = this.element;
     if (!el || !el.visibilityCondition) return;
-    this.builder.updateElement(el.id, {
-      visibilityCondition: { ...el.visibilityCondition, [field]: value }
-    });
+    const updates: any = { ...el.visibilityCondition, [field]: value };
+    // Auto-set operator when selecting a button element
+    if (field === 'elementId') {
+      const page = this.builder.activePage();
+      const target = page?.elements.find(e => e.id === value);
+      if (target?.type === 'button') {
+        updates.operator = 'button_active';
+      } else if (['button_active', 'button_not_active'].includes(el.visibilityCondition.operator)) {
+        updates.operator = 'equals';
+      }
+    }
+    this.builder.updateElement(el.id, { visibilityCondition: updates });
   }
 
   setConditionFunction(functionName: string): void {
@@ -272,6 +281,24 @@ export class SettingsTab {
       ri === rowIdx ? row.map((cell, ci) => ci === colIdx ? value : cell) : [...row]
     );
     this.builder.updateElement(el.id, { tableData: newData });
+  }
+
+  isSelectedConditionElementButton(): boolean {
+    const el = this.element;
+    if (!el?.visibilityCondition?.elementId) return false;
+    const page = this.builder.activePage();
+    if (!page) return false;
+    const target = page.elements.find(e => e.id === el.visibilityCondition!.elementId);
+    return target?.type === 'button';
+  }
+
+  getDefaultLengthError(el: BuilderElement): string {
+    const min = el.settings['minLength'];
+    const max = el.settings['maxLength'];
+    if (min && max) return `Must be between ${min} and ${max} characters`;
+    if (min) return `Must be at least ${min} characters`;
+    if (max) return `Must be at most ${max} characters`;
+    return '';
   }
 
   updateConditionBindingField(field: string, value: string): void {

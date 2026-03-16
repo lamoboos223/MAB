@@ -38,7 +38,7 @@ export interface VisibilityCondition {
   source: 'element' | 'function' | 'geofence';
   elementId?: string;
   functionBinding?: TwkBinding;
-  operator: 'equals' | 'not_equals' | 'contains' | 'empty' | 'not_empty' | 'greater_than' | 'less_than';
+  operator: 'equals' | 'not_equals' | 'contains' | 'empty' | 'not_empty' | 'greater_than' | 'less_than' | 'button_active' | 'button_not_active';
   value?: string;
   geofenceLat?: string;
   geofenceLng?: string;
