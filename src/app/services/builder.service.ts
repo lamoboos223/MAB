@@ -14,7 +14,7 @@ export class BuilderService {
   selectedElementId = signal<string | null>(null);
   secretKey = signal<string>('MY_HMAC_SECRET_2025');
   debugMode = signal<boolean>(false);
-  showGrid = signal<boolean>(false);
+  showGrid = signal<boolean>(true);
 
   activePage = computed(() => {
     const pages = this.pages();
