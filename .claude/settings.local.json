@@ -15,7 +15,8 @@
       "Bash(grep -r \"proxy\" node_modules/@angular/build/src/builders/dev-server/ --include=\"*.js\" -l 2>/dev/null | head -5)",
       "Bash(ls node_modules/.package-lock.json 2>/dev/null; npm ls concurrently 2>&1 | head -5)",
       "Bash(git add:*)",
-      "Bash(curl -k -s \"https://devportal.tawakkalna.sa/developer-center\" 2>/dev/null | grep -i -oE '\\(#[0-9a-fA-F]{3,8}|rgb[a]?\\\\\\([^\\)]+\\\\\\)\\)' | sort -u | head -30)"
+      "Bash(curl -k -s \"https://devportal.tawakkalna.sa/developer-center\" 2>/dev/null | grep -i -oE '\\(#[0-9a-fA-F]{3,8}|rgb[a]?\\\\\\([^\\)]+\\\\\\)\\)' | sort -u | head -30)",
+      "Bash(find C:/Users/lamob/development/miniapps_builder/docs -type f -name \"*.md\" 2>/dev/null | head -10)"
     ]
   }
 }

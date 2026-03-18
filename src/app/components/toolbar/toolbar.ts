@@ -62,6 +62,12 @@ export class Toolbar {
     input.value = '';
   }
 
+  newDesign(): void {
+    if (!confirm('Start a new design? Your current work will be cleared.')) return;
+    this.builder.clearSavedState();
+    location.reload();
+  }
+
   toggleTheme(): void { this.themeService.toggle(); }
 
   get previewLang() { return this.builder.activeLang(); }

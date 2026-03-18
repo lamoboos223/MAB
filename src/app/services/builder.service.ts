@@ -1,6 +1,18 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, effect } from '@angular/core';
 import { BuilderElement, ElementType, ElementStyle, FieldMapping } from '../models/element.model';
 import { Page } from '../models/page.model';
+
+const STORAGE_KEY = 'miniapps_builder_state';
+
+interface SavedState {
+  pages: Page[];
+  activePageId: string;
+  activeLang: 'en' | 'ar';
+  appThemeMode: 'light' | 'dark' | 'auto';
+  secretKey: string;
+  debugMode: boolean;
+  showGrid: boolean;
+}
 
 @Injectable({ providedIn: 'root' })
 export class BuilderService {
@@ -30,10 +42,50 @@ export class BuilderService {
   });
 
   constructor() {
+    this.loadState();
+
+    effect(() => {
+      const state: SavedState = {
+        pages: this.pages(),
+        activePageId: this.activePageId(),
+        activeLang: this.activeLang(),
+        appThemeMode: this.appThemeMode(),
+        secretKey: this.secretKey(),
+        debugMode: this.debugMode(),
+        showGrid: this.showGrid(),
+      };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch { /* storage full or unavailable */ }
+    });
+  }
+
+  private loadState(): void {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const state: SavedState = JSON.parse(raw);
+        if (state.pages?.length) {
+          this.pages.set(state.pages);
+          this.activePageId.set(state.activePageId || state.pages[0].id);
+          if (state.activeLang) this.activeLang.set(state.activeLang);
+          if (state.appThemeMode) this.appThemeMode.set(state.appThemeMode);
+          if (state.secretKey) this.secretKey.set(state.secretKey);
+          if (state.debugMode !== undefined) this.debugMode.set(state.debugMode);
+          if (state.showGrid !== undefined) this.showGrid.set(state.showGrid);
+          return;
+        }
+      }
+    } catch { /* corrupted data, start fresh */ }
+
     const firstPage = this.pages()[0];
     if (firstPage) {
       this.activePageId.set(firstPage.id);
     }
+  }
+
+  clearSavedState(): void {
+    localStorage.removeItem(STORAGE_KEY);
   }
 
   addPage(): void {

@@ -9,6 +9,7 @@
         {{ themeService.theme() === 'dark' ? '☀️' : '🌙' }}
       </button>
     }
+    <button class="toolbar-btn new-btn" (click)="newDesign()">New</button>
     <button class="toolbar-btn debug-btn" [class.debug-btn--active]="builder.debugMode()" (click)="builder.debugMode.set(!builder.debugMode())">Debug</button>
     <button class="toolbar-btn grid-btn" [class.grid-btn--active]="builder.showGrid()" (click)="builder.showGrid.set(!builder.showGrid())">Grid</button>
     <button class="toolbar-btn import-btn" (click)="triggerImport()">Import ZIP</button>
