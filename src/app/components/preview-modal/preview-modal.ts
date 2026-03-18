@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, AfterViewInit, OnDestroy, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BuilderService } from '../../services/builder.service';
 import { inject } from '@angular/core';
@@ -74,6 +74,13 @@ export class PreviewModal implements AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.messageListener) {
       window.removeEventListener('message', this.messageListener);
+    }
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      this.close.emit();
     }
   }
 
