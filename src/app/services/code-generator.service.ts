@@ -204,7 +204,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     return css;
   }
 
-  generateJs(pages: Page[], themeMode: 'light' | 'dark' | 'auto' = 'auto', secretKey: string = '', debugMode: boolean = false): string {
+  generateJs(pages: Page[], themeMode: 'light' | 'dark' | 'auto' = 'auto', secretKey: string = '', debugMode: boolean = false, debugTarget: 'preview' | 'standalone' = 'preview'): string {
     const hasI18n = this.hasI18nElements(pages);
     const needsDeviceInfo = themeMode === 'auto' || hasI18n;
     const hasRequiredFields = pages.some(p => p.elements.some(e => e.type === 'input' && e.settings['required'] === 'true'));
@@ -212,35 +212,96 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     let js = '';
 
     if (debugMode) {
-      js += `// Debug mode — relay logs to parent\n`;
+      js += `// Debug mode\n`;
       js += `var __origConsoleError = console.error.bind(console);\n`;
-      js += `function debugLog(msg, err) {\n`;
-      js += `  __origConsoleError(msg, err || '');\n`;
-      js += `  window.parent.postMessage({ type: 'debug-log', message: '' + msg, error: err ? '' + (err.message || err) : '' }, '*');\n`;
-      js += `}\n`;
+
+      if (debugTarget === 'standalone') {
+        // On-screen debug panel for exported ZIP
+        js += `(function() {\n`;
+        js += `  var panel = document.createElement('div');\n`;
+        js += `  panel.id = '__debug_panel';\n`;
+        js += `  panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:40vh;overflow-y:auto;background:rgba(0,0,0,0.92);color:#0f0;font-family:monospace;font-size:11px;z-index:99999;padding:0;display:none;border-top:2px solid #0f0;';\n`;
+        js += `  var header = document.createElement('div');\n`;
+        js += `  header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:6px 10px;position:sticky;top:0;background:rgba(0,0,0,0.95);border-bottom:1px solid #333;';\n`;
+        js += `  header.innerHTML = '<span style=\"color:#0f0;font-weight:bold;\">DEBUG</span><div><button id=\"__debug_clear\" style=\"background:none;border:1px solid #555;color:#aaa;padding:2px 8px;border-radius:4px;font-size:10px;margin-right:4px;cursor:pointer;\">Clear</button><button id=\"__debug_close\" style=\"background:none;border:1px solid #555;color:#aaa;padding:2px 8px;border-radius:4px;font-size:10px;cursor:pointer;\">Close</button></div>';\n`;
+        js += `  panel.appendChild(header);\n`;
+        js += `  var logs = document.createElement('div');\n`;
+        js += `  logs.id = '__debug_logs';\n`;
+        js += `  logs.style.cssText = 'padding:6px 10px;';\n`;
+        js += `  panel.appendChild(logs);\n`;
+        js += `  document.body.appendChild(panel);\n`;
+        js += `  var btn = document.createElement('button');\n`;
+        js += `  btn.id = '__debug_toggle';\n`;
+        js += `  btn.textContent = 'DBG';\n`;
+        js += `  btn.style.cssText = 'position:fixed;bottom:10px;right:10px;z-index:100000;background:#111;color:#0f0;border:1px solid #0f0;border-radius:50%;width:40px;height:40px;font-size:10px;font-weight:bold;font-family:monospace;cursor:pointer;';\n`;
+        js += `  document.body.appendChild(btn);\n`;
+        js += `  btn.onclick = function() { panel.style.display = panel.style.display === 'none' ? 'block' : 'none'; };\n`;
+        js += `  document.getElementById('__debug_clear').onclick = function() { logs.innerHTML = ''; };\n`;
+        js += `  document.getElementById('__debug_close').onclick = function() { panel.style.display = 'none'; };\n`;
+        js += `})();\n`;
+        js += `function debugLog(msg, err) {\n`;
+        js += `  __origConsoleError(msg, err || '');\n`;
+        js += `  var el = document.getElementById('__debug_logs');\n`;
+        js += `  if (!el) return;\n`;
+        js += `  var line = document.createElement('div');\n`;
+        js += `  line.style.cssText = 'padding:3px 0;border-bottom:1px solid #222;word-break:break-all;';\n`;
+        js += `  var t = new Date().toLocaleTimeString();\n`;
+        js += `  line.innerHTML = '<span style=\"color:#666;\">' + t + '</span> ' + msg + (err ? ' <span style=\"color:#f44;\">' + err + '</span>' : '');\n`;
+        js += `  el.appendChild(line);\n`;
+        js += `  el.parentElement.scrollTop = el.parentElement.scrollHeight;\n`;
+        js += `}\n`;
+      } else {
+        // Preview mode — relay to parent iframe
+        js += `function debugLog(msg, err) {\n`;
+        js += `  __origConsoleError(msg, err || '');\n`;
+        js += `  window.parent.postMessage({ type: 'debug-log', message: '' + msg, error: err ? '' + (err.message || err) : '' }, '*');\n`;
+        js += `}\n`;
+      }
+
       js += `window.onerror = function(msg, src, line, col, err) { debugLog('Uncaught: ' + msg, err); };\n`;
       js += `window.addEventListener('unhandledrejection', function(e) { debugLog('Unhandled Promise', e.reason); });\n\n`;
 
-      // Proxy fetch through parent to avoid CORS issues in preview iframe
-      js += `// Fetch proxy — relay through parent window to avoid CORS\n`;
-      js += `var __fetchId = 0;\n`;
-      js += `var __fetchCallbacks = {};\n`;
-      js += `window.addEventListener('message', function(e) {\n`;
-      js += `  if (e.data && e.data.type === 'fetch-response' && __fetchCallbacks[e.data.id]) {\n`;
-      js += `    __fetchCallbacks[e.data.id](e.data);\n`;
-      js += `    delete __fetchCallbacks[e.data.id];\n`;
-      js += `  }\n`;
-      js += `});\n`;
-      js += `function __proxyFetch(url, opts) {\n`;
-      js += `  var id = ++__fetchId;\n`;
-      js += `  return new Promise(function(resolve, reject) {\n`;
-      js += `    __fetchCallbacks[id] = function(data) {\n`;
-      js += `      if (data.error) { reject(new Error(data.error)); }\n`;
-      js += `      else { resolve({ ok: data.ok, status: data.status, text: function() { return Promise.resolve(data.body); }, json: function() { return Promise.resolve(JSON.parse(data.body)); } }); }\n`;
-      js += `    };\n`;
-      js += `    window.parent.postMessage({ type: 'fetch-request', id: id, url: url, method: (opts && opts.method) || 'GET', headers: (opts && opts.headers) || {}, body: (opts && opts.body) || null }, '*');\n`;
-      js += `  });\n`;
-      js += `}\n\n`;
+      if (debugTarget === 'standalone') {
+        // CORS-safe fetch wrapper — retries without preflight on failure
+        js += `var __origFetch = window.fetch.bind(window);\n`;
+        js += `window.fetch = function(url, opts) {\n`;
+        js += `  return __origFetch(url, opts).catch(function(err) {\n`;
+        js += `    if (!err.message || (err.message.indexOf('Failed to fetch') === -1 && err.message.indexOf('NetworkError') === -1)) throw err;\n`;
+        js += `    debugLog('[CORS] Preflight blocked, retrying without preflight: ' + url);\n`;
+        js += `    var safeOpts = Object.assign({}, opts);\n`;
+        js += `    var h = {};\n`;
+        js += `    if (opts && opts.headers) { for (var k in opts.headers) { h[k] = opts.headers[k]; } }\n`;
+        js += `    if (h['Content-Type'] && h['Content-Type'].indexOf('application/json') !== -1) {\n`;
+        js += `      h['Content-Type'] = 'text/plain';\n`;
+        js += `    }\n`;
+        js += `    safeOpts.headers = h;\n`;
+        js += `    return __origFetch(url, safeOpts);\n`;
+        js += `  });\n`;
+        js += `};\n\n`;
+      }
+
+      if (debugTarget === 'preview') {
+        // Proxy fetch through parent to avoid CORS issues in preview iframe
+        js += `// Fetch proxy — relay through parent window to avoid CORS\n`;
+        js += `var __fetchId = 0;\n`;
+        js += `var __fetchCallbacks = {};\n`;
+        js += `window.addEventListener('message', function(e) {\n`;
+        js += `  if (e.data && e.data.type === 'fetch-response' && __fetchCallbacks[e.data.id]) {\n`;
+        js += `    __fetchCallbacks[e.data.id](e.data);\n`;
+        js += `    delete __fetchCallbacks[e.data.id];\n`;
+        js += `  }\n`;
+        js += `});\n`;
+        js += `function __proxyFetch(url, opts) {\n`;
+        js += `  var id = ++__fetchId;\n`;
+        js += `  return new Promise(function(resolve, reject) {\n`;
+        js += `    __fetchCallbacks[id] = function(data) {\n`;
+        js += `      if (data.error) { reject(new Error(data.error)); }\n`;
+        js += `      else { resolve({ ok: data.ok, status: data.status, text: function() { return Promise.resolve(data.body); }, json: function() { return Promise.resolve(JSON.parse(data.body)); } }); }\n`;
+        js += `    };\n`;
+        js += `    window.parent.postMessage({ type: 'fetch-request', id: id, url: url, method: (opts && opts.method) || 'GET', headers: (opts && opts.headers) || {}, body: (opts && opts.body) || null }, '*');\n`;
+        js += `  });\n`;
+        js += `}\n\n`;
+      }
     }
 
     if (hasSubmit) {
@@ -976,7 +1037,9 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     js += `});\n`;
     if (debugMode) {
       js = js.replace(/console\.error\(/g, 'debugLog(');
-      js = js.replace(/\bfetch\(/g, '__proxyFetch(');
+      if (debugTarget === 'preview') {
+        js = js.replace(/\bfetch\(/g, '__proxyFetch(');
+      }
     }
     return js;
   }

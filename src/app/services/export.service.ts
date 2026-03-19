@@ -22,7 +22,7 @@ export class ExportService {
     const css = this.codeGen.generateCss(pages, themeMode);
     zip.file('css/style.css', css);
 
-    const js = this.codeGen.generateJs(pages, themeMode, this.builder.secretKey(), this.builder.debugMode());
+    const js = this.codeGen.generateJs(pages, themeMode, this.builder.secretKey(), this.builder.debugMode(), 'standalone');
     zip.file('js/app.js', js);
 
     const twkHelperContent = await this.loadTwkHelper();
