@@ -3,6 +3,14 @@ import { BuilderElement, ElementType, ElementStyle, FieldMapping } from '../mode
 import { Page } from '../models/page.model';
 
 const STORAGE_KEY = 'miniapps_builder_state';
+const REVISIONS_KEY = 'miniapps_builder_revisions';
+
+export interface Revision {
+  id: string;
+  name: string;
+  timestamp: number;
+  pages: Page[];
+}
 
 interface SavedState {
   pages: Page[];
@@ -86,6 +94,48 @@ export class BuilderService {
 
   clearSavedState(): void {
     localStorage.removeItem(STORAGE_KEY);
+  }
+
+  revisions = signal<Revision[]>(this.loadRevisions());
+  activeRevisionId = signal<string | null>(null);
+
+  private loadRevisions(): Revision[] {
+    try {
+      const raw = localStorage.getItem(REVISIONS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  }
+
+  private saveRevisions(): void {
+    try {
+      localStorage.setItem(REVISIONS_KEY, JSON.stringify(this.revisions()));
+    } catch { /* storage full */ }
+  }
+
+  saveRevision(name: string): void {
+    const revision: Revision = {
+      id: this.generateId(),
+      name,
+      timestamp: Date.now(),
+      pages: structuredClone(this.pages()),
+    };
+    this.revisions.set([...this.revisions(), revision]);
+    this.saveRevisions();
+    this.activeRevisionId.set(revision.id);
+  }
+
+  loadRevision(revisionId: string): void {
+    const revision = this.revisions().find(r => r.id === revisionId);
+    if (!revision) return;
+    this.pages.set(structuredClone(revision.pages));
+    this.activePageId.set(revision.pages[0]?.id || '');
+    this.selectedElementId.set(null);
+    this.activeRevisionId.set(revisionId);
+  }
+
+  deleteRevision(revisionId: string): void {
+    this.revisions.set(this.revisions().filter(r => r.id !== revisionId));
+    this.saveRevisions();
   }
 
   addPage(): void {

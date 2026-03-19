@@ -23,7 +23,15 @@ export class Toolbar {
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   showPreview = false;
+  showRevisions = false;
   previewPages: Record<string, string> = {};
+
+  activeRevisionName = () => {
+    const id = this.builder.activeRevisionId();
+    if (!id) return '';
+    const rev = this.builder.revisions().find(r => r.id === id);
+    return rev?.name || '';
+  };
 
   preview(): void {
     const pages = this.builder.pages();
@@ -66,6 +74,31 @@ export class Toolbar {
     if (!confirm('Start a new design? Your current work will be cleared.')) return;
     this.builder.clearSavedState();
     location.reload();
+  }
+
+  saveRevision(): void {
+    const name = prompt('Revision name:', `Revision ${this.builder.revisions().length + 1}`);
+    if (!name) return;
+    this.builder.saveRevision(name);
+  }
+
+  loadRevision(id: string): void {
+    this.builder.loadRevision(id);
+    this.showRevisions = false;
+  }
+
+  deleteRevision(event: Event, id: string): void {
+    event.stopPropagation();
+    if (!confirm('Delete this revision?')) return;
+    this.builder.deleteRevision(id);
+  }
+
+  toggleRevisions(): void {
+    this.showRevisions = !this.showRevisions;
+  }
+
+  formatDate(timestamp: number): string {
+    return new Date(timestamp).toLocaleString();
   }
 
   toggleTheme(): void { this.themeService.toggle(); }

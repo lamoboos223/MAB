@@ -10,6 +10,28 @@
       </button>
     }
     <button class="toolbar-btn new-btn" (click)="newDesign()">New</button>
+    <button class="toolbar-btn save-rev-btn" (click)="saveRevision()">Save Rev</button>
+    <div class="revisions-wrapper">
+      <button class="toolbar-btn rev-btn" (click)="toggleRevisions()">
+        {{ activeRevisionName() || 'Revisions' }}
+      </button>
+      @if (showRevisions) {
+        <div class="revisions-dropdown">
+          @if (builder.revisions().length === 0) {
+            <div class="revisions-empty">No revisions saved yet</div>
+          }
+          @for (rev of builder.revisions(); track rev.id) {
+            <div class="revision-item" [class.revision-item--active]="builder.activeRevisionId() === rev.id" (click)="loadRevision(rev.id)">
+              <div class="revision-item__info">
+                <span class="revision-item__name">{{ rev.name }}</span>
+                <span class="revision-item__date">{{ formatDate(rev.timestamp) }}</span>
+              </div>
+              <button class="revision-item__delete" (click)="deleteRevision($event, rev.id)">x</button>
+            </div>
+          }
+        </div>
+      }
+    </div>
     <button class="toolbar-btn debug-btn" [class.debug-btn--active]="builder.debugMode()" (click)="builder.debugMode.set(!builder.debugMode())">Debug</button>
     <button class="toolbar-btn grid-btn" [class.grid-btn--active]="builder.showGrid()" (click)="builder.showGrid.set(!builder.showGrid())">Grid</button>
     <button class="toolbar-btn import-btn" (click)="triggerImport()">Import ZIP</button>
