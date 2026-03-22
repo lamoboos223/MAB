@@ -465,6 +465,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       js += `    document.querySelectorAll('[data-condition]').forEach(function(el) {\n`;
       js += `      try {\n`;
       js += `        var cond = JSON.parse(el.getAttribute('data-condition'));\n`;
+      js += `        if (cond.source === 'geofence') return;\n`;
       js += `        el.style.display = evalCondition(cond) ? '' : 'none';\n`;
       js += `      } catch(e) {}\n`;
       js += `    });\n`;
@@ -518,30 +519,49 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
         js += `    var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);\n`;
         js += `    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));\n`;
         js += `  }\n`;
+        js += `  function applyGeofence(userLat, userLng) {\n`;
+        js += `    debugLog('[Geofence] User location: ' + userLat + ', ' + userLng);\n`;
+        js += `    document.querySelectorAll('[data-condition]').forEach(function(el) {\n`;
+        js += `      try {\n`;
+        js += `        var c = JSON.parse(el.getAttribute('data-condition'));\n`;
+        js += `        if (c.source !== 'geofence') return;\n`;
+        js += `        var dist = haversineDistance(userLat, userLng, parseFloat(c.geofenceLat), parseFloat(c.geofenceLng));\n`;
+        js += `        var radius = parseFloat(c.geofenceRadius) || 500;\n`;
+        js += `        var inside = dist <= radius;\n`;
+        js += `        var show = c.operator === 'equals' ? inside : !inside;\n`;
+        js += `        debugLog('[Geofence] dist=' + dist.toFixed(1) + 'm, radius=' + radius + 'm, inside=' + inside + ', op=' + c.operator + ', show=' + show);\n`;
+        js += `        var btn = el.querySelector('button, [type=\"submit\"]');\n`;
+        js += `        if (btn) {\n`;
+        js += `          el.style.display = '';\n`;
+        js += `          btn.disabled = !show;\n`;
+        js += `          btn.style.opacity = show ? '1' : '0.5';\n`;
+        js += `          btn.style.cursor = show ? 'pointer' : 'not-allowed';\n`;
+        js += `        } else {\n`;
+        js += `          el.style.display = show ? '' : 'none';\n`;
+        js += `        }\n`;
+        js += `      } catch(e) { debugLog('[Geofence] Error processing element:', e); }\n`;
+        js += `    });\n`;
+        js += `  }\n`;
+        js += `  // Try TWK first, fallback to browser Geolocation API\n`;
         js += `  if (typeof TWK !== 'undefined' && TWK.getUserLocation) {\n`;
+        js += `    debugLog('[Geofence] Using TWK.getUserLocation');\n`;
         js += `    TWK.getUserLocation().then(function(data) {\n`;
-        js += `      var loc = data.result;\n`;
-        js += `      if (!loc || !loc.latitude) return;\n`;
-        js += `      var userLat = parseFloat(loc.latitude);\n`;
-        js += `      var userLng = parseFloat(loc.longitude);\n`;
-        js += `      document.querySelectorAll('[data-condition]').forEach(function(el) {\n`;
-        js += `        try {\n`;
-        js += `          var c = JSON.parse(el.getAttribute('data-condition'));\n`;
-        js += `          if (c.source !== 'geofence') return;\n`;
-        js += `          var dist = haversineDistance(userLat, userLng, parseFloat(c.geofenceLat), parseFloat(c.geofenceLng));\n`;
-        js += `          var radius = parseFloat(c.geofenceRadius) || 500;\n`;
-        js += `          var inside = dist <= radius;\n`;
-        js += `          var show = c.operator === 'equals' ? inside : !inside;\n`;
-        js += `          var btn = el.querySelector('button');\n`;
-        js += `          if (btn) {\n`;
-        js += `            el.style.display = '';\n`;
-        js += `            btn.disabled = !show;\n`;
-        js += `          } else {\n`;
-        js += `            el.style.display = show ? '' : 'none';\n`;
-        js += `          }\n`;
-        js += `        } catch(e) {}\n`;
-        js += `      });\n`;
-        js += `    }).catch(function(err) { console.error('getUserLocation:', err); });\n`;
+        js += `      debugLog('[Geofence] TWK response: ' + JSON.stringify(data).substring(0, 200));\n`;
+        js += `      var loc = data.result || data;\n`;
+        js += `      if (!loc) { debugLog('[Geofence] No location in response'); return; }\n`;
+        js += `      if (loc.location) loc = loc.location;\n`;
+        js += `      var userLat = parseFloat(loc.latitude || loc.lat);\n`;
+        js += `      var userLng = parseFloat(loc.longitude || loc.lng);\n`;
+        js += `      if (isNaN(userLat) || isNaN(userLng)) { debugLog('[Geofence] Invalid coords: ' + JSON.stringify(loc)); return; }\n`;
+        js += `      applyGeofence(userLat, userLng);\n`;
+        js += `    }).catch(function(err) { debugLog('[Geofence] TWK.getUserLocation failed:', err); });\n`;
+        js += `  } else if (navigator.geolocation) {\n`;
+        js += `    debugLog('[Geofence] Using browser Geolocation API');\n`;
+        js += `    navigator.geolocation.getCurrentPosition(function(pos) {\n`;
+        js += `      applyGeofence(pos.coords.latitude, pos.coords.longitude);\n`;
+        js += `    }, function(err) { debugLog('[Geofence] Browser geolocation failed:', err.message); });\n`;
+        js += `  } else {\n`;
+        js += `    debugLog('[Geofence] No location API available');\n`;
         js += `  }\n`;
       }
     }
@@ -570,6 +590,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
           } else if (el.type === 'map') {
             js += `  ${call}.then(function(data) {\n`;
             js += `    var loc = data.${b.resultPath};\n`;
+            js += `    if (loc.location) loc = loc.location;\n`;
             js += `    document.getElementById('${el.id}-iframe').src = 'https://maps.google.com/maps?q=' + loc.latitude + ',' + loc.longitude + '&output=embed';\n`;
             js += `  }).catch(function(err) { console.error('${b.functionName}:', err); });\n\n`;
           } else if (['dropdown', 'radio', 'checkbox'].includes(el.type)) {
@@ -1151,7 +1172,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     for (const el of page.elements) {
       const pos = el.position;
       if (pos) {
-        const hideStyle = el.visibilityCondition ? 'display:none;' : '';
+        const isGeofenceButton = el.visibilityCondition?.source === 'geofence' && el.type === 'button';
+        const hideStyle = el.visibilityCondition && !isGeofenceButton ? 'display:none;' : '';
         const leftVw = parseFloat((pos.x / CodeGeneratorService.CANVAS_WIDTH * 100).toFixed(2));
         const topVw = parseFloat((pos.y / CodeGeneratorService.CANVAS_WIDTH * 100).toFixed(2));
         body += `  <div style="${hideStyle}position:absolute;left:${leftVw}vw;top:${topVw}vw;max-width:calc(100% - ${leftVw}vw)"${el.visibilityCondition ? ` data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}"` : ''}>\n  ${this.elementToHtml(el, page.elements)}\n  </div>\n`;
@@ -1198,8 +1220,10 @@ ${body}${sheetHtml}
         const tag = el.settings['headingLevel'] || 'p';
         return `  <${tag} id="${el.id}">${el.dataSource === 'dynamic' ? 'Loading...' : elIcon + this.escapeHtml(el.staticContent)}</${tag}>`;
       }
-      case 'button':
-        return `  <button id="${el.id}">${elIcon}${this.escapeHtml(el.staticContent)}</button>`;
+      case 'button': {
+        const geofenceDisabled = el.visibilityCondition?.source === 'geofence' ? ' disabled style="opacity:0.5;cursor:not-allowed"' : '';
+        return `  <button id="${el.id}"${geofenceDisabled}>${elIcon}${this.escapeHtml(el.staticContent)}</button>`;
+      }
       case 'image':
         return `  <img id="${el.id}" src="${el.staticContent || ''}" alt="${el.settings['alt'] || ''}" style="width:${el.settings['width'] || '100%'}">`;
       case 'input': {

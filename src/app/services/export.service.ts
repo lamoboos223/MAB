@@ -48,7 +48,7 @@ export class ExportService {
     const cssResp = await fetch('assets/primeicons/primeicons.css');
     let css = await cssResp.text();
     // Rewrite font paths from ./fonts/ to ../css/fonts/ since CSS is in css/ folder
-    css = css.replace(/url\(["']?\.\/fonts\//g, 'url("fonts/');
+    css = css.replace(/url\(["']?\.\/fonts\/([^"')]+)["']?\)/g, 'url(fonts/$1)');
     zip.file('css/primeicons.css', css);
 
     const fontFiles = ['primeicons.woff2', 'primeicons.woff', 'primeicons.ttf', 'primeicons.eot', 'primeicons.svg'];
