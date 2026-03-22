@@ -166,6 +166,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .img-picker__trigger--compact:hover, .img-picker__trigger--compact:active { background-color: var(--dropdown-hover-bg); }
 /* Toast */
 .toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #ef4444; color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; z-index: 2000; transition: bottom 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+.toast--success { background: #22c55e; }
 .toast--visible { bottom: 40px; }
 `;
 
@@ -312,8 +313,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       js += `    new Promise(function(_, reject) { setTimeout(function() { reject(new Error(label + ' timed out after ' + ms + 'ms')); }, ms); })\n`;
       js += `  ]);\n`;
       js += `}\n\n`;
-      js += `function showToast(msg) {\n`;
-      js += `  var t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;\n`;
+      js += `function showToast(msg, type) {\n`;
+      js += `  var t = document.createElement('div'); t.className = 'toast' + (type === 'success' ? ' toast--success' : ''); t.textContent = msg;\n`;
       js += `  document.body.appendChild(t);\n`;
       js += `  setTimeout(function() { t.classList.add('toast--visible'); }, 10);\n`;
       js += `  setTimeout(function() { t.classList.remove('toast--visible'); setTimeout(function() { t.remove(); }, 300); }, 3000);\n`;
@@ -556,6 +557,12 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
             js += `  ${call}.then(function(data) {\n`;
             js += `    document.getElementById('${el.id}').textContent = data.${b.resultPath};\n`;
             js += `  }).catch(function(err) { console.error('${b.functionName}:', err); });\n\n`;
+          } else if (el.type === 'input') {
+            js += `  ${call}.then(function(data) {\n`;
+            js += `    var inp = document.getElementById('${el.id}');\n`;
+            js += `    inp.value = data.${b.resultPath};\n`;
+            js += `    inp.setAttribute('readonly', 'true');\n`;
+            js += `  }).catch(function(err) { console.error('${b.functionName}:', err); });\n\n`;
           } else if (el.type === 'image') {
             js += `  ${call}.then(function(data) {\n`;
             js += `    document.getElementById('${el.id}').src = data.${b.resultPath};\n`;
@@ -760,7 +767,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
             if (successFile) {
               js += `      window.location.href = '${successFile}';\n`;
             } else {
-              js += `      showToast('Submitted successfully!');\n`;
+              js += `      showToast('Submitted successfully!', 'success');\n`;
               js += `      btn.disabled = false; btn.textContent = originalText;\n`;
             }
             js += `    } catch(err) {\n`;
@@ -1060,6 +1067,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
         if (el.type === 'button' && ar.staticContent) {
           js += `    var el_${el.id.replace(/-/g, '_')} = document.getElementById('${el.id}');\n`;
           js += `    if (el_${el.id.replace(/-/g, '_')}) el_${el.id.replace(/-/g, '_')}.textContent = ${JSON.stringify(ar.staticContent)};\n`;
+        }
+
+        if (el.type === 'alert' && ar.staticContent) {
+          js += `    var el_${el.id.replace(/-/g, '_')} = document.getElementById('${el.id}');\n`;
+          js += `    if (el_${el.id.replace(/-/g, '_')}) { var sp = el_${el.id.replace(/-/g, '_')}.querySelector('span'); if (sp) sp.textContent = ${JSON.stringify(ar.staticContent)}; }\n`;
         }
 
         if (el.type === 'input') {

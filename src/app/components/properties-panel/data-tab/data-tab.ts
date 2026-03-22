@@ -18,7 +18,7 @@ export class DataTab {
   categories = this.twkService.getCategories();
 
   get element() { return this.builder.selectedElement(); }
-  get supportsDataSource(): boolean { return ['text', 'image', 'dropdown', 'radio', 'checkbox', 'map'].includes(this.element?.type ?? ''); }
+  get supportsDataSource(): boolean { return ['text', 'image', 'input', 'dropdown', 'radio', 'checkbox', 'map'].includes(this.element?.type ?? ''); }
   get supportsItemActions(): boolean { return ['dropdown', 'radio', 'checkbox', 'media-select'].includes(this.element?.type ?? ''); }
   get supportsButtonAction(): boolean { return this.element?.type === 'button'; }
 

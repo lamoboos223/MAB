@@ -54,7 +54,10 @@
       } @else {
         <label class="el-label">{{ displayLabel }}@if (element.settings['required'] === 'true') { <span class="required-star">*</span> }</label>
       }
-      @if (isMultiLine) {
+      @if (element.dataSource === 'dynamic' && element.dynamicBinding) {
+        <input class="el-input" [value]="element.dynamicBinding.functionName + '()'" disabled />
+        <span class="binding-badge binding-badge--input">{{ element.dynamicBinding.functionName }}()</span>
+      } @else if (isMultiLine) {
         <textarea class="el-input el-textarea" [ngStyle]="getTextAreaStyle()" [placeholder]="displayPlaceholder" disabled></textarea>
       } @else {
         <input class="el-input" [type]="element.settings['inputType'] || 'text'" [placeholder]="displayPlaceholder" disabled />

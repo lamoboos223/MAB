@@ -1,0 +1,47 @@
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.panel-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-primary);
+  flex-shrink: 0;
+}
+
+.panel-tab {
+  flex: 1;
+  padding: 10px 8px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+
+  &.active {
+    color: var(--accent-text);
+    border-bottom-color: var(--accent);
+  }
+
+  &:hover:not(.active) {
+    color: var(--text-secondary);
+  }
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+app-properties-panel,
+app-ai-chat {
+  display: block;
+  height: 100%;
+}

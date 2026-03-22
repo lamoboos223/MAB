@@ -233,6 +233,12 @@
   color: var(--accent-text);
   font-weight: 500;
   font-family: 'SF Mono', 'Fira Code', monospace;
+
+  &--input {
+    display: block;
+    margin-top: 4px;
+    text-align: center;
+  }
 }
 
 .el-alert {

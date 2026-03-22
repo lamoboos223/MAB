@@ -1,0 +1,28 @@
+<div class="right-panel">
+  <div class="panel-tabs">
+    <button
+      class="panel-tab"
+      [class.active]="activeTab() === 'properties'"
+      (click)="activeTab.set('properties')"
+    >
+      Properties
+    </button>
+    <button
+      class="panel-tab"
+      [class.active]="activeTab() === 'ai-chat'"
+      (click)="activeTab.set('ai-chat')"
+    >
+      AI Agent
+    </button>
+  </div>
+  <div class="panel-content">
+    @switch (activeTab()) {
+      @case ('properties') {
+        <app-properties-panel></app-properties-panel>
+      }
+      @case ('ai-chat') {
+        <app-ai-chat></app-ai-chat>
+      }
+    }
+  </div>
+</div>

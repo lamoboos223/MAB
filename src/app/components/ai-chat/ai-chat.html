@@ -1,0 +1,94 @@
+<div class="chat-container">
+  @if (!agent.hasApiKey()) {
+    <div class="api-key-setup">
+      <div class="setup-icon">&#x1F511;</div>
+      <h3 class="setup-title">Claude API Key</h3>
+      <p class="setup-desc">Enter your Anthropic API key to start chatting with the AI agent.</p>
+      <div class="setup-form">
+        <input
+          type="password"
+          class="setup-input"
+          placeholder="sk-ant-..."
+          [ngModel]="apiKeyInput()"
+          (ngModelChange)="apiKeyInput.set($event)"
+          (keydown.enter)="saveApiKey()"
+        />
+        <button class="setup-btn" (click)="saveApiKey()" [disabled]="!apiKeyInput().trim()">Save</button>
+      </div>
+      <p class="setup-warning">Your key is stored in localStorage and visible in browser devtools. This is a developer tool — do not use in production.</p>
+    </div>
+  } @else {
+    <div class="messages" #messagesContainer>
+      @if (agent.messages().length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">&#x2728;</div>
+          <p class="empty-title">AI Agent Ready</p>
+          <p class="empty-desc">Describe the app you want to build and I'll create it on the canvas.</p>
+          <div class="suggestions">
+            <button class="suggestion" (click)="messageInput.set('Build a login page with email and password fields'); send()">Login page</button>
+            <button class="suggestion" (click)="messageInput.set('Create a contact form with name, email, and message'); send()">Contact form</button>
+            <button class="suggestion" (click)="messageInput.set('Build a user profile card showing name, email, and phone from TWK'); send()">Profile card</button>
+          </div>
+        </div>
+      }
+
+      @for (msg of agent.messages(); track $index) {
+        <div class="message" [class.user]="msg.role === 'user'" [class.assistant]="msg.role === 'assistant'">
+          @if (msg.role === 'assistant') {
+            <div class="message-avatar">AI</div>
+          }
+          <div class="message-content">
+            <div class="message-text">{{ msg.content }}</div>
+            @if (msg.toolCalls?.length) {
+              <div class="tool-calls">
+                @for (tc of msg.toolCalls; track $index) {
+                  <div class="tool-call">
+                    <span class="tool-icon">&#x2699;</span>
+                    <span class="tool-name">{{ tc.name }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      @if (agent.isStreaming()) {
+        <div class="typing-indicator">
+          <span></span><span></span><span></span>
+        </div>
+      }
+
+      @if (agent.error()) {
+        <div class="error-message">
+          <span>{{ agent.error() }}</span>
+          <button class="error-dismiss" (click)="agent.error.set(null)">Dismiss</button>
+        </div>
+      }
+    </div>
+
+    <div class="input-area">
+      <textarea
+        class="chat-input"
+        placeholder="Describe what you want to build..."
+        [ngModel]="messageInput()"
+        (ngModelChange)="messageInput.set($event)"
+        (keydown)="onKeydown($event)"
+        [disabled]="agent.isStreaming()"
+        rows="3"
+      ></textarea>
+      <div class="input-actions">
+        @if (agent.isStreaming()) {
+          <button class="stop-btn" (click)="agent.cancelStream()" title="Stop generating">&#x25A0;</button>
+        } @else {
+          <button class="send-btn" (click)="send()" [disabled]="!messageInput().trim()" title="Send message">&#x27A4;</button>
+        }
+      </div>
+    </div>
+
+    <div class="chat-footer">
+      <button class="footer-btn" (click)="agent.clearConversation()" [disabled]="agent.isStreaming()">Clear chat</button>
+      <button class="footer-btn danger" (click)="removeApiKey()">Remove key</button>
+    </div>
+  }
+</div>
