@@ -11,6 +11,7 @@ const MAX_AUTO_CONTINUE = 15;
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  images?: string[]; // base64 data URLs for user-uploaded images
   toolCalls?: { name: string; result: string }[];
 }
 
@@ -29,6 +30,8 @@ RULES:
 5. **PAYLOAD PRECISION**: When the user specifies what data to submit, ONLY include those fields in the payloadTemplate. The auto-generated template includes ALL fields — you MUST call configureSubmitAction with a custom payloadTemplate containing only what was requested. If the user says "send name and coords", the payload should be ONLY {"name":"{{user_full_name}}","coordinates":"{{coordinates}}"} — do NOT add extra fields the user didn't ask for.
 6. **Interpret user intent carefully**: Even with vague prompts, analyze what the user actually asked for. Don't add features/fields they didn't mention. When in doubt, include LESS not more — it's easier to add than remove.
 7. **Be terse**: Keep text responses extremely short (1-2 sentences max). The user can see the result on the canvas — do NOT list what you built, do NOT write summaries, do NOT use markdown headers/bullets/emojis in your responses. Just say "Done" or a brief note if something needs attention. Every token in your response costs the user money.
+8. **Image analysis**: When the user uploads an image (screenshot/mockup/wireframe), analyze it carefully to determine: which elements to create (text, input, button, map, image, dropdown, etc.), what TWK dynamic bindings to use (e.g., if you see "National ID" use getUserId, if you see a name field use getUserFullName, if you see a map use getUserLocation binding, if you see a profile photo use getUserProfilePhoto), what submit action to configure, and what layout/styling to replicate. Infer element types and data sources from visual context — a field showing "1234567890" next to "National ID" means an input bound to getUserId, a map embed means a map element with location binding, etc.
+9. **Ask before building (when ambiguous)**: If the image or prompt is ambiguous or you need clarification on key decisions (e.g., which fields to submit, what the submit endpoint URL is, whether to add geofence, what language support is needed), ask the user a SHORT clarifying question BEFORE proceeding. Keep questions focused — ask only what you truly need. If the intent is clear enough, just build it without asking.
 
 ## Canvas & Layout
 - Mobile viewport: 375×667px. Body padding 16px → usable width ~343px
@@ -237,15 +240,30 @@ export class AiAgentService {
     this.isStreaming.set(false);
   }
 
-  async sendMessage(content: string): Promise<void> {
+  async sendMessage(content: string, images?: string[]): Promise<void> {
     if (!this.hasApiKey() || this.isStreaming()) return;
 
     this.error.set(null);
     this.isStreaming.set(true);
 
-    // Add user message
-    this.messages.update(msgs => [...msgs, { role: 'user', content }]);
-    this.apiMessages.push({ role: 'user', content });
+    // Add user message (with optional images for display)
+    this.messages.update(msgs => [...msgs, { role: 'user', content, images: images?.length ? images : undefined }]);
+
+    // Build API content blocks: images first, then text
+    const apiContent: unknown[] = [];
+    if (images?.length) {
+      for (const dataUrl of images) {
+        const match = dataUrl.match(/^data:(image\/[^;]+);base64,(.+)$/);
+        if (match) {
+          apiContent.push({
+            type: 'image',
+            source: { type: 'base64', media_type: match[1], data: match[2] },
+          });
+        }
+      }
+    }
+    apiContent.push({ type: 'text', text: content || 'Build this app based on the image(s) I uploaded.' });
+    this.apiMessages.push({ role: 'user', content: apiContent });
 
     try {
       await this.streamResponse();
