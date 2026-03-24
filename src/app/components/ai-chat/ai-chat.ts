@@ -41,12 +41,9 @@ export class AiChat {
     const files = Array.from(input.files);
     for (const file of files) {
       if (!file.type.startsWith('image/')) continue;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = reader.result as string;
+      this.compressImage(file).then(dataUrl => {
         this.pendingImages.update(imgs => [...imgs, dataUrl]);
-      };
-      reader.readAsDataURL(file);
+      });
     }
     input.value = '';
   }
@@ -79,13 +76,32 @@ export class AiChat {
         event.preventDefault();
         const file = items[i].getAsFile();
         if (!file) continue;
-        const reader = new FileReader();
-        reader.onload = () => {
-          this.pendingImages.update(imgs => [...imgs, reader.result as string]);
-        };
-        reader.readAsDataURL(file);
+        this.compressImage(file).then(dataUrl => {
+          this.pendingImages.update(imgs => [...imgs, dataUrl]);
+        });
       }
     }
+  }
+
+  /** Resize image to max 1024px and compress as JPEG to reduce API token cost */
+  private compressImage(file: File): Promise<string> {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1024;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = URL.createObjectURL(file);
+    });
   }
 
   private scrollToBottom(): void {

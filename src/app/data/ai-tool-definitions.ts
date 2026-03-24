@@ -308,12 +308,14 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'setVisibilityCondition',
-    description: 'Set a visibility condition on an element to control when it is shown/hidden. Use source "element" to base visibility on another element\'s value, "function" to base on a TWK function result, or "geofence" to base on geographic location.',
+    description: 'Add a visibility condition on an element. Multiple conditions can be added (AND logic). Each condition has a behavior: "show_hide" (element hidden when condition fails) or "enable_disable" (element disabled when condition fails). Call multiple times to add multiple conditions. Set replace=true to replace all existing conditions.',
     input_schema: {
       type: 'object' as const,
       properties: {
         elementId: { type: 'string', description: 'ID of the element to add the condition to' },
         source: { type: 'string', enum: ['element', 'function', 'geofence'], description: 'Condition source type' },
+        behavior: { type: 'string', enum: ['show_hide', 'enable_disable'], description: 'What happens when condition fails. Default: enable_disable for geofence, show_hide for others.' },
+        replace: { type: 'boolean', description: 'If true, replace all existing conditions with this one. Default false (append).' },
         // Element-based
         conditionElementId: { type: 'string', description: 'For source="element": ID of the element to watch' },
         operator: {
@@ -335,7 +337,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'removeVisibilityCondition',
-    description: 'Remove the visibility condition from an element so it is always visible.',
+    description: 'Remove all visibility conditions from an element so it is always visible and enabled.',
     input_schema: {
       type: 'object' as const,
       properties: {

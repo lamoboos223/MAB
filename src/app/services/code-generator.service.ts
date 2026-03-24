@@ -1,9 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Page } from '../models/page.model';
-import { BuilderElement, ElementStyle } from '../models/element.model';
+import { BuilderElement, ElementStyle, VisibilityCondition } from '../models/element.model';
 
 @Injectable({ providedIn: 'root' })
 export class CodeGeneratorService {
+
+  /** Get all conditions for an element (migrates old single to array) */
+  private getConditions(el: BuilderElement): VisibilityCondition[] {
+    if (el.visibilityConditions?.length) return el.visibilityConditions;
+    if (el.visibilityCondition) return [{ ...el.visibilityCondition, behavior: el.visibilityCondition.behavior || (el.visibilityCondition.source === 'geofence' ? 'enable_disable' : 'show_hide') }];
+    return [];
+  }
 
   private hasI18nElements(pages: Page[]): boolean {
     return pages.some(p => p.elements.some(e => e.i18nEnabled));
@@ -321,19 +328,25 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       js += `}\n\n`;
     }
 
-    const hasConditions = pages.some(p => p.elements.some(e => e.visibilityCondition));
+    const hasConditions = pages.some(p => p.elements.some(e => this.getConditions(e).length > 0));
 
     js += `document.addEventListener('DOMContentLoaded', function() {\n`;
 
     // Map zoom controls and geofence circle rendering
     const allMapElements = pages.flatMap(p => p.elements).filter(e => e.type === 'map');
-    const allGeofences = pages.flatMap(p => p.elements).filter(e => e.visibilityCondition?.source === 'geofence');
+    const allGeofenceConds: VisibilityCondition[] = [];
+    for (const p of pages) {
+      for (const e of p.elements) {
+        for (const c of this.getConditions(e)) {
+          if (c.source === 'geofence') allGeofenceConds.push(c);
+        }
+      }
+    }
     if (allMapElements.length > 0) {
       js += `  // Map zoom and geofence circles\n`;
-      if (allGeofences.length > 0) {
+      if (allGeofenceConds.length > 0) {
         js += `  var __geofences = [\n`;
-        for (const gf of allGeofences) {
-          const vc = gf.visibilityCondition!;
+        for (const vc of allGeofenceConds) {
           js += `    { lat: ${vc.geofenceLat || '24.7136'}, lng: ${vc.geofenceLng || '46.6753'}, radius: ${vc.geofenceRadius || '500'} },\n`;
         }
         js += `  ];\n`;
@@ -369,14 +382,14 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       js += `    var lng = container.getAttribute('data-lng');\n`;
       js += `    var iframe = document.getElementById(mapId + '-iframe');\n`;
       js += `    if (iframe) iframe.src = 'https://maps.google.com/maps?q=' + lat + ',' + lng + '&z=' + z + '&output=embed';\n`;
-      if (allGeofences.length > 0) {
+      if (allGeofenceConds.length > 0) {
         js += `    drawGeofenceCircles(mapId);\n`;
       }
       js += `  }\n`;
       js += `  document.querySelectorAll('.map-zoom-btn').forEach(function(btn) {\n`;
       js += `    btn.addEventListener('click', function() { updateMapZoom(btn.getAttribute('data-map'), btn.getAttribute('data-dir')); });\n`;
       js += `  });\n`;
-      if (allGeofences.length > 0) {
+      if (allGeofenceConds.length > 0) {
         for (const mapEl of allMapElements) {
           js += `  drawGeofenceCircles('${mapEl.id}');\n`;
         }
@@ -461,46 +474,45 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       js += `      default: return true;\n`;
       js += `    }\n`;
       js += `  }\n`;
+      js += `  function applyConditions(el) {\n`;
+      js += `    try {\n`;
+      js += `      var conds = JSON.parse(el.getAttribute('data-conditions') || '[]');\n`;
+      js += `      var shouldShow = true, shouldEnable = true;\n`;
+      js += `      for (var i = 0; i < conds.length; i++) {\n`;
+      js += `        var c = conds[i];\n`;
+      js += `        if (c.source === 'geofence') continue;\n`;
+      js += `        var pass = evalCondition(c);\n`;
+      js += `        if (c.behavior === 'enable_disable') { if (!pass) shouldEnable = false; }\n`;
+      js += `        else { if (!pass) shouldShow = false; }\n`;
+      js += `      }\n`;
+      js += `      el.style.display = shouldShow ? '' : 'none';\n`;
+      js += `      var interactable = el.querySelector('button, input, select, textarea, [type=\"submit\"]');\n`;
+      js += `      if (interactable) {\n`;
+      js += `        interactable.disabled = !shouldEnable;\n`;
+      js += `        interactable.style.opacity = shouldEnable ? '' : '0.5';\n`;
+      js += `        interactable.style.cursor = shouldEnable ? '' : 'not-allowed';\n`;
+      js += `      }\n`;
+      js += `    } catch(e) {}\n`;
+      js += `  }\n`;
       js += `  function checkConditions() {\n`;
-      js += `    document.querySelectorAll('[data-condition]').forEach(function(el) {\n`;
-      js += `      try {\n`;
-      js += `        var cond = JSON.parse(el.getAttribute('data-condition'));\n`;
-      js += `        if (cond.source === 'geofence') return;\n`;
-      js += `        el.style.display = evalCondition(cond) ? '' : 'none';\n`;
-      js += `      } catch(e) {}\n`;
-      js += `    });\n`;
+      js += `    document.querySelectorAll('[data-conditions]').forEach(applyConditions);\n`;
       js += `  }\n`;
       js += `  document.addEventListener('input', checkConditions);\n`;
       js += `  document.addEventListener('change', checkConditions);\n`;
 
       // Evaluate function-based conditions on page load
+      const processedFunctions = new Set<string>();
       for (const page of pages) {
         for (const el of page.elements) {
-          if (el.visibilityCondition?.source === 'function' && el.visibilityCondition.functionBinding) {
-            const b = el.visibilityCondition.functionBinding;
-            const params = Object.values(b.params).filter(v => v).map(v => `'${v}'`).join(', ');
-            js += `  TWK.${b.functionName}(${params}).then(function(data) {\n`;
-            js += `    var val = String(data.${b.resultPath} || '');\n`;
-            js += `    document.querySelectorAll('[data-condition]').forEach(function(el) {\n`;
-            js += `      try {\n`;
-            js += `        var c = JSON.parse(el.getAttribute('data-condition'));\n`;
-            js += `        if (c.source === 'function' && c.functionBinding && c.functionBinding.functionName === '${b.functionName}') {\n`;
-            js += `          var op = c.operator, cv = c.value || '';\n`;
-            js += `          var show = false;\n`;
-            js += `          switch(op) {\n`;
-            js += `            case 'equals': show = val === cv; break;\n`;
-            js += `            case 'not_equals': show = val !== cv; break;\n`;
-            js += `            case 'contains': show = val.indexOf(cv) >= 0; break;\n`;
-            js += `            case 'empty': show = !val || !val.trim(); break;\n`;
-            js += `            case 'not_empty': show = !!val && !!val.trim(); break;\n`;
-            js += `            case 'greater_than': show = parseFloat(val) > parseFloat(cv); break;\n`;
-            js += `            case 'less_than': show = parseFloat(val) < parseFloat(cv); break;\n`;
-            js += `          }\n`;
-            js += `          el.style.display = show ? '' : 'none';\n`;
-            js += `        }\n`;
-            js += `      } catch(e) {}\n`;
-            js += `    });\n`;
-            js += `  }).catch(function(err) { console.error('Condition ${b.functionName}:', err); });\n`;
+          for (const cond of this.getConditions(el)) {
+            if (cond.source === 'function' && cond.functionBinding && !processedFunctions.has(cond.functionBinding.functionName)) {
+              processedFunctions.add(cond.functionBinding.functionName);
+              const b = cond.functionBinding;
+              const params = Object.values(b.params).filter(v => v).map(v => `'${v}'`).join(', ');
+              js += `  TWK.${b.functionName}(${params}).then(function(data) {\n`;
+              js += `    checkConditions();\n`;
+              js += `  }).catch(function(err) { console.error('Condition ${b.functionName}:', err); });\n`;
+            }
           }
         }
       }
@@ -508,7 +520,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       js += `  checkConditions();\n`;
 
       // Geofence conditions
-      const hasGeofence = pages.some(p => p.elements.some(e => e.visibilityCondition?.source === 'geofence'));
+      const hasGeofence = allGeofenceConds.length > 0;
       if (hasGeofence) {
         js += `  // Geofence evaluation\n`;
         js += `  function haversineDistance(lat1, lon1, lat2, lon2) {\n`;
@@ -521,23 +533,32 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
         js += `  }\n`;
         js += `  function applyGeofence(userLat, userLng) {\n`;
         js += `    debugLog('[Geofence] User location: ' + userLat + ', ' + userLng);\n`;
-        js += `    document.querySelectorAll('[data-condition]').forEach(function(el) {\n`;
+        js += `    document.querySelectorAll('[data-conditions]').forEach(function(el) {\n`;
         js += `      try {\n`;
-        js += `        var c = JSON.parse(el.getAttribute('data-condition'));\n`;
-        js += `        if (c.source !== 'geofence') return;\n`;
-        js += `        var dist = haversineDistance(userLat, userLng, parseFloat(c.geofenceLat), parseFloat(c.geofenceLng));\n`;
-        js += `        var radius = parseFloat(c.geofenceRadius) || 500;\n`;
-        js += `        var inside = dist <= radius;\n`;
-        js += `        var show = c.operator === 'equals' ? inside : !inside;\n`;
-        js += `        debugLog('[Geofence] dist=' + dist.toFixed(1) + 'm, radius=' + radius + 'm, inside=' + inside + ', op=' + c.operator + ', show=' + show);\n`;
-        js += `        var btn = el.querySelector('button, [type=\"submit\"]');\n`;
-        js += `        if (btn) {\n`;
-        js += `          el.style.display = '';\n`;
-        js += `          btn.disabled = !show;\n`;
-        js += `          btn.style.opacity = show ? '1' : '0.5';\n`;
-        js += `          btn.style.cursor = show ? 'pointer' : 'not-allowed';\n`;
-        js += `        } else {\n`;
-        js += `          el.style.display = show ? '' : 'none';\n`;
+        js += `        var conds = JSON.parse(el.getAttribute('data-conditions') || '[]');\n`;
+        js += `        var shouldShow = true, shouldEnable = true;\n`;
+        js += `        for (var i = 0; i < conds.length; i++) {\n`;
+        js += `          var c = conds[i];\n`;
+        js += `          if (c.source === 'geofence') {\n`;
+        js += `            var dist = haversineDistance(userLat, userLng, parseFloat(c.geofenceLat), parseFloat(c.geofenceLng));\n`;
+        js += `            var radius = parseFloat(c.geofenceRadius) || 500;\n`;
+        js += `            var inside = dist <= radius;\n`;
+        js += `            var pass = c.operator === 'equals' ? inside : !inside;\n`;
+        js += `            debugLog('[Geofence] dist=' + dist.toFixed(1) + 'm, radius=' + radius + 'm, inside=' + inside + ', pass=' + pass + ', behavior=' + c.behavior);\n`;
+        js += `            if (c.behavior === 'enable_disable') { if (!pass) shouldEnable = false; }\n`;
+        js += `            else { if (!pass) shouldShow = false; }\n`;
+        js += `          } else {\n`;
+        js += `            var pass2 = evalCondition(c);\n`;
+        js += `            if (c.behavior === 'enable_disable') { if (!pass2) shouldEnable = false; }\n`;
+        js += `            else { if (!pass2) shouldShow = false; }\n`;
+        js += `          }\n`;
+        js += `        }\n`;
+        js += `        el.style.display = shouldShow ? '' : 'none';\n`;
+        js += `        var interactable = el.querySelector('button, input, select, textarea, [type=\"submit\"]');\n`;
+        js += `        if (interactable) {\n`;
+        js += `          interactable.disabled = !shouldEnable;\n`;
+        js += `          interactable.style.opacity = shouldEnable ? '' : '0.5';\n`;
+        js += `          interactable.style.cursor = shouldEnable ? '' : 'not-allowed';\n`;
         js += `        }\n`;
         js += `      } catch(e) { debugLog('[Geofence] Error processing element:', e); }\n`;
         js += `    });\n`;
@@ -1170,16 +1191,20 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   private generateHtml(page: Page, allPages: Page[]): string {
     let body = '';
     for (const el of page.elements) {
+      const conditions = this.getConditions(el);
+      const hasShowHide = conditions.some(c => c.behavior === 'show_hide' || (!c.behavior && c.source !== 'geofence'));
+      const hasEnableDisable = conditions.some(c => c.behavior === 'enable_disable' || (!c.behavior && c.source === 'geofence'));
+      // Elements with only enable_disable conditions start visible; show_hide start hidden
+      const hideStyle = conditions.length > 0 && hasShowHide ? 'display:none;' : '';
+      const condAttr = conditions.length > 0 ? ` data-conditions="${this.escapeHtml(JSON.stringify(conditions))}"` : '';
       const pos = el.position;
       if (pos) {
-        const isGeofenceButton = el.visibilityCondition?.source === 'geofence' && el.type === 'button';
-        const hideStyle = el.visibilityCondition && !isGeofenceButton ? 'display:none;' : '';
         const leftVw = parseFloat((pos.x / CodeGeneratorService.CANVAS_WIDTH * 100).toFixed(2));
         const topVw = parseFloat((pos.y / CodeGeneratorService.CANVAS_WIDTH * 100).toFixed(2));
-        body += `  <div style="${hideStyle}position:absolute;left:${leftVw}vw;top:${topVw}vw;max-width:calc(100% - ${leftVw}vw)"${el.visibilityCondition ? ` data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}"` : ''}>\n  ${this.elementToHtml(el, page.elements)}\n  </div>\n`;
+        body += `  <div style="${hideStyle}position:absolute;left:${leftVw}vw;top:${topVw}vw;max-width:calc(100% - ${leftVw}vw)"${condAttr}>\n  ${this.elementToHtml(el, page.elements, hasEnableDisable)}\n  </div>\n`;
       } else {
-        if (el.visibilityCondition) {
-          body += `  <div data-condition="${this.escapeHtml(JSON.stringify(el.visibilityCondition))}" style="display:none">\n  ${this.elementToHtml(el, page.elements)}\n  </div>\n`;
+        if (conditions.length > 0) {
+          body += `  <div${condAttr} style="${hideStyle}">\n  ${this.elementToHtml(el, page.elements, hasEnableDisable)}\n  </div>\n`;
         } else {
           body += this.elementToHtml(el, page.elements) + '\n';
         }
@@ -1213,7 +1238,7 @@ ${body}${sheetHtml}
     return icon ? `<i class="pi pi-${icon}"></i> ` : '';
   }
 
-  private elementToHtml(el: BuilderElement, pageElements?: BuilderElement[]): string {
+  private elementToHtml(el: BuilderElement, pageElements?: BuilderElement[], startDisabled = false): string {
     const elIcon = this.iconHtml(el.settings['icon']);
     switch (el.type) {
       case 'text': {
@@ -1221,8 +1246,8 @@ ${body}${sheetHtml}
         return `  <${tag} id="${el.id}">${el.dataSource === 'dynamic' ? 'Loading...' : elIcon + this.escapeHtml(el.staticContent)}</${tag}>`;
       }
       case 'button': {
-        const geofenceDisabled = el.visibilityCondition?.source === 'geofence' ? ' disabled style="opacity:0.5;cursor:not-allowed"' : '';
-        return `  <button id="${el.id}"${geofenceDisabled}>${elIcon}${this.escapeHtml(el.staticContent)}</button>`;
+        const disabledAttr = startDisabled ? ' disabled style="opacity:0.5;cursor:not-allowed"' : '';
+        return `  <button id="${el.id}"${disabledAttr}>${elIcon}${this.escapeHtml(el.staticContent)}</button>`;
       }
       case 'image':
         return `  <img id="${el.id}" src="${el.staticContent || ''}" alt="${el.settings['alt'] || ''}" style="width:${el.settings['width'] || '100%'}">`;
@@ -1303,7 +1328,7 @@ ${body}${sheetHtml}
         const lat = el.settings['lat'] || '24.7136';
         const lng = el.settings['lng'] || '46.6753';
         const zoom = el.settings['zoom'] || '13';
-        const geofences = (pageElements || []).filter(e => e.visibilityCondition?.source === 'geofence');
+        const geofences = (pageElements || []).filter(e => this.getConditions(e).some(c => c.source === 'geofence'));
         let mapHtml = `  <div class="map-container" id="${el.id}" data-lat="${lat}" data-lng="${lng}" data-zoom="${zoom}">\n`;
         mapHtml += `    <iframe id="${el.id}-iframe" src="https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed"></iframe>\n`;
         if (geofences.length > 0) {

@@ -110,7 +110,8 @@ export class ToolExecutorService {
         if (e.options?.length) el['options'] = e.options;
         if (e.pageNavigateTo) el['pageNavigateTo'] = e.pageNavigateTo;
         if (e.submitConfig) el['submitConfig'] = { apiUrl: e.submitConfig.apiUrl, method: e.submitConfig.method };
-        if (e.visibilityCondition) el['visibilityCondition'] = e.visibilityCondition;
+        const conds = e.visibilityConditions?.length ? e.visibilityConditions : e.visibilityCondition ? [e.visibilityCondition] : [];
+        if (conds.length) el['visibilityConditions'] = conds;
         if (e.tableData?.length) el['tableRows'] = e.tableData.length;
         if (e.i18nEnabled) el['i18nEnabled'] = true;
         if (e.i18n) el['i18n'] = e.i18n;
@@ -356,8 +357,9 @@ export class ToolExecutorService {
 
     const source = input['source'] as 'element' | 'function' | 'geofence';
     const operator = (input['operator'] as string) || 'equals';
+    const behavior = (input['behavior'] as string) || (source === 'geofence' ? 'enable_disable' : 'show_hide');
 
-    const condition: any = { source, operator };
+    const condition: any = { source, operator, behavior };
 
     if (source === 'element') {
       condition.elementId = input['conditionElementId'] || '';
@@ -377,15 +379,20 @@ export class ToolExecutorService {
       condition.geofenceRadius = input['geofenceRadius'] || '500';
     }
 
-    this.builder.updateElement(elementId, { visibilityCondition: condition });
-    return `Visibility condition set on ${elementId}: ${source} ${operator}`;
+    // Append to existing conditions (or replace if replace=true)
+    const replace = input['replace'] === true;
+    const existing = el.visibilityConditions?.length ? [...el.visibilityConditions] : el.visibilityCondition ? [el.visibilityCondition] : [];
+    const conditions = replace ? [condition] : [...existing, condition];
+
+    this.builder.updateElement(elementId, { visibilityConditions: conditions, visibilityCondition: undefined } as any);
+    return `Visibility condition added on ${elementId}: ${source} ${operator} (${behavior}). Total conditions: ${conditions.length}`;
   }
 
   private removeVisibilityCondition(elementId: string): string {
     const el = this.findElement(elementId);
     if (!el) throw new Error(`Element ${elementId} not found`);
-    this.builder.updateElement(elementId, { visibilityCondition: undefined } as any);
-    return `Visibility condition removed from ${elementId}`;
+    this.builder.updateElement(elementId, { visibilityConditions: undefined, visibilityCondition: undefined } as any);
+    return `All visibility conditions removed from ${elementId}`;
   }
 
   private updateI18n(input: Record<string, unknown>): string {

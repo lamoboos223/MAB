@@ -378,99 +378,110 @@
     }
   }
 
-  <!-- Visibility Condition (all elements) -->
+  <!-- Visibility Conditions (all elements) -->
   <div class="condition-section">
-    <label class="section-label">Visibility Condition</label>
-    @if (el.visibilityCondition) {
-      <div class="field">
-        <label>Source</label>
-        <select [ngModel]="el.visibilityCondition.source" (ngModelChange)="updateConditionSource($event)">
-          <option value="element">Another Element</option>
-          <option value="function">TWK Function</option>
-          <option value="geofence">Geofence (Location)</option>
-        </select>
-      </div>
-      @if (el.visibilityCondition.source === 'element') {
+    <label class="section-label">Visibility Conditions</label>
+    @for (cond of getConditions(); track $index; let i = $index) {
+      <div class="condition-card">
+        <div class="condition-card__header">
+          <span class="condition-card__label">Condition {{ i + 1 }}</span>
+          <button class="condition-card__remove" (click)="removeCondition(i)" title="Remove">&times;</button>
+        </div>
         <div class="field">
-          <label>Element</label>
-          <select [ngModel]="el.visibilityCondition.elementId || ''" (ngModelChange)="updateConditionField('elementId', $event)">
-            <option value="">-- Select Element --</option>
-            @for (other of getOtherElements(); track other.id) {
-              <option [value]="other.id">{{ other.settings['label'] || other.staticContent || other.type }} ({{ other.type }})</option>
-            }
+          <label>Behavior</label>
+          <select [ngModel]="cond.behavior" (ngModelChange)="updateConditionField(i, 'behavior', $event)">
+            <option value="show_hide">Show / Hide</option>
+            <option value="enable_disable">Enable / Disable</option>
           </select>
         </div>
-      }
-      @if (el.visibilityCondition.source === 'function') {
         <div class="field">
-          <label>TWK Function</label>
-          <app-function-picker
-            [value]="el.visibilityCondition.functionBinding?.functionName || ''"
-            placeholder="Select function..."
-            (valueChange)="setConditionFunction($event)"
-          ></app-function-picker>
+          <label>Source</label>
+          <select [ngModel]="cond.source" (ngModelChange)="updateConditionSource(i, $event)">
+            <option value="element">Another Element</option>
+            <option value="function">TWK Function</option>
+            <option value="geofence">Geofence (Location)</option>
+          </select>
         </div>
-        @if (el.visibilityCondition.functionBinding; as binding) {
-          @for (param of twkService.getByName(binding.functionName)?.params ?? []; track param.name) {
-            <div class="field">
-              <label>{{ param.name }}</label>
-              <input type="text" [ngModel]="binding.params[param.name] || ''" (ngModelChange)="setConditionFunctionParam(param.name, $event)">
-            </div>
-          }
+        @if (cond.source === 'element') {
           <div class="field">
-            <label>Result Path</label>
-            <input type="text" [ngModel]="binding.resultPath" (ngModelChange)="updateConditionBindingField('resultPath', $event)">
+            <label>Element</label>
+            <select [ngModel]="cond.elementId || ''" (ngModelChange)="updateConditionField(i, 'elementId', $event)">
+              <option value="">-- Select Element --</option>
+              @for (other of getAllPageElements(); track other.id) {
+                <option [value]="other.id">{{ other.settings['label'] || other.staticContent || other.type }} ({{ other.type }}){{ other.isSelf ? ' [self]' : '' }}</option>
+              }
+            </select>
           </div>
         }
-      }
-      @if (el.visibilityCondition.source === 'geofence') {
+        @if (cond.source === 'function') {
+          <div class="field">
+            <label>TWK Function</label>
+            <app-function-picker
+              [value]="cond.functionBinding?.functionName || ''"
+              placeholder="Select function..."
+              (valueChange)="setConditionFunction(i, $event)"
+            ></app-function-picker>
+          </div>
+          @if (cond.functionBinding; as binding) {
+            @for (param of twkService.getByName(binding.functionName)?.params ?? []; track param.name) {
+              <div class="field">
+                <label>{{ param.name }}</label>
+                <input type="text" [ngModel]="binding.params[param.name] || ''" (ngModelChange)="setConditionFunctionParam(i, param.name, $event)">
+              </div>
+            }
+            <div class="field">
+              <label>Result Path</label>
+              <input type="text" [ngModel]="binding.resultPath" (ngModelChange)="updateConditionBindingField(i, 'resultPath', $event)">
+            </div>
+          }
+        }
+        @if (cond.source === 'geofence') {
+          <div class="field">
+            <label>Center Latitude</label>
+            <input type="text" [ngModel]="cond.geofenceLat || ''" (ngModelChange)="updateConditionField(i, 'geofenceLat', $event)" placeholder="e.g. 24.7136">
+          </div>
+          <div class="field">
+            <label>Center Longitude</label>
+            <input type="text" [ngModel]="cond.geofenceLng || ''" (ngModelChange)="updateConditionField(i, 'geofenceLng', $event)" placeholder="e.g. 46.6753">
+          </div>
+          <div class="field">
+            <label>Radius (meters)</label>
+            <input type="number" [ngModel]="cond.geofenceRadius || ''" (ngModelChange)="updateConditionField(i, 'geofenceRadius', $event)" placeholder="e.g. 500">
+          </div>
+        }
         <div class="field">
-          <label>Center Latitude</label>
-          <input type="text" [ngModel]="el.visibilityCondition.geofenceLat || ''" (ngModelChange)="updateConditionField('geofenceLat', $event)" placeholder="e.g. 24.7136">
+          <label>Operator</label>
+          @if (cond.source === 'geofence') {
+            <select [ngModel]="cond.operator" (ngModelChange)="updateConditionField(i, 'operator', $event)">
+              <option value="equals">Inside Radius</option>
+              <option value="not_equals">Outside Radius</option>
+            </select>
+          } @else if (isConditionElementButton(i)) {
+            <select [ngModel]="cond.operator" (ngModelChange)="updateConditionField(i, 'operator', $event)">
+              <option value="button_active">Button is Active</option>
+              <option value="button_not_active">Button is Not Active</option>
+            </select>
+          } @else {
+            <select [ngModel]="cond.operator" (ngModelChange)="updateConditionField(i, 'operator', $event)">
+              <option value="equals">Equals</option>
+              <option value="not_equals">Not Equals</option>
+              <option value="contains">Contains</option>
+              <option value="empty">Is Empty</option>
+              <option value="not_empty">Is Not Empty</option>
+              <option value="greater_than">Greater Than</option>
+              <option value="less_than">Less Than</option>
+            </select>
+          }
         </div>
-        <div class="field">
-          <label>Center Longitude</label>
-          <input type="text" [ngModel]="el.visibilityCondition.geofenceLng || ''" (ngModelChange)="updateConditionField('geofenceLng', $event)" placeholder="e.g. 46.6753">
-        </div>
-        <div class="field">
-          <label>Radius (meters)</label>
-          <input type="number" [ngModel]="el.visibilityCondition.geofenceRadius || ''" (ngModelChange)="updateConditionField('geofenceRadius', $event)" placeholder="e.g. 500">
-        </div>
-      }
-      <div class="field">
-        <label>Operator</label>
-        @if (el.visibilityCondition.source === 'geofence') {
-          <select [ngModel]="el.visibilityCondition.operator" (ngModelChange)="updateConditionField('operator', $event)">
-            <option value="equals">Inside Radius</option>
-            <option value="not_equals">Outside Radius</option>
-          </select>
-        } @else if (isSelectedConditionElementButton()) {
-          <select [ngModel]="el.visibilityCondition.operator" (ngModelChange)="updateConditionField('operator', $event)">
-            <option value="button_active">Button is Active</option>
-            <option value="button_not_active">Button is Not Active</option>
-          </select>
-        } @else {
-          <select [ngModel]="el.visibilityCondition.operator" (ngModelChange)="updateConditionField('operator', $event)">
-            <option value="equals">Equals</option>
-            <option value="not_equals">Not Equals</option>
-            <option value="contains">Contains</option>
-            <option value="empty">Is Empty</option>
-            <option value="not_empty">Is Not Empty</option>
-            <option value="greater_than">Greater Than</option>
-            <option value="less_than">Less Than</option>
-          </select>
+        @if (!['empty', 'not_empty', 'button_active', 'button_not_active'].includes(cond.operator) && cond.source !== 'geofence') {
+          <div class="field">
+            <label>Value</label>
+            <input type="text" [ngModel]="cond.value || ''" (ngModelChange)="updateConditionField(i, 'value', $event)">
+          </div>
         }
       </div>
-      @if (!['empty', 'not_empty', 'button_active', 'button_not_active'].includes(el.visibilityCondition.operator) && el.visibilityCondition.source !== 'geofence') {
-        <div class="field">
-          <label>Value</label>
-          <input type="text" [ngModel]="el.visibilityCondition.value || ''" (ngModelChange)="updateConditionField('value', $event)">
-        </div>
-      }
-      <button class="remove-btn" style="margin-top:4px" (click)="removeCondition()">Remove Condition</button>
-    } @else {
-      <button class="add-btn" (click)="addCondition()">+ Add Condition</button>
     }
+    <button class="add-btn" (click)="addCondition()">+ Add Condition</button>
   </div>
 }
 

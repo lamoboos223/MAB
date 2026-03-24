@@ -52,7 +52,12 @@ i18n: Yes — use updateI18n to set Arabic content
 Action trigger (see Button Actions).
 Settings: icon (PrimeIcons), toggleable ("true"/"false"), toggleGroup (string name — only one button active per group), validateRequired ("true" to validate required fields before action)
 **Toggleable buttons**: When toggleable="true", clicking toggles active state (data-active attr + .active CSS class). Use toggleGroup to make a radio-like button group — only one active at a time. Useful for tab-like navigation or filters.
-**Visibility + toggleable**: Other elements can watch a toggleable button via visibility condition with operator "button_active"/"button_not_active".
+**Visibility + toggleable**: Other elements (or the button itself) can watch a toggleable button via visibility condition with operator "button_active"/"button_not_active". Self-reference is allowed.
+**Mutual toggle pattern (check-in/checkout)**: To make two buttons alternate visibility (click A hides A and shows B, click B hides B and shows A):
+1. Both buttons: toggleable="true", same toggleGroup
+2. Button A condition: source=element, conditionElementId=A's own ID, operator=button_not_active, behavior=show_hide (visible when self is NOT active)
+3. Button B condition: source=element, conditionElementId=A's ID, operator=button_active, behavior=show_hide (visible when A IS active)
+Result: A visible initially → click A → A hides, B shows → click B → B hides, A shows (toggleGroup deactivates A when B clicked).
 i18n: Yes — set Arabic button label
 Style: Full-width (343px) for mobile. Secondary style: backgroundColor "transparent", border/color with accent.
 
@@ -191,10 +196,20 @@ With params: share(fileName,content,mimetype) | openScreen(screenType,valuesPara
 ### Other
 getDeviceInfo → device capabilities object
 
-## Visibility Conditions
+## Visibility Conditions (Multiple per element, AND logic)
+Each element can have MULTIPLE conditions (call setVisibilityCondition multiple times). All conditions are AND'd.
+Each condition has a **behavior**:
+- **show_hide**: Element is hidden when condition fails (default for element/function sources)
+- **enable_disable**: Element is disabled (greyed out) when condition fails (default for geofence)
+
+Sources:
 - **element**: Watch element value. Operators: equals, not_equals, contains, empty, not_empty, greater_than, less_than. For toggleable buttons: button_active, button_not_active.
 - **function**: Watch TWK function result. Same operators.
-- **geofence**: Show/hide based on user location within radius. Uses Haversine distance. Also renders geofence circle on all map elements. Set geofenceLat, geofenceLng, geofenceRadius (meters).
+- **geofence**: Location-based. Uses Haversine distance. Also renders geofence circle on all map elements. Set geofenceLat, geofenceLng, geofenceRadius (meters).
+
+Example: Checkout button that appears only after Check-in is clicked AND is only clickable inside geofence:
+1. setVisibilityCondition(checkoutId, source="element", conditionElementId=checkinId, operator="button_active", behavior="show_hide")
+2. setVisibilityCondition(checkoutId, source="geofence", geofenceLat="24.7", geofenceLng="46.6", geofenceRadius="200", behavior="enable_disable")
 
 ## UI/UX Standards
 - Full-width elements: width "343px". Full-width buttons for mobile.

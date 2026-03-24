@@ -13,8 +13,8 @@
     </div>
   }
 
-  @if (element.visibilityCondition) {
-    <div class="el-condition-badge" title="Has visibility condition">?</div>
+  @if (element.visibilityConditions?.length || element.visibilityCondition) {
+    <div class="el-condition-badge" title="Has visibility condition(s)">?</div>
   }
 
   @switch (element.type) {

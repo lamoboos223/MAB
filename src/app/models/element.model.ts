@@ -36,6 +36,7 @@ export interface TwkBinding {
 
 export interface VisibilityCondition {
   source: 'element' | 'function' | 'geofence';
+  behavior: 'show_hide' | 'enable_disable';
   elementId?: string;
   functionBinding?: TwkBinding;
   operator: 'equals' | 'not_equals' | 'contains' | 'empty' | 'not_empty' | 'greater_than' | 'less_than' | 'button_active' | 'button_not_active';
@@ -98,6 +99,7 @@ export interface BuilderElement {
   darkStyles?: ElementStyle;
   submitConfig?: SubmitConfig;
   position?: { x: number; y: number };
-  visibilityCondition?: VisibilityCondition;
+  visibilityCondition?: VisibilityCondition; // deprecated, kept for migration
+  visibilityConditions?: VisibilityCondition[];
   tableData?: string[][];
 }

@@ -178,80 +178,111 @@ export class SettingsTab {
     return page ? page.elements.filter(e => e.id !== el.id) : [];
   }
 
-  addCondition(): void {
+  /** Like getOtherElements but includes self — used for condition element picker */
+  getAllPageElements(): { id: string; type: string; settings: Record<string, string>; staticContent: string; isSelf: boolean }[] {
+    const el = this.element;
+    if (!el) return [];
+    const page = this.builder.activePage();
+    return page ? page.elements.map(e => ({ id: e.id, type: e.type, settings: e.settings, staticContent: e.staticContent, isSelf: e.id === el.id })) : [];
+  }
+
+  getConditions(): VisibilityCondition[] {
+    const el = this.element;
+    if (!el) return [];
+    // Migrate old single condition to array
+    if (el.visibilityCondition && !el.visibilityConditions?.length) {
+      return [{ ...el.visibilityCondition, behavior: el.visibilityCondition.behavior || (el.visibilityCondition.source === 'geofence' ? 'enable_disable' : 'show_hide') }];
+    }
+    return el.visibilityConditions || [];
+  }
+
+  private saveConditions(conditions: VisibilityCondition[]): void {
     const el = this.element;
     if (!el) return;
-    const condition: VisibilityCondition = {
+    this.builder.updateElement(el.id, {
+      visibilityConditions: conditions.length ? conditions : undefined,
+      visibilityCondition: undefined
+    } as any);
+  }
+
+  addCondition(): void {
+    const conditions = [...this.getConditions()];
+    conditions.push({
       source: 'element',
+      behavior: 'show_hide',
       operator: 'equals',
       value: ''
-    };
-    this.builder.updateElement(el.id, { visibilityCondition: condition });
+    });
+    this.saveConditions(conditions);
   }
 
-  removeCondition(): void {
-    const el = this.element;
-    if (!el) return;
-    this.builder.updateElement(el.id, { visibilityCondition: undefined } as any);
+  removeCondition(index?: number): void {
+    if (index === undefined) {
+      this.saveConditions([]);
+    } else {
+      const conditions = this.getConditions().filter((_, i) => i !== index);
+      this.saveConditions(conditions);
+    }
   }
 
-  updateConditionSource(source: 'element' | 'function' | 'geofence'): void {
-    const el = this.element;
-    if (!el || !el.visibilityCondition) return;
-    const condition: VisibilityCondition = {
-      ...el.visibilityCondition,
+  updateConditionSource(index: number, source: 'element' | 'function' | 'geofence'): void {
+    const conditions = [...this.getConditions()];
+    if (!conditions[index]) return;
+    conditions[index] = {
+      ...conditions[index],
       source,
       elementId: source === 'element' ? '' : undefined,
       functionBinding: source === 'function' ? { functionName: '', params: {}, resultPath: 'result' } : undefined,
       geofenceLat: source === 'geofence' ? '24.7136' : undefined,
       geofenceLng: source === 'geofence' ? '46.6753' : undefined,
       geofenceRadius: source === 'geofence' ? '500' : undefined,
-      operator: source === 'geofence' ? 'equals' : el.visibilityCondition.operator
+      operator: source === 'geofence' ? 'equals' : conditions[index].operator,
+      behavior: source === 'geofence' ? 'enable_disable' : conditions[index].behavior
     };
-    this.builder.updateElement(el.id, { visibilityCondition: condition });
+    this.saveConditions(conditions);
   }
 
-  updateConditionField(field: string, value: string): void {
-    const el = this.element;
-    if (!el || !el.visibilityCondition) return;
-    const updates: any = { ...el.visibilityCondition, [field]: value };
-    // Auto-set operator when selecting a button element
+  updateConditionField(index: number, field: string, value: string): void {
+    const conditions = [...this.getConditions()];
+    if (!conditions[index]) return;
+    const updates: any = { ...conditions[index], [field]: value };
     if (field === 'elementId') {
       const page = this.builder.activePage();
       const target = page?.elements.find(e => e.id === value);
       if (target?.type === 'button') {
         updates.operator = 'button_active';
-      } else if (['button_active', 'button_not_active'].includes(el.visibilityCondition.operator)) {
+      } else if (['button_active', 'button_not_active'].includes(conditions[index].operator)) {
         updates.operator = 'equals';
       }
     }
-    this.builder.updateElement(el.id, { visibilityCondition: updates });
+    conditions[index] = updates;
+    this.saveConditions(conditions);
   }
 
-  setConditionFunction(functionName: string): void {
-    const el = this.element;
-    if (!el || !el.visibilityCondition) return;
+  setConditionFunction(index: number, functionName: string): void {
+    const conditions = [...this.getConditions()];
+    if (!conditions[index]) return;
     const fn = this.twkService.getByName(functionName);
     const binding: TwkBinding = {
       functionName,
       params: {},
       resultPath: fn?.returns?.path || 'result'
     };
-    this.builder.updateElement(el.id, {
-      visibilityCondition: { ...el.visibilityCondition, functionBinding: binding }
-    });
+    conditions[index] = { ...conditions[index], functionBinding: binding };
+    this.saveConditions(conditions);
   }
 
-  setConditionFunctionParam(paramName: string, value: string): void {
-    const el = this.element;
-    if (!el || !el.visibilityCondition?.functionBinding) return;
-    const binding = {
-      ...el.visibilityCondition.functionBinding,
-      params: { ...el.visibilityCondition.functionBinding.params, [paramName]: value }
+  setConditionFunctionParam(index: number, paramName: string, value: string): void {
+    const conditions = [...this.getConditions()];
+    if (!conditions[index]?.functionBinding) return;
+    conditions[index] = {
+      ...conditions[index],
+      functionBinding: {
+        ...conditions[index].functionBinding!,
+        params: { ...conditions[index].functionBinding!.params, [paramName]: value }
+      }
     };
-    this.builder.updateElement(el.id, {
-      visibilityCondition: { ...el.visibilityCondition, functionBinding: binding }
-    });
+    this.saveConditions(conditions);
   }
 
   onTableResize(rows: string, columns: string): void {
@@ -283,12 +314,13 @@ export class SettingsTab {
     this.builder.updateElement(el.id, { tableData: newData });
   }
 
-  isSelectedConditionElementButton(): boolean {
-    const el = this.element;
-    if (!el?.visibilityCondition?.elementId) return false;
+  isConditionElementButton(index: number): boolean {
+    const conditions = this.getConditions();
+    const cond = conditions[index];
+    if (!cond?.elementId) return false;
     const page = this.builder.activePage();
     if (!page) return false;
-    const target = page.elements.find(e => e.id === el.visibilityCondition!.elementId);
+    const target = page.elements.find(e => e.id === cond.elementId);
     return target?.type === 'button';
   }
 
@@ -301,12 +333,13 @@ export class SettingsTab {
     return '';
   }
 
-  updateConditionBindingField(field: string, value: string): void {
-    const el = this.element;
-    if (!el || !el.visibilityCondition?.functionBinding) return;
-    const binding = { ...el.visibilityCondition.functionBinding, [field]: value };
-    this.builder.updateElement(el.id, {
-      visibilityCondition: { ...el.visibilityCondition, functionBinding: binding }
-    });
+  updateConditionBindingField(index: number, field: string, value: string): void {
+    const conditions = [...this.getConditions()];
+    if (!conditions[index]?.functionBinding) return;
+    conditions[index] = {
+      ...conditions[index],
+      functionBinding: { ...conditions[index].functionBinding!, [field]: value }
+    };
+    this.saveConditions(conditions);
   }
 }
