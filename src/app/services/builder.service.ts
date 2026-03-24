@@ -272,7 +272,7 @@ export class BuilderService {
         ];
         break;
       case 'map':
-        base.settings = { lat: '24.7136', lng: '46.6753', zoom: '13' };
+        base.settings = { lat: '24.7136', lng: '46.6753', zoom: '13', locked: 'true' };
         break;
       case 'divider':
         base.styles = { border: '1px solid #3f3f46' };

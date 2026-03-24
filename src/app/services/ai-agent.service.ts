@@ -119,7 +119,7 @@ i18n: Yes — set Arabic label and Arabic option labels
 
 ### map
 Google Maps embed with zoom controls and **geofence circle visualization**.
-Settings: lat (string, default "24.7136"), lng (string, default "46.6753"), zoom (string "1"-"20", default "13")
+Settings: lat (string, default "24.7136"), lng (string, default "46.6753"), zoom (string "1"-"20", default "13"), locked ("true"/"false", default "true" — when locked the user can only view the map; when unlocked the user can pan/zoom the map directly)
 **Geofence on map**: When ANY element has a visibility condition with source="geofence", MAB automatically draws colored circles on map elements showing the geofence area. The circle is an SVG overlay (rgba(66,133,244,0.15) fill, rgba(66,133,244,0.8) stroke) scaled by zoom level using Haversine distance.
 **To add a geofence circle on a map**: Set a geofence visibility condition on any element (can be the map itself or any other element). The geofence renders on ALL map elements. Example: setVisibilityCondition({elementId: buttonId, source: "geofence", geofenceLat: "24.7136", geofenceLng: "46.6753", geofenceRadius: "200"}) — this shows/hides the button based on location AND draws a 200m circle on all maps.
 i18n: No

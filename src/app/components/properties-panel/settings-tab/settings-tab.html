@@ -306,6 +306,13 @@
         <label>Zoom</label>
         <input type="text" [ngModel]="el.settings['zoom'] || ''" (ngModelChange)="updateSetting('zoom', $event)">
       </div>
+      <div class="field">
+        <label>Interaction</label>
+        <select [ngModel]="el.settings['locked'] || 'true'" (ngModelChange)="updateSetting('locked', $event)">
+          <option value="true">Locked (view only)</option>
+          <option value="false">Unlocked (user can move)</option>
+        </select>
+      </div>
     }
 
     @case ('divider') {

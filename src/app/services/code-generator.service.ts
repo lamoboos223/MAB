@@ -1328,11 +1328,14 @@ ${body}${sheetHtml}
         const lat = el.settings['lat'] || '24.7136';
         const lng = el.settings['lng'] || '46.6753';
         const zoom = el.settings['zoom'] || '13';
+        const locked = el.settings['locked'] !== 'false';
         const geofences = (pageElements || []).filter(e => this.getConditions(e).some(c => c.source === 'geofence'));
         let mapHtml = `  <div class="map-container" id="${el.id}" data-lat="${lat}" data-lng="${lng}" data-zoom="${zoom}">\n`;
         mapHtml += `    <iframe id="${el.id}-iframe" src="https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed"></iframe>\n`;
-        if (geofences.length > 0) {
+        if (locked) {
           mapHtml += `    <div class="map-interaction-blocker"></div>\n`;
+        }
+        if (geofences.length > 0 && locked) {
           mapHtml += `    <svg class="map-geofence-overlay" id="${el.id}-svg"></svg>\n`;
         }
         mapHtml += `    <div class="map-zoom-controls">\n`;
