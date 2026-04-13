@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
 import { BuilderElement, ElementType, ElementStyle, FieldMapping } from '../models/element.model';
 import { Page } from '../models/page.model';
+import { PartnerTheme } from '../models/partner-theme.model';
 
 const STORAGE_KEY = 'miniapps_builder_state';
 const REVISIONS_KEY = 'miniapps_builder_revisions';
@@ -20,6 +21,7 @@ interface SavedState {
   secretKey: string;
   debugMode: boolean;
   showGrid: boolean;
+  partnerTheme?: PartnerTheme | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -35,6 +37,7 @@ export class BuilderService {
   secretKey = signal<string>('MY_HMAC_SECRET_2025');
   debugMode = signal<boolean>(false);
   showGrid = signal<boolean>(true);
+  partnerTheme = signal<PartnerTheme | null>(null);
 
   activePage = computed(() => {
     const pages = this.pages();
@@ -61,6 +64,7 @@ export class BuilderService {
         secretKey: this.secretKey(),
         debugMode: this.debugMode(),
         showGrid: this.showGrid(),
+        partnerTheme: this.partnerTheme(),
       };
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -81,6 +85,7 @@ export class BuilderService {
           if (state.secretKey) this.secretKey.set(state.secretKey);
           if (state.debugMode !== undefined) this.debugMode.set(state.debugMode);
           if (state.showGrid !== undefined) this.showGrid.set(state.showGrid);
+          if (state.partnerTheme !== undefined) this.partnerTheme.set(state.partnerTheme);
           return;
         }
       }

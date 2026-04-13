@@ -40,13 +40,17 @@ export class CodeEditor {
     const page = this.builder.activePage();
     const pages = this.builder.pages();
     if (!page) return '';
-    const all = this.generator.generatePages(pages);
+    const all = this.generator.generatePages(pages, this.builder.partnerTheme());
     const idx = pages.findIndex(p => p.id === page.id);
     return all[idx]?.html ?? '';
   });
 
   generatedCss = computed(() => {
-    return this.generator.generateCss(this.builder.pages(), this.builder.appThemeMode());
+    return this.generator.generateCss(
+      this.builder.pages(),
+      this.builder.appThemeMode(),
+      this.builder.partnerTheme()
+    );
   });
 
   generatedJs = computed(() => {

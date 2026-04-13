@@ -12,14 +12,15 @@ export class ExportService {
   async exportZip(): Promise<void> {
     const pages = this.builder.pages();
     const themeMode = this.builder.appThemeMode();
+    const partnerTheme = this.builder.partnerTheme();
     const zip = new JSZip();
 
-    const htmlPages = this.codeGen.generatePages(pages);
+    const htmlPages = this.codeGen.generatePages(pages, partnerTheme);
     for (const page of htmlPages) {
       zip.file(page.fileName, page.html);
     }
 
-    const css = this.codeGen.generateCss(pages, themeMode);
+    const css = this.codeGen.generateCss(pages, themeMode, partnerTheme);
     zip.file('css/style.css', css);
 
     const js = this.codeGen.generateJs(pages, themeMode, this.builder.secretKey(), this.builder.debugMode(), 'standalone');

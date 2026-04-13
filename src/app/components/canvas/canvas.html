@@ -3,7 +3,7 @@
     <div class="phone-header">
       <span>{{ builder.activePage()?.name }}</span>
     </div>
-    <div class="phone-body" [class.show-grid]="builder.showGrid()">
+    <div class="phone-body" [class.show-grid]="builder.showGrid()" [style]="partnerStyle()">
       @for (element of builder.activePage()?.elements; track element.id) {
         <div class="canvas-drag-item"
           #wrapper

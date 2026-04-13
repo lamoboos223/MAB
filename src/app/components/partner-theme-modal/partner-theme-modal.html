@@ -1,0 +1,113 @@
+<div class="partner-modal__backdrop" (click)="onBackdrop($event)">
+  <div class="partner-modal">
+    <div class="partner-modal__header">
+      <h2>Partner Theme</h2>
+      <button class="partner-modal__close" (click)="cancel()" aria-label="Close">×</button>
+    </div>
+
+    <div class="partner-modal__body">
+      <p class="partner-modal__hint">
+        Branding applied to the exported mini-app (accent color, font, logo). The MAB builder UI is unaffected.
+      </p>
+
+      <div class="field">
+        <label>Partner name</label>
+        <input
+          type="text"
+          placeholder="e.g. STC"
+          [ngModel]="draft().name"
+          (ngModelChange)="update('name', $event)"
+        />
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Accent color</label>
+          <div class="color-input">
+            <input
+              type="color"
+              [ngModel]="draft().accent"
+              (ngModelChange)="update('accent', $event)"
+            />
+            <input
+              type="text"
+              [ngModel]="draft().accent"
+              (ngModelChange)="update('accent', $event)"
+              placeholder="#1b7a5f"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label>Accent hover</label>
+          <div class="color-input">
+            <input
+              type="color"
+              [ngModel]="draft().accentHover"
+              (ngModelChange)="update('accentHover', $event)"
+            />
+            <input
+              type="text"
+              [ngModel]="draft().accentHover"
+              (ngModelChange)="update('accentHover', $event)"
+              placeholder="#114b47"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Font family</label>
+        <input
+          type="text"
+          placeholder="e.g. 'Tajawal', sans-serif"
+          [ngModel]="draft().fontFamily"
+          (ngModelChange)="update('fontFamily', $event)"
+        />
+      </div>
+
+      <div class="field">
+        <label>Font URL (optional &mdash; Google Fonts or CDN)</label>
+        <input
+          type="text"
+          placeholder="https://fonts.googleapis.com/css2?family=Tajawal&display=swap"
+          [ngModel]="draft().fontUrl"
+          (ngModelChange)="update('fontUrl', $event)"
+        />
+      </div>
+
+      <div class="field">
+        <label>Logo URL (optional)</label>
+        <input
+          type="text"
+          placeholder="https://cdn.partner.com/logo.png"
+          [ngModel]="draft().logoUrl"
+          (ngModelChange)="update('logoUrl', $event)"
+        />
+      </div>
+
+      <div class="preview-box">
+        <div class="preview-box__label">Preview</div>
+        <div class="preview-box__sample">
+          @if (draft().logoUrl) {
+            <img [src]="draft().logoUrl" alt="logo" />
+          }
+          @if (draft().name) {
+            <span class="preview-box__name" [style.color]="draft().accent">{{ draft().name }}</span>
+          }
+          <button
+            class="preview-box__btn"
+            [style.background]="draft().accent"
+            [style.font-family]="draft().fontFamily || null"
+          >Sample Button</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="partner-modal__footer">
+      <button class="btn-ghost" (click)="clear()">Clear theme</button>
+      <div class="footer-spacer"></div>
+      <button class="btn-secondary" (click)="cancel()">Cancel</button>
+      <button class="btn-primary" (click)="save()">Save</button>
+    </div>
+  </div>
+</div>

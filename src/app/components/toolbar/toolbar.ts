@@ -6,15 +6,17 @@ import { CodeGeneratorService } from '../../services/code-generator.service';
 import { ThemeService } from '../../services/theme.service';
 import { HistoryService } from '../../services/history.service';
 import { PreviewModal } from '../preview-modal/preview-modal';
+import { PartnerThemeModal } from '../partner-theme-modal/partner-theme-modal';
 
 @Component({
   selector: 'app-toolbar',
   standalone: true,
-  imports: [PreviewModal],
+  imports: [PreviewModal, PartnerThemeModal],
   templateUrl: './toolbar.html',
   styleUrl: './toolbar.scss'
 })
 export class Toolbar {
+  showPartnerModal = false;
   private exportService = inject(ExportService);
   private importService = inject(ImportService);
   builder = inject(BuilderService);
@@ -56,8 +58,9 @@ export class Toolbar {
   preview(): void {
     const pages = this.builder.pages();
     const themeMode = this.builder.appThemeMode();
-    const htmlPages = this.codeGen.generatePages(pages);
-    const css = this.codeGen.generateCss(pages, themeMode);
+    const partnerTheme = this.builder.partnerTheme();
+    const htmlPages = this.codeGen.generatePages(pages, partnerTheme);
+    const css = this.codeGen.generateCss(pages, themeMode, partnerTheme);
     const js = this.codeGen.generateJs(pages, themeMode, this.builder.secretKey(), this.builder.debugMode());
     const mockTwk = this.generateMockTwk();
 

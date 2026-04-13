@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Page } from '../models/page.model';
 import { BuilderElement, ElementStyle, VisibilityCondition } from '../models/element.model';
+import { PartnerTheme } from '../models/partner-theme.model';
 
 @Injectable({ providedIn: 'root' })
 export class CodeGeneratorService {
@@ -16,14 +17,14 @@ export class CodeGeneratorService {
     return pages.some(p => p.elements.some(e => e.i18nEnabled));
   }
 
-  generatePages(pages: Page[]): { fileName: string; html: string }[] {
+  generatePages(pages: Page[], partnerTheme: PartnerTheme | null = null): { fileName: string; html: string }[] {
     return pages.map((page, index) => ({
       fileName: index === 0 ? 'index.html' : `page${index + 1}.html`,
-      html: this.generateHtml(page, pages)
+      html: this.generateHtml(page, pages, partnerTheme)
     }));
   }
 
-  generateCss(pages: Page[], themeMode: 'light' | 'dark' | 'auto' = 'auto'): string {
+  generateCss(pages: Page[], themeMode: 'light' | 'dark' | 'auto' = 'auto', partnerTheme: PartnerTheme | null = null): string {
     const hasI18n = this.hasI18nElements(pages);
 
     const dark = {
@@ -40,6 +41,15 @@ export class CodeGeneratorService {
       dropdownTriggerBg: 'rgba(0,0,0,0.02)', dropdownPanelBg: '#ffffff',
       dropdownHoverBg: 'rgba(0,0,0,0.04)', dropdownActiveBg: 'rgba(0,0,0,0.06)',
     };
+
+    if (partnerTheme?.accent) {
+      dark.accent = partnerTheme.accent;
+      light.accent = partnerTheme.accent;
+    }
+    if (partnerTheme?.accentHover) {
+      dark.accentHover = partnerTheme.accentHover;
+      light.accentHover = partnerTheme.accentHover;
+    }
 
     const themeCssVars = (t: typeof dark) => `
   --bg: ${t.bg}; --text: ${t.text}; --text-secondary: ${t.textSecondary}; --text-muted: ${t.textMuted};
@@ -58,7 +68,9 @@ export class CodeGeneratorService {
       themeBlock = `:root {${themeCssVars(dark)}\n}\n[data-theme="dark"] {${themeCssVars(dark)}\n}\n[data-theme="light"] {${themeCssVars(light)}\n}`;
     }
 
-    let css = `* { margin: 0; padding: 0; box-sizing: border-box; }
+    const fontImport = partnerTheme?.fontUrl ? `@import url("${partnerTheme.fontUrl}");\n` : '';
+
+    let css = `${fontImport}* { margin: 0; padding: 0; box-sizing: border-box; }
 ${themeBlock}
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
@@ -185,6 +197,15 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     if (hasI18n) {
       css += `[dir="rtl"] { font-family: 'Arial', -apple-system, sans-serif; }\n`;
       css += `[dir="rtl"] select, [dir="rtl"] input { text-align: right; }\n`;
+    }
+
+    css += `.partner-header { display: flex; align-items: center; gap: 10px; padding: 10px 0 18px; }\n`;
+    css += `.partner-header img { max-height: 36px; width: auto; border-radius: 0; }\n`;
+    css += `.partner-header__name { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: 0.2px; }\n`;
+
+    if (partnerTheme?.fontFamily) {
+      const ff = partnerTheme.fontFamily.replace(/"/g, '\\"');
+      css += `body, button, input, select, textarea { font-family: ${ff} !important; }\n`;
     }
 
     for (const page of pages) {
@@ -1188,8 +1209,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     return js;
   }
 
-  private generateHtml(page: Page, allPages: Page[]): string {
+  private generateHtml(page: Page, allPages: Page[], partnerTheme: PartnerTheme | null = null): string {
     let body = '';
+    if (partnerTheme?.logoUrl) {
+      body += `  <div class="partner-header"><img src="${this.escapeHtml(partnerTheme.logoUrl)}" alt="${this.escapeHtml(partnerTheme.name || '')}"/></div>\n`;
+    }
     for (const el of page.elements) {
       const conditions = this.getConditions(el);
       const hasShowHide = conditions.some(c => c.behavior === 'show_hide' || (!c.behavior && c.source !== 'geofence'));
