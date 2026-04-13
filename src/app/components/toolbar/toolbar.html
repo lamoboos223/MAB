@@ -63,9 +63,9 @@
     <button class="toolbar-btn partner-btn" [class.partner-btn--active]="!!builder.partnerTheme()" (click)="showPartnerModal = true" title="Configure partner branding for exported mini-app">
       @if (builder.partnerTheme(); as pt) {
         <span class="partner-btn__swatch" [style.background]="pt.accent"></span>
-        {{ pt.name || 'Partner' }}
+        {{ pt.name || 'Theme' }}
       } @else {
-        Partner
+        Theme
       }
     </button>
     <button class="toolbar-btn import-btn" (click)="triggerImport()">Import ZIP</button>

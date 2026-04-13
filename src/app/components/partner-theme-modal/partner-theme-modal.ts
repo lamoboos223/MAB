@@ -38,7 +38,7 @@ export class PartnerThemeModal {
   save(): void {
     const d = this.draft();
     const theme: PartnerTheme = {
-      name: d.name.trim() || 'Partner',
+      name: d.name.trim() || 'Theme',
       accent: d.accent || '#1b7a5f',
       accentHover: d.accentHover || d.accent || '#114b47',
       fontFamily: d.fontFamily?.trim() || undefined,
