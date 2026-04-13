@@ -1,12 +1,25 @@
-import { Component, effect, inject, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import hljs from 'highlight.js/lib/core';
+import jsonLang from 'highlight.js/lib/languages/json';
+import xmlLang from 'highlight.js/lib/languages/xml';
+import cssLang from 'highlight.js/lib/languages/css';
+import jsLang from 'highlight.js/lib/languages/javascript';
 import { BuilderService } from '../../services/builder.service';
+import { CodeGeneratorService } from '../../services/code-generator.service';
 import { BuilderElement } from '../../models/element.model';
+
+hljs.registerLanguage('json', jsonLang);
+hljs.registerLanguage('xml', xmlLang);
+hljs.registerLanguage('css', cssLang);
+hljs.registerLanguage('javascript', jsLang);
 
 interface PageShape {
   name: string;
   elements: BuilderElement[];
 }
+
+type EditorTab = 'json' | 'html' | 'css' | 'js';
 
 @Component({
   selector: 'app-code-editor',
@@ -17,9 +30,40 @@ interface PageShape {
 })
 export class CodeEditor {
   builder = inject(BuilderService);
+  private generator = inject(CodeGeneratorService);
 
+  activeTab = signal<EditorTab>('json');
   codeText = signal<string>('');
   parseError = signal<string | null>(null);
+
+  generatedHtml = computed(() => {
+    const page = this.builder.activePage();
+    const pages = this.builder.pages();
+    if (!page) return '';
+    const all = this.generator.generatePages(pages);
+    const idx = pages.findIndex(p => p.id === page.id);
+    return all[idx]?.html ?? '';
+  });
+
+  generatedCss = computed(() => {
+    return this.generator.generateCss(this.builder.pages(), this.builder.appThemeMode());
+  });
+
+  generatedJs = computed(() => {
+    return this.generator.generateJs(
+      this.builder.pages(),
+      this.builder.appThemeMode(),
+      this.builder.secretKey(),
+      this.builder.debugMode(),
+      'preview'
+    );
+  });
+
+  highlightedJson = computed(() => this.highlight(this.codeText(), 'json'));
+  highlightedHtml = computed(() => this.highlight(this.generatedHtml(), 'xml'));
+  highlightedCss = computed(() => this.highlight(this.generatedCss(), 'css'));
+  highlightedJs = computed(() => this.highlight(this.generatedJs(), 'javascript'));
+
   private lastSerialized = '';
   private parseTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -42,10 +86,36 @@ export class CodeEditor {
     });
   }
 
+  private highlight(code: string, lang: string): string {
+    if (!code) return '';
+    try {
+      return hljs.highlight(code, { language: lang, ignoreIllegals: true }).value;
+    } catch {
+      return this.escape(code);
+    }
+  }
+
+  private escape(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  setTab(tab: EditorTab): void {
+    this.activeTab.set(tab);
+  }
+
   onCodeInput(value: string): void {
     this.codeText.set(value);
     if (this.parseTimer) clearTimeout(this.parseTimer);
     this.parseTimer = setTimeout(() => this.tryApply(value), 500);
+  }
+
+  onEditorScroll(event: Event): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    const pre = textarea.previousElementSibling as HTMLElement | null;
+    if (pre) {
+      pre.scrollTop = textarea.scrollTop;
+      pre.scrollLeft = textarea.scrollLeft;
+    }
   }
 
   private tryApply(raw: string): void {
@@ -95,6 +165,30 @@ export class CodeEditor {
       this.tryApply(pretty);
     } catch (e) {
       this.parseError.set((e as Error).message);
+    }
+  }
+
+  copyReadonly(): void {
+    const text = this.readonlyText();
+    if (!text) return;
+    navigator.clipboard?.writeText(text).catch(() => {});
+  }
+
+  readonlyText(): string {
+    switch (this.activeTab()) {
+      case 'html': return this.generatedHtml();
+      case 'css': return this.generatedCss();
+      case 'js': return this.generatedJs();
+      default: return '';
+    }
+  }
+
+  readonlyHighlighted(): string {
+    switch (this.activeTab()) {
+      case 'html': return this.highlightedHtml();
+      case 'css': return this.highlightedCss();
+      case 'js': return this.highlightedJs();
+      default: return '';
     }
   }
 }

@@ -9,33 +9,57 @@
 .code-editor__header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--border-primary);
   background: var(--bg-secondary);
   flex-shrink: 0;
+  height: 36px;
 }
 
-.code-editor__title {
+.code-editor__tabs {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  height: 100%;
+  margin-right: auto;
+}
+
+.code-editor__tab {
+  padding: 0 14px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-tertiary);
   font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-tertiary);
+
+  &.active {
+    color: var(--accent-text);
+    border-bottom-color: var(--accent);
+  }
+
+  &:hover:not(.active) {
+    color: var(--text-secondary);
+  }
 }
 
 .code-editor__status {
-  flex: 1;
   font-size: 11px;
   color: var(--text-tertiary);
   font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', monospace;
 
   &.error {
-    color: #d64545;
+    color: var(--danger);
   }
 }
 
-.code-editor__format {
+.code-editor__action {
   font-size: 11px;
   padding: 4px 10px;
   background: var(--bg-primary);
@@ -52,17 +76,52 @@
   }
 }
 
-.code-editor__textarea {
+.code-editor__body {
+  position: relative;
   flex: 1;
-  border: none;
-  resize: none;
-  outline: none;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.code-editor__highlight,
+.code-editor__textarea {
+  position: absolute;
+  inset: 0;
+  margin: 0;
   padding: 12px 14px;
   font-family: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'Consolas', monospace;
   font-size: 12px;
   line-height: 1.55;
-  color: var(--text-primary);
-  background: var(--bg-primary);
   tab-size: 2;
   white-space: pre;
+  overflow: auto;
+  border: 0;
+}
+
+.code-editor__highlight {
+  pointer-events: none;
+  background: transparent;
+  color: var(--text-primary);
+  z-index: 1;
+
+  &.hljs--readonly {
+    pointer-events: auto;
+    user-select: text;
+  }
+}
+
+.code-editor__textarea {
+  resize: none;
+  outline: none;
+  color: transparent;
+  caret-color: var(--text-primary);
+  background: transparent;
+  z-index: 2;
+  -webkit-text-fill-color: transparent;
+
+  &::selection {
+    background: var(--accent-subtle);
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
 }
