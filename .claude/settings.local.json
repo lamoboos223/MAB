@@ -18,7 +18,8 @@
       "Bash(curl -k -s \"https://devportal.tawakkalna.sa/developer-center\" 2>/dev/null | grep -i -oE '\\(#[0-9a-fA-F]{3,8}|rgb[a]?\\\\\\([^\\)]+\\\\\\)\\)' | sort -u | head -30)",
       "Bash(find C:/Users/lamob/development/miniapps_builder/docs -type f -name \"*.md\" 2>/dev/null | head -10)",
       "Bash(cd:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(C:/Users/lamob/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh:*)"
     ]
   }
 }

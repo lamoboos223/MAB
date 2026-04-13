@@ -1,48 +1,37 @@
-<div class="palette-container">
-  <h3 class="palette-title">Elements</h3>
-  <div class="palette-grid">
+<div class="palette-rail">
+  <div class="palette-rail__label">Elements</div>
+  <div class="palette-rail__items">
     @for (item of elements; track item.type) {
-      <div class="palette-item" (click)="addElement(item.type)">
-        <span class="palette-icon">{{ item.icon }}</span>
-        <span class="palette-label">{{ item.label }}</span>
-      </div>
+      <button
+        class="palette-rail__item"
+        [title]="item.label"
+        (click)="addElement(item.type)"
+      >
+        <span class="palette-rail__icon">{{ item.icon }}</span>
+        <span class="palette-rail__name">{{ item.label }}</span>
+      </button>
     }
   </div>
 
-  <div class="settings-section">
-    <h3 class="palette-title">App Theme</h3>
-    <div class="theme-switcher">
-      <button
-        class="theme-option"
-        [class.active]="builder.appThemeMode() === 'light'"
-        (click)="setThemeMode('light')"
-      >
-        <span class="theme-icon">&#9788;</span>
-        <span>Light</span>
-      </button>
-      <button
-        class="theme-option"
-        [class.active]="builder.appThemeMode() === 'dark'"
-        (click)="setThemeMode('dark')"
-      >
-        <span class="theme-icon">&#9790;</span>
-        <span>Dark</span>
-      </button>
-      <button
-        class="theme-option"
-        [class.active]="builder.appThemeMode() === 'auto'"
-        (click)="setThemeMode('auto')"
-      >
-        <span class="theme-icon">&#9684;</span>
-        <span>Auto</span>
-      </button>
-    </div>
-    <p class="theme-hint">
-      @switch (builder.appThemeMode()) {
-        @case ('light') { Always light theme }
-        @case ('dark') { Always dark theme }
-        @case ('auto') { Matches user's device theme }
-      }
-    </p>
+  <div class="palette-rail__label">Theme</div>
+  <div class="palette-rail__theme">
+    <button
+      class="palette-rail__theme-btn"
+      [class.active]="builder.appThemeMode() === 'light'"
+      (click)="setThemeMode('light')"
+      title="Light theme"
+    ><span>&#9788;</span> Light</button>
+    <button
+      class="palette-rail__theme-btn"
+      [class.active]="builder.appThemeMode() === 'dark'"
+      (click)="setThemeMode('dark')"
+      title="Dark theme"
+    ><span>&#9790;</span> Dark</button>
+    <button
+      class="palette-rail__theme-btn"
+      [class.active]="builder.appThemeMode() === 'auto'"
+      (click)="setThemeMode('auto')"
+      title="Auto theme"
+    ><span>&#9684;</span> Auto</button>
   </div>
 </div>

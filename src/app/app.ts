@@ -1,25 +1,32 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, signal } from '@angular/core';
 import { ElementPalette } from './components/element-palette/element-palette';
 import { Canvas } from './components/canvas/canvas';
-import { RightPanel } from './components/right-panel/right-panel';
+import { PropertiesPanel } from './components/properties-panel/properties-panel';
+import { AiChat } from './components/ai-chat/ai-chat';
+import { CodeEditor } from './components/code-editor/code-editor';
 import { Toolbar } from './components/toolbar/toolbar';
 import { PageTabs } from './components/page-tabs/page-tabs';
 
+type ResizeTarget = 'palette' | 'properties' | 'canvas';
+
 @Component({
   selector: 'app-root',
-  imports: [ElementPalette, Canvas, RightPanel, Toolbar, PageTabs],
+  imports: [ElementPalette, Canvas, PropertiesPanel, AiChat, CodeEditor, Toolbar, PageTabs],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
-  paletteWidth = 220;
+  paletteWidth = 160;
   propertiesWidth = 300;
+  canvasWidth = 520;
 
-  private resizing: 'palette' | 'properties' | null = null;
+  activePropsTab = signal<'properties' | 'ai-chat'>('properties');
 
-  onResizeStart(event: MouseEvent, panel: 'palette' | 'properties') {
+  private resizing: ResizeTarget | null = null;
+
+  onResizeStart(event: MouseEvent, target: ResizeTarget) {
     event.preventDefault();
-    this.resizing = panel;
+    this.resizing = target;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   }
@@ -29,9 +36,13 @@ export class App {
     if (!this.resizing) return;
 
     if (this.resizing === 'palette') {
-      this.paletteWidth = Math.min(400, Math.max(160, event.clientX));
-    } else {
-      this.propertiesWidth = Math.min(500, Math.max(200, window.innerWidth - event.clientX));
+      this.paletteWidth = Math.min(260, Math.max(120, event.clientX));
+    } else if (this.resizing === 'properties') {
+      const next = event.clientX - this.paletteWidth;
+      this.propertiesWidth = Math.min(500, Math.max(220, next));
+    } else if (this.resizing === 'canvas') {
+      const next = window.innerWidth - event.clientX;
+      this.canvasWidth = Math.min(window.innerWidth * 0.7, Math.max(280, next));
     }
   }
 

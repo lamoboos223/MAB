@@ -3,9 +3,34 @@
   <div class="main-content">
     <app-element-palette class="palette" [style.width.px]="paletteWidth"></app-element-palette>
     <div class="resize-handle" (mousedown)="onResizeStart($event, 'palette')"></div>
-    <app-canvas class="canvas"></app-canvas>
+    <div class="properties-column" [style.width.px]="propertiesWidth">
+      <div class="properties-column__tabs">
+        <button
+          class="properties-column__tab"
+          [class.active]="activePropsTab() === 'properties'"
+          (click)="activePropsTab.set('properties')"
+        >Properties</button>
+        <button
+          class="properties-column__tab"
+          [class.active]="activePropsTab() === 'ai-chat'"
+          (click)="activePropsTab.set('ai-chat')"
+        >AI Agent</button>
+      </div>
+      <div class="properties-column__content">
+        @switch (activePropsTab()) {
+          @case ('properties') {
+            <app-properties-panel></app-properties-panel>
+          }
+          @case ('ai-chat') {
+            <app-ai-chat></app-ai-chat>
+          }
+        }
+      </div>
+    </div>
     <div class="resize-handle" (mousedown)="onResizeStart($event, 'properties')"></div>
-    <app-right-panel class="properties" [style.width.px]="propertiesWidth"></app-right-panel>
+    <app-code-editor class="editor"></app-code-editor>
+    <div class="resize-handle" (mousedown)="onResizeStart($event, 'canvas')"></div>
+    <app-canvas class="canvas" [style.width.px]="canvasWidth"></app-canvas>
   </div>
   <app-page-tabs class="page-tabs"></app-page-tabs>
 </div>

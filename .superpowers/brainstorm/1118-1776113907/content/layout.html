@@ -1,0 +1,65 @@
+<h2>Where do palette, properties, and AI chat live?</h2>
+<p class="subtitle">You said: canvas on the right, editor in the middle. Here are three ways to arrange the rest.</p>
+
+<style>
+  .wire { display: grid; gap: 4px; height: 240px; font-size: 11px; font-weight: 600; color: #555; }
+  .wire > div { background: #e9ecef; border: 1px solid #c9ced4; border-radius: 4px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 4px; }
+  .wire .editor { background: #dde9fd; }
+  .wire .canvas { background: #e5f4e3; }
+  .wire .palette { background: #fff5d9; }
+  .wire .props { background: #fae3f2; }
+  .wire .ai { background: #e8e0fa; }
+  .wire .topbar { background: #343a40; color: #fff; grid-column: 1 / -1; height: 24px; }
+  .wire .tabs { background: #343a40; color: #fff; grid-column: 1 / -1; height: 20px; font-weight: 500; }
+</style>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="wire" style="grid-template-columns: 56px 1fr 1fr; grid-template-rows: 24px 1fr 20px;">
+        <div class="topbar">Toolbar</div>
+        <div class="palette">📦<br>Elements<br>(icons only)</div>
+        <div class="editor">Code Editor (JSON)</div>
+        <div class="canvas">Canvas</div>
+        <div class="tabs">Page Tabs</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Icon rail left</h3>
+      <p>Narrow vertical icon strip for elements. Click to expand a floating flyout. Properties and AI chat become <b>bottom tabs under the editor</b> or collapse into modals. Maximum horizontal space for editor + canvas.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="wire" style="grid-template-columns: 170px 1fr 1fr 200px; grid-template-rows: 24px 1fr 20px;">
+        <div class="topbar">Toolbar</div>
+        <div class="palette">Elements</div>
+        <div class="editor">Editor</div>
+        <div class="canvas">Canvas</div>
+        <div class="props">Properties<br>/ AI Chat<br>(tabs)</div>
+        <div class="tabs">Page Tabs</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Four columns, properties on far right</h3>
+      <p>Classic layout, one extra column. Palette left, editor and canvas in the middle, properties + AI chat as a tabbed sidebar on the far right. Familiar but gets cramped on small screens.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="wire" style="grid-template-columns: 1fr 1fr; grid-template-rows: 24px 1fr 1fr 20px;">
+        <div class="topbar">Toolbar</div>
+        <div class="editor" style="grid-column: 1;">Editor</div>
+        <div class="canvas" style="grid-column: 2; grid-row: 2 / 4;">Canvas</div>
+        <div class="props" style="grid-column: 1;">Properties (bottom half of editor column)</div>
+        <div class="tabs">Page Tabs</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Two columns, horizontal split left</h3>
+      <p>Canvas fills the full right side. Left column is split: editor on top, properties below. Palette and AI chat become collapsible overlays / drawer triggered from the toolbar. Cleanest look, but properties compete with editor for vertical space.</p>
+    </div>
+  </div>
+</div>

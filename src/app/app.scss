@@ -15,16 +15,89 @@
   display: flex;
   flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 
 .palette {
-  width: 220px;
-  min-width: 160px;
-  max-width: 400px;
+  min-width: 120px;
+  max-width: 260px;
   border-right: 1px solid var(--border-primary);
-  overflow-y: auto;
   background: var(--bg-primary);
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.properties-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  max-width: 500px;
+  border-right: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.properties-column__tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-primary);
+  flex-shrink: 0;
+  background: var(--bg-secondary);
+}
+
+.properties-column__tab {
+  flex: 1;
+  padding: 10px 8px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+
+  &.active {
+    color: var(--accent-text);
+    border-bottom-color: var(--accent);
+  }
+
+  &:hover:not(.active) {
+    color: var(--text-secondary);
+  }
+}
+
+.properties-column__content {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.properties-column__content app-properties-panel,
+.properties-column__content app-ai-chat {
+  display: block;
+  height: 100%;
+}
+
+.editor {
+  display: block;
+  flex: 1;
+  min-width: 240px;
+  overflow: hidden;
+}
+
+.canvas {
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px;
+  background-color: var(--bg-canvas);
+  flex-shrink: 0;
+  min-width: 280px;
+  max-width: 70vw;
+  border-left: 1px solid var(--border-primary);
 }
 
 .resize-handle {
@@ -40,26 +113,6 @@
   &:active {
     background: var(--accent-primary, #4a90d9);
   }
-}
-
-.canvas {
-  flex: 1;
-  overflow: auto;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 24px;
-  background-color: var(--bg-canvas);
-}
-
-.properties {
-  width: 300px;
-  min-width: 200px;
-  max-width: 500px;
-  border-left: 1px solid var(--border-primary);
-  overflow-y: auto;
-  background: var(--bg-primary);
-  flex-shrink: 0;
 }
 
 .page-tabs {
