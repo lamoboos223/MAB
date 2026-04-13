@@ -1,9 +1,10 @@
-import { Component, inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, HostListener, inject, ViewChild, ElementRef } from '@angular/core';
 import { ExportService } from '../../services/export.service';
 import { ImportService } from '../../services/import.service';
 import { BuilderService } from '../../services/builder.service';
 import { CodeGeneratorService } from '../../services/code-generator.service';
 import { ThemeService } from '../../services/theme.service';
+import { HistoryService } from '../../services/history.service';
 import { PreviewModal } from '../preview-modal/preview-modal';
 
 @Component({
@@ -19,6 +20,25 @@ export class Toolbar {
   builder = inject(BuilderService);
   private codeGen = inject(CodeGeneratorService);
   themeService = inject(ThemeService);
+  history = inject(HistoryService);
+
+  @HostListener('window:keydown', ['$event'])
+  onKeydown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement | null;
+    const tag = target?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
+
+    const ctrl = event.ctrlKey || event.metaKey;
+    if (!ctrl) return;
+    const key = event.key.toLowerCase();
+    if (key === 'z' && !event.shiftKey) {
+      event.preventDefault();
+      this.history.undo();
+    } else if ((key === 'z' && event.shiftKey) || key === 'y') {
+      event.preventDefault();
+      this.history.redo();
+    }
+  }
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 

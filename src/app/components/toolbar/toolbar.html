@@ -2,6 +2,32 @@
   <div class="toolbar-left">
     <img class="toolbar-logo" src="twk-logo.png" alt="TWK" />
     <span class="app-title">MAB</span>
+    <div class="history-group">
+      <button
+        class="history-btn"
+        [disabled]="!history.canUndo()"
+        (click)="history.undo()"
+        title="Undo (Ctrl+Z)"
+        aria-label="Undo"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 14 4 9l5-5"/>
+          <path d="M4 9h11a5 5 0 0 1 0 10h-4"/>
+        </svg>
+      </button>
+      <button
+        class="history-btn"
+        [disabled]="!history.canRedo()"
+        (click)="history.redo()"
+        title="Redo (Ctrl+Shift+Z)"
+        aria-label="Redo"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m15 14 5-5-5-5"/>
+          <path d="M20 9H9a5 5 0 0 0 0 10h4"/>
+        </svg>
+      </button>
+    </div>
   </div>
   <div class="toolbar-right">
     @if (builder.appThemeMode() === 'auto') {
