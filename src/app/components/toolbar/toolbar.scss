@@ -220,22 +220,84 @@
   &--active:hover { background: var(--accent-hover); }
 }
 
-.save-rev-btn, .rev-btn {
-  background: var(--btn-secondary-bg);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-primary);
-
-  &:hover { background: var(--bg-tertiary); }
+.checkpoints-wrapper {
+  position: relative;
+  margin-left: 8px;
+  padding-left: 12px;
+  border-left: 1px solid var(--border-primary);
 }
 
-.revisions-wrapper {
-  position: relative;
+.checkpoints-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 4px 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  line-height: 1.2;
+
+  &:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-primary);
+  }
+
+  &__label {
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__count {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  &__sub {
+    font-size: 10px;
+    color: var(--accent-text);
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.revision-save {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  background: var(--accent-subtle);
+  border: 1px dashed var(--accent);
+  color: var(--accent-text);
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  text-align: left;
+
+  &:hover {
+    background: var(--accent);
+    color: #fff;
+  }
 }
 
 .revisions-dropdown {
   position: absolute;
   top: calc(100% + 8px);
-  right: 0;
+  left: 0;
   width: 280px;
   max-height: 320px;
   overflow-y: auto;
