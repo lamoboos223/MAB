@@ -55,6 +55,34 @@
         </div>
       </div>
 
+      <div class="field-row">
+        <div class="field">
+          <label>Secondary color (optional)</label>
+          <div class="color-input">
+            <input
+              type="color"
+              [ngModel]="draft().accentSecondary || '#000000'"
+              (ngModelChange)="update('accentSecondary', $event)"
+            />
+            <input
+              type="text"
+              [ngModel]="draft().accentSecondary"
+              (ngModelChange)="update('accentSecondary', $event)"
+              placeholder="e.g. #ffb84d"
+            />
+          </div>
+        </div>
+        <div class="field">
+          <label>Border radius (optional)</label>
+          <input
+            type="text"
+            [ngModel]="draft().borderRadius"
+            (ngModelChange)="update('borderRadius', $event)"
+            placeholder="e.g. 4px, 12px, 999px"
+          />
+        </div>
+      </div>
+
       <div class="field">
         <label>Font family</label>
         <input
@@ -98,7 +126,16 @@
             class="preview-box__btn"
             [style.background]="draft().accent"
             [style.font-family]="draft().fontFamily || null"
+            [style.border-radius]="draft().borderRadius || null"
           >Sample Button</button>
+          @if (draft().accentSecondary) {
+            <button
+              class="preview-box__btn"
+              [style.background]="draft().accentSecondary"
+              [style.font-family]="draft().fontFamily || null"
+              [style.border-radius]="draft().borderRadius || null"
+            >Secondary</button>
+          }
         </div>
       </div>
     </div>

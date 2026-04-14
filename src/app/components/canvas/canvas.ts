@@ -25,6 +25,11 @@ export class Canvas {
       style['--btn-primary-bg'] = pt.accent;
     }
     if (pt.accentHover) style['--accent-hover'] = pt.accentHover;
+    if (pt.accentSecondary) style['--accent-secondary'] = pt.accentSecondary;
+    if (pt.borderRadius) {
+      style['--radius'] = pt.borderRadius;
+      style['--radius-sm'] = pt.borderRadius;
+    }
     if (pt.fontFamily) style['font-family'] = pt.fontFamily;
     return style;
   });

@@ -208,6 +208,19 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       css += `body, button, input, select, textarea { font-family: ${ff} !important; }\n`;
     }
 
+    if (partnerTheme?.borderRadius) {
+      const r = partnerTheme.borderRadius;
+      css += `:root { --radius: ${r}; }\n`;
+      css += `button, input[type="text"], input[type="number"], input[type="email"], input[type="tel"], textarea, select, .date-picker-trigger, .custom-dropdown__trigger, img { border-radius: ${r} !important; }\n`;
+    }
+
+    if (partnerTheme?.accentSecondary) {
+      const c = partnerTheme.accentSecondary;
+      css += `:root { --accent-secondary: ${c}; }\n`;
+      css += `button.active, button:active { background: ${c} !important; }\n`;
+      css += `input[type="radio"]:checked, input[type="checkbox"]:checked { accent-color: ${c}; }\n`;
+    }
+
     for (const page of pages) {
       for (const el of page.elements) {
         if (themeMode === 'auto') {
