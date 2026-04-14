@@ -8,6 +8,7 @@ import { Toolbar } from './components/toolbar/toolbar';
 import { PageTabs } from './components/page-tabs/page-tabs';
 
 type ResizeTarget = 'palette' | 'properties' | 'editor';
+type RightTab = 'code' | 'ai';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +21,7 @@ export class App {
   propertiesWidth = 300;
   editorWidth = 480;
 
-  activePropsTab = signal<'properties' | 'ai-chat'>('properties');
+  activeRightTab = signal<RightTab>('code');
 
   private resizing: ResizeTarget | null = null;
 

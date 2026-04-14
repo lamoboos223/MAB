@@ -27,25 +27,46 @@
   overflow: hidden;
 }
 
-.properties-column {
-  display: flex;
-  flex-direction: column;
+.properties {
+  display: block;
   min-width: 220px;
   max-width: 500px;
   border-right: 1px solid var(--border-primary);
   background: var(--bg-primary);
   flex-shrink: 0;
-  overflow: hidden;
+  overflow: auto;
 }
 
-.properties-column__tabs {
+.canvas {
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px;
+  background-color: var(--bg-canvas);
+  flex: 1;
+  min-width: 280px;
+}
+
+.right-column {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  min-width: 280px;
+  max-width: 60vw;
+  overflow: hidden;
+  border-left: 1px solid var(--border-primary);
+  background: var(--bg-primary);
+}
+
+.right-column__tabs {
   display: flex;
   border-bottom: 1px solid var(--border-primary);
   flex-shrink: 0;
   background: var(--bg-secondary);
 }
 
-.properties-column__tab {
+.right-column__tab {
   flex: 1;
   padding: 10px 8px;
   background: none;
@@ -68,36 +89,20 @@
   }
 }
 
-.properties-column__content {
+.right-column__content {
   flex: 1;
-  overflow: auto;
-  min-height: 0;
-}
-
-.properties-column__content app-properties-panel,
-.properties-column__content app-ai-chat {
-  display: block;
-  height: 100%;
-}
-
-.canvas {
-  overflow: auto;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 24px;
-  background-color: var(--bg-canvas);
-  flex: 1;
-  min-width: 280px;
-}
-
-.editor {
-  display: block;
-  flex-shrink: 0;
-  min-width: 280px;
-  max-width: 60vw;
   overflow: hidden;
-  border-left: 1px solid var(--border-primary);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-column__content app-code-editor,
+.right-column__content app-ai-chat {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .resize-handle {

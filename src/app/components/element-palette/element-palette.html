@@ -49,7 +49,7 @@
     </div>
   }
 
-  <div class="palette-rail__label">Theme</div>
+  <div class="palette-rail__label palette-rail__label--divider">Mode</div>
   <div class="palette-rail__theme">
     <button
       class="palette-rail__theme-btn"
@@ -69,5 +69,21 @@
       (click)="setThemeMode('auto')"
       title="Auto theme"
     ><span>&#9684;</span> Auto</button>
+  </div>
+
+  <div class="palette-rail__label palette-rail__label--divider">Language</div>
+  <div class="palette-rail__theme palette-rail__theme--row">
+    <button
+      class="palette-rail__theme-btn"
+      [class.active]="builder.activeLang() === 'en'"
+      (click)="builder.activeLang.set('en')"
+      title="English"
+    >EN</button>
+    <button
+      class="palette-rail__theme-btn"
+      [class.active]="builder.activeLang() === 'ar'"
+      (click)="builder.activeLang.set('ar')"
+      title="Arabic"
+    >AR</button>
   </div>
 </div>

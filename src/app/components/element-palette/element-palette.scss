@@ -14,6 +14,12 @@
   letter-spacing: 1px;
   color: var(--text-tertiary);
   padding: 4px 4px 6px;
+
+  &--divider {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-subtle);
+  }
 }
 
 .palette-rail__tabs {
@@ -169,10 +175,16 @@
   flex-direction: column;
   gap: 4px;
   padding: 4px 0 0;
-  border-top: 1px solid var(--border-subtle);
-  margin-top: 8px;
-  padding-top: 8px;
   flex-shrink: 0;
+
+  &--row {
+    flex-direction: row;
+
+    .palette-rail__theme-btn {
+      flex: 1;
+      justify-content: center;
+    }
+  }
 }
 
 .palette-rail__theme-btn {

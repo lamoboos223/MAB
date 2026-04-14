@@ -1,7 +1,9 @@
 <div class="toolbar-container">
   <div class="toolbar-left">
-    <img class="toolbar-logo" src="twk-logo.png" alt="TWK" />
-    <span class="app-title">MAB</span>
+    <button class="toolbar-brand" (click)="newDesign()" title="Reset design">
+      <img class="toolbar-logo" src="twk-logo.png" alt="TWK" />
+      <span class="app-title">MAB</span>
+    </button>
     <div class="history-group">
       <button
         class="history-btn"
@@ -30,12 +32,6 @@
     </div>
   </div>
   <div class="toolbar-right">
-    @if (builder.appThemeMode() === 'auto') {
-      <button class="theme-toggle" (click)="toggleTheme()">
-        {{ themeService.theme() === 'dark' ? '☀️' : '🌙' }}
-      </button>
-    }
-    <button class="toolbar-btn new-btn" (click)="newDesign()">New</button>
     <button class="toolbar-btn save-rev-btn" (click)="saveRevision()">Save Rev</button>
     <div class="revisions-wrapper">
       <button class="toolbar-btn rev-btn" (click)="toggleRevisions()">
@@ -58,7 +54,6 @@
         </div>
       }
     </div>
-    <button class="toolbar-btn debug-btn" [class.debug-btn--active]="builder.debugMode()" (click)="builder.debugMode.set(!builder.debugMode())">Debug</button>
     <button class="toolbar-btn grid-btn" [class.grid-btn--active]="builder.showGrid()" (click)="builder.showGrid.set(!builder.showGrid())">Grid</button>
     <button class="toolbar-btn partner-btn" [class.partner-btn--active]="!!builder.partnerTheme()" (click)="showPartnerModal = true" title="Configure partner branding for exported mini-app">
       @if (builder.partnerTheme(); as pt) {
@@ -68,14 +63,15 @@
         Theme
       }
     </button>
-    <button class="toolbar-btn import-btn" (click)="triggerImport()">Import ZIP</button>
-    <input #fileInput type="file" accept=".zip" (change)="onFileSelected($event)" hidden />
-    <select class="lang-select" [value]="previewLang" (change)="setPreviewLang($any($event.target).value)">
-      <option value="en">EN</option>
-      <option value="ar">AR</option>
-    </select>
-    <button class="toolbar-btn preview-btn" (click)="preview()">Preview</button>
-    <button class="toolbar-btn export-btn" (click)="export()">Export ZIP</button>
+    <div class="toolbar-group">
+      <button class="toolbar-btn preview-btn" (click)="preview()">Preview</button>
+      <button class="toolbar-btn debug-btn" [class.debug-btn--active]="builder.debugMode()" (click)="builder.debugMode.set(!builder.debugMode())">Debug</button>
+    </div>
+    <div class="toolbar-group">
+      <button class="toolbar-btn import-btn" (click)="triggerImport()">Import ZIP</button>
+      <input #fileInput type="file" accept=".zip" (change)="onFileSelected($event)" hidden />
+      <button class="toolbar-btn export-btn" (click)="export()">Export ZIP</button>
+    </div>
   </div>
 </div>
 @if (showPreview) {

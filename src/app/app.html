@@ -3,34 +3,30 @@
   <div class="main-content">
     <app-element-palette class="palette" [style.width.px]="paletteWidth"></app-element-palette>
     <div class="resize-handle" (mousedown)="onResizeStart($event, 'palette')"></div>
-    <div class="properties-column" [style.width.px]="propertiesWidth">
-      <div class="properties-column__tabs">
-        <button
-          class="properties-column__tab"
-          [class.active]="activePropsTab() === 'properties'"
-          (click)="activePropsTab.set('properties')"
-        >Properties</button>
-        <button
-          class="properties-column__tab"
-          [class.active]="activePropsTab() === 'ai-chat'"
-          (click)="activePropsTab.set('ai-chat')"
-        >AI Agent</button>
-      </div>
-      <div class="properties-column__content">
-        @switch (activePropsTab()) {
-          @case ('properties') {
-            <app-properties-panel></app-properties-panel>
-          }
-          @case ('ai-chat') {
-            <app-ai-chat></app-ai-chat>
-          }
-        }
-      </div>
-    </div>
+    <app-properties-panel class="properties" [style.width.px]="propertiesWidth"></app-properties-panel>
     <div class="resize-handle" (mousedown)="onResizeStart($event, 'properties')"></div>
     <app-canvas class="canvas"></app-canvas>
     <div class="resize-handle" (mousedown)="onResizeStart($event, 'editor')"></div>
-    <app-code-editor class="editor" [style.width.px]="editorWidth"></app-code-editor>
+    <div class="right-column" [style.width.px]="editorWidth">
+      <div class="right-column__tabs">
+        <button
+          class="right-column__tab"
+          [class.active]="activeRightTab() === 'code'"
+          (click)="activeRightTab.set('code')"
+        >Code</button>
+        <button
+          class="right-column__tab"
+          [class.active]="activeRightTab() === 'ai'"
+          (click)="activeRightTab.set('ai')"
+        >AI Agent</button>
+      </div>
+      <div class="right-column__content">
+        @switch (activeRightTab()) {
+          @case ('code') { <app-code-editor></app-code-editor> }
+          @case ('ai') { <app-ai-chat></app-ai-chat> }
+        }
+      </div>
+    </div>
   </div>
   <app-page-tabs class="page-tabs"></app-page-tabs>
 </div>

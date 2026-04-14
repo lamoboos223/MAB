@@ -12,6 +12,23 @@
   gap: 12px;
 }
 
+.toolbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+}
+
 .toolbar-logo {
   height: 24px;
   width: auto;
@@ -64,6 +81,20 @@
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px;
+  border-left: 1px solid var(--border-primary);
+  border-right: 1px solid var(--border-primary);
+
+  &:last-child {
+    border-right: none;
+    padding-right: 0;
+  }
 }
 
 .toolbar-btn {

@@ -17,7 +17,7 @@
     </div>
   } @else {
     <div class="element-list">
-      <div class="element-list__header">Elements</div>
+      <div class="element-list__header">On Canvas</div>
       @for (el of builder.activePage()?.elements; track el.id) {
         <div class="element-list__item">
           <button class="element-list__select" (click)="builder.selectElement(el.id)">
