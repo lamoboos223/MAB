@@ -5,74 +5,142 @@
     </div>
   }
 
-  <div class="style-group">
-    <label>Font Size</label>
-    <input type="text" [ngModel]="activeStyles.fontSize" (ngModelChange)="updateStyle('fontSize', $event)" placeholder="e.g. 16px">
+  <div class="style-section">
+    <h4 class="style-section__title">Fonts</h4>
+
+    <div class="style-group">
+      <label>Font Size</label>
+      <input type="number" min="0" step="1"
+        [ngModel]="numVal('fontSize')"
+        (ngModelChange)="setNum('fontSize', $event)"
+        placeholder="px">
+    </div>
+
+    <div class="style-group">
+      <label>Font Weight</label>
+      <select [ngModel]="activeStyles.fontWeight" (ngModelChange)="updateStyle('fontWeight', $event)">
+        <option value="">Default</option>
+        <option value="100">100</option>
+        <option value="200">200</option>
+        <option value="300">300</option>
+        <option value="400">400</option>
+        <option value="500">500</option>
+        <option value="600">600</option>
+        <option value="700">700</option>
+        <option value="800">800</option>
+        <option value="900">900</option>
+      </select>
+    </div>
+
+    <div class="style-group">
+      <label>Text Align</label>
+      <div class="align-group">
+        <button type="button" class="align-btn"
+          [class.align-btn--active]="activeStyles.textAlign === 'left'"
+          (click)="toggleAlign('left')" title="Left">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="15" y2="12"/>
+            <line x1="3" y1="18" x2="18" y2="18"/>
+          </svg>
+        </button>
+        <button type="button" class="align-btn"
+          [class.align-btn--active]="activeStyles.textAlign === 'center'"
+          (click)="toggleAlign('center')" title="Center">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="6" y1="12" x2="18" y2="12"/>
+            <line x1="4" y1="18" x2="20" y2="18"/>
+          </svg>
+        </button>
+        <button type="button" class="align-btn"
+          [class.align-btn--active]="activeStyles.textAlign === 'right'"
+          (click)="toggleAlign('right')" title="Right">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="9" y1="12" x2="21" y2="12"/>
+            <line x1="6" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <button type="button" class="align-btn"
+          [class.align-btn--active]="activeStyles.textAlign === 'justify'"
+          (click)="toggleAlign('justify')" title="Justify">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
   </div>
 
-  <div class="style-group">
-    <label>Font Weight</label>
-    <select [ngModel]="activeStyles.fontWeight" (ngModelChange)="updateStyle('fontWeight', $event)">
-      <option value="">Default</option>
-      <option value="100">100</option>
-      <option value="200">200</option>
-      <option value="300">300</option>
-      <option value="400">400</option>
-      <option value="500">500</option>
-      <option value="600">600</option>
-      <option value="700">700</option>
-      <option value="800">800</option>
-      <option value="900">900</option>
-    </select>
+  <div class="style-section">
+    <h4 class="style-section__title">Colors</h4>
+
+    <div class="style-group">
+      <label>Text</label>
+      <input type="color" [ngModel]="activeStyles.color || (styleThemeTab === 'dark' ? '#ffffff' : '#000000')" (ngModelChange)="updateStyle('color', $event)">
+    </div>
+
+    <div class="style-group">
+      <label>Background</label>
+      <input type="color" [ngModel]="activeStyles.backgroundColor || (styleThemeTab === 'dark' ? '#000000' : '#ffffff')" (ngModelChange)="updateStyle('backgroundColor', $event)">
+    </div>
   </div>
 
-  <div class="style-group">
-    <label>Color</label>
-    <input type="color" [ngModel]="activeStyles.color || (styleThemeTab === 'dark' ? '#ffffff' : '#000000')" (ngModelChange)="updateStyle('color', $event)">
-  </div>
+  <div class="style-section">
+    <h4 class="style-section__title">Layout</h4>
 
-  <div class="style-group">
-    <label>Background Color</label>
-    <input type="color" [ngModel]="activeStyles.backgroundColor || (styleThemeTab === 'dark' ? '#000000' : '#ffffff')" (ngModelChange)="updateStyle('backgroundColor', $event)">
-  </div>
+    <div class="style-row">
+      <div class="style-group">
+        <label>Padding</label>
+        <input type="number" min="0" step="1"
+          [ngModel]="numVal('padding')"
+          (ngModelChange)="setNum('padding', $event)"
+          placeholder="px">
+      </div>
+      <div class="style-group">
+        <label>Margin</label>
+        <input type="number" min="0" step="1"
+          [ngModel]="numVal('margin')"
+          (ngModelChange)="setNum('margin', $event)"
+          placeholder="px">
+      </div>
+    </div>
 
-  <div class="style-group">
-    <label>Text Align</label>
-    <select [ngModel]="activeStyles.textAlign" (ngModelChange)="updateStyle('textAlign', $event)">
-      <option value="">Default</option>
-      <option value="left">Left</option>
-      <option value="center">Center</option>
-      <option value="right">Right</option>
-    </select>
-  </div>
+    <div class="style-row">
+      <div class="style-group">
+        <label>Radius</label>
+        <input type="number" min="0" step="1"
+          [ngModel]="numVal('borderRadius')"
+          (ngModelChange)="setNum('borderRadius', $event)"
+          placeholder="px">
+      </div>
+      <div class="style-group">
+        <label>Border</label>
+        <input type="text"
+          [ngModel]="activeStyles.border"
+          (ngModelChange)="updateStyle('border', $event)"
+          placeholder="1px solid #333">
+      </div>
+    </div>
 
-  <div class="style-group">
-    <label>Padding</label>
-    <input type="text" [ngModel]="activeStyles.padding" (ngModelChange)="updateStyle('padding', $event)" placeholder="e.g. 8px">
-  </div>
-
-  <div class="style-group">
-    <label>Margin</label>
-    <input type="text" [ngModel]="activeStyles.margin" (ngModelChange)="updateStyle('margin', $event)" placeholder="e.g. 8px">
-  </div>
-
-  <div class="style-group">
-    <label>Border Radius</label>
-    <input type="text" [ngModel]="activeStyles.borderRadius" (ngModelChange)="updateStyle('borderRadius', $event)" placeholder="e.g. 4px">
-  </div>
-
-  <div class="style-group">
-    <label>Border</label>
-    <input type="text" [ngModel]="activeStyles.border" (ngModelChange)="updateStyle('border', $event)" placeholder="e.g. 1px solid #333">
-  </div>
-
-  <div class="style-group">
-    <label>Width</label>
-    <input type="text" [ngModel]="activeStyles.width" (ngModelChange)="updateStyle('width', $event)" placeholder="e.g. 100%">
-  </div>
-
-  <div class="style-group">
-    <label>Height</label>
-    <input type="text" [ngModel]="activeStyles.height" (ngModelChange)="updateStyle('height', $event)" placeholder="e.g. auto">
+    <div class="style-row">
+      <div class="style-group">
+        <label>Width</label>
+        <input type="number" min="0" step="1"
+          [ngModel]="numVal('width')"
+          (ngModelChange)="setNum('width', $event)"
+          placeholder="px">
+      </div>
+      <div class="style-group">
+        <label>Height</label>
+        <input type="number" min="0" step="1"
+          [ngModel]="numVal('height')"
+          (ngModelChange)="setNum('height', $event)"
+          placeholder="px">
+      </div>
+    </div>
   </div>
 }

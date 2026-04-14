@@ -44,4 +44,23 @@ export class StyleTab {
     }
   }
 
+  numVal(key: keyof ElementStyle): number | null {
+    const v = (this.activeStyles as Record<string, string | undefined>)[key as string];
+    if (!v) return null;
+    const m = /^(-?\d+(?:\.\d+)?)/.exec(v);
+    return m ? parseFloat(m[1]) : null;
+  }
+
+  setNum(key: keyof ElementStyle, value: number | null, unit: string = 'px'): void {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      this.updateStyle(key as string, '');
+    } else {
+      this.updateStyle(key as string, `${value}${unit}`);
+    }
+  }
+
+  toggleAlign(value: 'left' | 'center' | 'right' | 'justify'): void {
+    const current = this.activeStyles.textAlign;
+    this.updateStyle('textAlign', current === value ? '' : value);
+  }
 }
