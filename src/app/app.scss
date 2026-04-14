@@ -80,13 +80,6 @@
   height: 100%;
 }
 
-.editor {
-  display: block;
-  flex: 1;
-  min-width: 240px;
-  overflow: hidden;
-}
-
 .canvas {
   overflow: auto;
   display: flex;
@@ -94,9 +87,16 @@
   align-items: flex-start;
   padding: 24px;
   background-color: var(--bg-canvas);
+  flex: 1;
+  min-width: 280px;
+}
+
+.editor {
+  display: block;
   flex-shrink: 0;
   min-width: 280px;
-  max-width: 70vw;
+  max-width: 60vw;
+  overflow: hidden;
   border-left: 1px solid var(--border-primary);
 }
 

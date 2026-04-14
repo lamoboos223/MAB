@@ -7,7 +7,7 @@ import { CodeEditor } from './components/code-editor/code-editor';
 import { Toolbar } from './components/toolbar/toolbar';
 import { PageTabs } from './components/page-tabs/page-tabs';
 
-type ResizeTarget = 'palette' | 'properties' | 'canvas';
+type ResizeTarget = 'palette' | 'properties' | 'editor';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +18,7 @@ type ResizeTarget = 'palette' | 'properties' | 'canvas';
 export class App {
   paletteWidth = 160;
   propertiesWidth = 300;
-  canvasWidth = 520;
+  editorWidth = 480;
 
   activePropsTab = signal<'properties' | 'ai-chat'>('properties');
 
@@ -40,9 +40,9 @@ export class App {
     } else if (this.resizing === 'properties') {
       const next = event.clientX - this.paletteWidth;
       this.propertiesWidth = Math.min(500, Math.max(220, next));
-    } else if (this.resizing === 'canvas') {
+    } else if (this.resizing === 'editor') {
       const next = window.innerWidth - event.clientX;
-      this.canvasWidth = Math.min(window.innerWidth * 0.7, Math.max(280, next));
+      this.editorWidth = Math.min(window.innerWidth * 0.6, Math.max(280, next));
     }
   }
 

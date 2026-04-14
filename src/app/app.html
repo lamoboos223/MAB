@@ -28,9 +28,9 @@
       </div>
     </div>
     <div class="resize-handle" (mousedown)="onResizeStart($event, 'properties')"></div>
-    <app-code-editor class="editor"></app-code-editor>
-    <div class="resize-handle" (mousedown)="onResizeStart($event, 'canvas')"></div>
-    <app-canvas class="canvas" [style.width.px]="canvasWidth"></app-canvas>
+    <app-canvas class="canvas"></app-canvas>
+    <div class="resize-handle" (mousedown)="onResizeStart($event, 'editor')"></div>
+    <app-code-editor class="editor" [style.width.px]="editorWidth"></app-code-editor>
   </div>
   <app-page-tabs class="page-tabs"></app-page-tabs>
 </div>
