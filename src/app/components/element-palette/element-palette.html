@@ -1,17 +1,53 @@
 <div class="palette-rail">
-  <div class="palette-rail__label">Elements</div>
-  <div class="palette-rail__items">
-    @for (item of elements; track item.type) {
-      <button
-        class="palette-rail__item"
-        [title]="item.label"
-        (click)="addElement(item.type)"
-      >
-        <span class="palette-rail__icon">{{ item.icon }}</span>
-        <span class="palette-rail__name">{{ item.label }}</span>
-      </button>
-    }
+  <div class="palette-rail__tabs">
+    <button
+      class="palette-rail__tab"
+      [class.active]="activeTab() === 'elements'"
+      (click)="activeTab.set('elements')"
+    >Elements</button>
+    <button
+      class="palette-rail__tab"
+      [class.active]="activeTab() === 'blocks'"
+      (click)="activeTab.set('blocks')"
+    >Blocks</button>
   </div>
+
+  @if (activeTab() === 'elements') {
+    <div class="palette-rail__items">
+      @for (item of elements; track item.type) {
+        <button
+          class="palette-rail__item"
+          [title]="item.label"
+          (click)="addElement(item.type)"
+        >
+          <span class="palette-rail__icon">{{ item.icon }}</span>
+          <span class="palette-rail__name">{{ item.label }}</span>
+        </button>
+      }
+    </div>
+  } @else {
+    <button class="palette-rail__save-block" (click)="saveSelectionAsBlock()">
+      + Save selection as block
+    </button>
+    <div class="palette-rail__items">
+      @for (block of builder.blocks(); track block.id) {
+        <button
+          class="palette-rail__item palette-rail__item--block"
+          [title]="block.name"
+          (click)="addBlock(block.id)"
+        >
+          <span class="palette-rail__icon">{{ block.icon }}</span>
+          <span class="palette-rail__name">{{ block.name }}</span>
+          <span class="palette-rail__delete" (click)="deleteBlock($event, block.id)" title="Delete block">×</span>
+        </button>
+      }
+      @empty {
+        <div class="palette-rail__empty">
+          No blocks yet. Select an element on the canvas, then click "Save selection as block".
+        </div>
+      }
+    </div>
+  }
 
   <div class="palette-rail__label">Theme</div>
   <div class="palette-rail__theme">

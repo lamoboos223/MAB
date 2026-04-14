@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { BuilderService } from '../../services/builder.service';
 import { ThemeService } from '../../services/theme.service';
 import { ElementType } from '../../models/element.model';
@@ -9,6 +9,8 @@ interface PaletteItem {
   icon: string;
 }
 
+type PaletteTab = 'elements' | 'blocks';
+
 @Component({
   selector: 'app-element-palette',
   imports: [],
@@ -18,6 +20,8 @@ interface PaletteItem {
 export class ElementPalette {
   builder = inject(BuilderService);
   private themeService = inject(ThemeService);
+
+  activeTab = signal<PaletteTab>('elements');
 
   elements: PaletteItem[] = [
     { type: 'text', label: 'Text', icon: 'T' },
@@ -38,6 +42,29 @@ export class ElementPalette {
 
   addElement(type: ElementType): void {
     this.builder.addElement(type);
+  }
+
+  addBlock(blockId: string): void {
+    this.builder.addBlockInstance(blockId);
+  }
+
+  saveSelectionAsBlock(): void {
+    const selected = this.builder.selectedElement();
+    if (!selected) {
+      alert('Select an element on the canvas first to save as a block.');
+      return;
+    }
+    const name = prompt('Name for this block', selected.label || 'New Block');
+    if (name === null) return;
+    this.builder.saveAsBlock(selected.id, name);
+    this.activeTab.set('blocks');
+  }
+
+  deleteBlock(event: MouseEvent, blockId: string): void {
+    event.stopPropagation();
+    if (confirm('Delete this block?')) {
+      this.builder.deleteBlock(blockId);
+    }
   }
 
   setThemeMode(mode: 'light' | 'dark' | 'auto'): void {

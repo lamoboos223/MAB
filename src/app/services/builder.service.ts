@@ -2,9 +2,11 @@ import { Injectable, signal, computed, effect } from '@angular/core';
 import { BuilderElement, ElementType, ElementStyle, FieldMapping } from '../models/element.model';
 import { Page } from '../models/page.model';
 import { PartnerTheme } from '../models/partner-theme.model';
+import { Block } from '../models/block.model';
 
 const STORAGE_KEY = 'miniapps_builder_state';
 const REVISIONS_KEY = 'miniapps_builder_revisions';
+const BLOCKS_KEY = 'miniapps_builder_blocks';
 
 export interface Revision {
   id: string;
@@ -103,6 +105,63 @@ export class BuilderService {
 
   revisions = signal<Revision[]>(this.loadRevisions());
   activeRevisionId = signal<string | null>(null);
+
+  blocks = signal<Block[]>(this.loadBlocks());
+
+  private loadBlocks(): Block[] {
+    try {
+      const raw = localStorage.getItem(BLOCKS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  }
+
+  private saveBlocks(): void {
+    try {
+      localStorage.setItem(BLOCKS_KEY, JSON.stringify(this.blocks()));
+    } catch { /* storage full */ }
+  }
+
+  saveAsBlock(elementId: string, name: string): void {
+    const page = this.activePage();
+    if (!page) return;
+    const el = page.elements.find(e => e.id === elementId);
+    if (!el) return;
+    const { id: _id, position: _pos, ...rest } = structuredClone(el);
+    const block: Block = {
+      id: this.generateId(),
+      name: name.trim() || el.label || 'Untitled Block',
+      icon: el.type.charAt(0).toUpperCase(),
+      createdAt: Date.now(),
+      element: rest,
+    };
+    this.blocks.set([...this.blocks(), block]);
+    this.saveBlocks();
+  }
+
+  addBlockInstance(blockId: string): void {
+    const block = this.blocks().find(b => b.id === blockId);
+    if (!block) return;
+    const page = this.activePage();
+    const count = page ? page.elements.length : 0;
+    const instance: BuilderElement = {
+      ...structuredClone(block.element),
+      id: this.generateId(),
+      position: { x: 12, y: 12 + count * 70 },
+    };
+    const pages = this.pages().map(p => {
+      if (p.id === this.activePageId()) {
+        return { ...p, elements: [...p.elements, instance] };
+      }
+      return p;
+    });
+    this.pages.set(pages);
+    this.selectedElementId.set(instance.id);
+  }
+
+  deleteBlock(blockId: string): void {
+    this.blocks.set(this.blocks().filter(b => b.id !== blockId));
+    this.saveBlocks();
+  }
 
   private loadRevisions(): Revision[] {
     try {
