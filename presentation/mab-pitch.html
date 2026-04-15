@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MAB — MiniApps Builder | Executive Pitch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1b7a5f;
+    --primary-dark: #114b47;
+    --primary-light: #26a37f;
+    --primary-soft: rgba(27, 122, 95, 0.08);
+    --accent: #d4a855;
+    --bg: #ffffff;
+    --bg-alt: #f7faf9;
+    --bg-dark: #0a1f18;
+    --bg-dark-alt: #11281f;
+    --text: #0a1f18;
+    --text-secondary: #3b5a4c;
+    --text-muted: #8aa498;
+    --text-on-dark: #e8f5ef;
+    --text-on-dark-muted: #8eb5a3;
+    --border: #e2efe8;
+    --border-strong: #cfe3d8;
+    --shadow-sm: 0 1px 3px rgba(10, 31, 24, 0.06);
+    --shadow: 0 4px 20px rgba(10, 31, 24, 0.08);
+    --shadow-lg: 0 20px 60px rgba(10, 31, 24, 0.12);
+    --radius-sm: 8px;
+    --radius: 12px;
+    --radius-lg: 20px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+  h1, h2, h3, h4 { line-height: 1.2; letter-spacing: -0.02em; }
+
+  /* === NAV === */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 72px; z-index: 100;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--transition);
+  }
+  .nav.scrolled { border-bottom-color: var(--border); }
+  .nav__inner {
+    max-width: 1200px; margin: 0 auto; height: 100%;
+    padding: 0 32px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav__brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 800; font-size: 18px; color: var(--primary-dark);
+    letter-spacing: -0.01em;
+  }
+  .nav__brand-mark {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
+    display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 14px;
+  }
+  .nav__links { display: flex; gap: 4px; }
+  .nav__link {
+    padding: 8px 14px; font-size: 14px; font-weight: 500;
+    color: var(--text-secondary); text-decoration: none;
+    border-radius: 8px; transition: all var(--transition);
+  }
+  .nav__link:hover { color: var(--primary); background: var(--primary-soft); }
+  .nav__link.active { color: var(--primary); background: var(--primary-soft); }
+  .nav__cta {
+    padding: 9px 18px; background: var(--primary); color: #fff;
+    border-radius: 8px; font-size: 14px; font-weight: 600;
+    text-decoration: none; transition: all var(--transition);
+  }
+  .nav__cta:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  @media (max-width: 768px) { .nav__links { display: none; } }
+
+  /* === HERO === */
+  .hero {
+    padding: 160px 0 100px; position: relative;
+    background:
+      radial-gradient(ellipse 800px 400px at 20% 20%, rgba(27, 122, 95, 0.08), transparent 60%),
+      radial-gradient(ellipse 600px 400px at 80% 80%, rgba(212, 168, 85, 0.06), transparent 60%),
+      var(--bg);
+    overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(27, 122, 95, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(27, 122, 95, 0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 800px 500px at 50% 30%, #000 30%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 800px 500px at 50% 30%, #000 30%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero__inner { position: relative; display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px; align-items: center; }
+  .hero__eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px;
+    background: var(--primary-soft); color: var(--primary);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero__eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--primary); }
+  .hero h1 {
+    font-size: clamp(40px, 5vw, 64px); font-weight: 800;
+    color: var(--text); margin-bottom: 20px;
+  }
+  .hero h1 .gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero__sub {
+    font-size: 19px; color: var(--text-secondary);
+    max-width: 560px; margin-bottom: 32px;
+  }
+  .hero__actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 24px; border-radius: var(--radius-sm);
+    font-size: 15px; font-weight: 600; text-decoration: none;
+    border: none; cursor: pointer; transition: all var(--transition);
+    font-family: inherit;
+  }
+  .btn--primary {
+    background: var(--primary); color: #fff;
+    box-shadow: 0 8px 24px rgba(27, 122, 95, 0.25);
+  }
+  .btn--primary:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 12px 28px rgba(27, 122, 95, 0.3); }
+  .btn--ghost {
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border-strong);
+  }
+  .btn--ghost:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* Hero visual - phone mock */
+  .hero__visual { display: flex; justify-content: center; position: relative; }
+  .phone-mock {
+    width: 300px; height: 600px;
+    background: #fff; border: 1px solid var(--border-strong);
+    border-radius: 40px; padding: 12px; box-shadow: var(--shadow-lg);
+    position: relative; z-index: 2;
+  }
+  .phone-mock::before {
+    content: ''; position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+    width: 100px; height: 28px; background: #0a1f18; border-radius: 14px;
+  }
+  .phone-screen {
+    background: var(--bg-alt); border-radius: 28px; height: 100%;
+    padding: 60px 20px 20px; display: flex; flex-direction: column; gap: 12px;
+    overflow: hidden;
+  }
+  .mock-hdr {
+    font-size: 11px; color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.08em; font-weight: 600; margin-bottom: 4px;
+  }
+  .mock-el {
+    padding: 12px 14px; border-radius: 10px; background: #fff;
+    border: 1px solid var(--border); font-size: 13px; color: var(--text-secondary);
+    animation: slideIn 0.5s ease-out backwards;
+  }
+  .mock-el:nth-child(2) { animation-delay: 0.1s; }
+  .mock-el:nth-child(3) { animation-delay: 0.2s; }
+  .mock-el:nth-child(4) { animation-delay: 0.3s; }
+  .mock-el:nth-child(5) { animation-delay: 0.4s; }
+  .mock-el--input { color: var(--text-muted); }
+  .mock-el--btn {
+    background: var(--primary); color: #fff; text-align: center; font-weight: 600;
+    border-color: var(--primary);
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .hero__badge {
+    position: absolute; padding: 10px 14px; background: #fff;
+    border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: var(--shadow); font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hero__badge--1 { top: 10%; left: -20px; color: var(--primary); animation: float 4s ease-in-out infinite; }
+  .hero__badge--2 { bottom: 12%; right: -20px; color: var(--primary); animation: float 4s ease-in-out infinite 2s; }
+  .hero__badge svg { width: 14px; height: 14px; }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @media (max-width: 900px) {
+    .hero__inner { grid-template-columns: 1fr; }
+    .hero__visual { order: -1; }
+  }
+
+  /* === SECTION === */
+  section { padding: 100px 0; position: relative; }
+  .section__eyebrow {
+    display: inline-block; padding: 6px 14px; border-radius: 999px;
+    background: var(--primary-soft); color: var(--primary);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .section__title {
+    font-size: clamp(32px, 4vw, 44px); font-weight: 800;
+    margin-bottom: 16px; max-width: 720px;
+  }
+  .section__lead {
+    font-size: 18px; color: var(--text-secondary);
+    max-width: 680px; margin-bottom: 56px;
+  }
+
+  /* === PROBLEM === */
+  .problem { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .problem__grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+  }
+  .problem-card {
+    padding: 32px 28px; background: #fff;
+    border: 1px solid var(--border); border-radius: var(--radius);
+    transition: all var(--transition);
+  }
+  .problem-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--border-strong); }
+  .problem-card__icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: rgba(220, 38, 38, 0.08); color: #dc2626;
+    display: grid; place-items: center; margin-bottom: 20px;
+  }
+  .problem-card__icon svg { width: 22px; height: 22px; }
+  .problem-card h3 { font-size: 17px; margin-bottom: 8px; }
+  .problem-card p { font-size: 14px; color: var(--text-secondary); }
+  @media (max-width: 900px) { .problem__grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .problem__grid { grid-template-columns: 1fr; } }
+
+  /* === SOLUTION === */
+  .solution__steps {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+    margin-top: 20px;
+  }
+  .step {
+    position: relative; padding: 36px 32px;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition);
+  }
+  .step:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: var(--shadow);
+  }
+  .step__num {
+    position: absolute; top: -16px; left: 32px;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--primary); color: #fff;
+    font-size: 14px; font-weight: 700;
+    display: grid; place-items: center;
+  }
+  .step__icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: var(--primary-soft); color: var(--primary);
+    display: grid; place-items: center; margin: 12px 0 20px;
+  }
+  .step__icon svg { width: 28px; height: 28px; }
+  .step h3 { font-size: 22px; margin-bottom: 10px; }
+  .step p { color: var(--text-secondary); font-size: 15px; }
+  @media (max-width: 900px) { .solution__steps { grid-template-columns: 1fr; } }
+
+  /* === FEATURES === */
+  .features { background: var(--bg-dark); color: var(--text-on-dark); }
+  .features .section__eyebrow { background: rgba(38, 163, 127, 0.15); color: #4fd4a8; }
+  .features .section__title { color: #fff; }
+  .features .section__lead { color: var(--text-on-dark-muted); }
+  .features__layout { display: grid; grid-template-columns: 280px 1fr; gap: 40px; }
+  .features__tabs { display: flex; flex-direction: column; gap: 4px; }
+  .features__tab {
+    text-align: left; padding: 14px 18px;
+    background: transparent; border: 1px solid transparent;
+    color: var(--text-on-dark-muted); border-radius: 10px;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: all var(--transition); font-family: inherit;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .features__tab:hover { background: rgba(255, 255, 255, 0.04); color: #fff; }
+  .features__tab.active {
+    background: rgba(38, 163, 127, 0.1);
+    border-color: rgba(38, 163, 127, 0.3);
+    color: #fff;
+  }
+  .features__tab svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .features__panel {
+    background: var(--bg-dark-alt);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-lg);
+    padding: 48px; min-height: 420px;
+  }
+  .features__panel h3 { font-size: 28px; color: #fff; margin-bottom: 12px; }
+  .features__panel p { color: var(--text-on-dark-muted); font-size: 16px; margin-bottom: 28px; max-width: 560px; }
+  .features__list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; }
+  .features__list li {
+    list-style: none; padding-left: 26px; position: relative;
+    color: var(--text-on-dark); font-size: 14px;
+  }
+  .features__list li::before {
+    content: ''; position: absolute; left: 0; top: 7px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgba(38, 163, 127, 0.2);
+    border: 2px solid #4fd4a8;
+  }
+  @media (max-width: 900px) {
+    .features__layout { grid-template-columns: 1fr; }
+    .features__tabs { flex-direction: row; overflow-x: auto; gap: 8px; padding-bottom: 8px; }
+    .features__tab { white-space: nowrap; }
+    .features__panel { padding: 32px 24px; }
+    .features__list { grid-template-columns: 1fr; }
+  }
+
+  /* === DEMO === */
+  .demo__grid { display: grid; grid-template-columns: 1fr 380px; gap: 40px; align-items: start; }
+  .demo__builder {
+    background: var(--bg-alt); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); padding: 28px;
+  }
+  .demo__builder h4 { font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 16px; }
+  .demo__palette { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 24px; }
+  .demo__el-btn {
+    padding: 12px 14px; background: #fff; border: 1px solid var(--border);
+    border-radius: 10px; font-size: 13px; font-weight: 500; color: var(--text);
+    cursor: pointer; transition: all var(--transition); font-family: inherit;
+    display: flex; align-items: center; gap: 10px; text-align: left;
+  }
+  .demo__el-btn:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+  .demo__el-btn svg { width: 16px; height: 16px; }
+  .demo__themes { display: flex; gap: 8px; align-items: center; }
+  .demo__themes-label { font-size: 12px; color: var(--text-muted); margin-right: 4px; }
+  .demo__swatch {
+    width: 28px; height: 28px; border-radius: 8px; border: 2px solid transparent;
+    cursor: pointer; transition: all var(--transition);
+  }
+  .demo__swatch.active { border-color: var(--text); }
+  .demo__swatch:hover { transform: scale(1.1); }
+
+  .demo__phone {
+    width: 340px; height: 600px; background: #fff;
+    border: 1px solid var(--border-strong); border-radius: 36px;
+    padding: 10px; box-shadow: var(--shadow-lg); margin: 0 auto;
+    position: relative;
+  }
+  .demo__phone::before {
+    content: ''; position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+    width: 90px; height: 24px; background: #0a1f18; border-radius: 12px; z-index: 2;
+  }
+  .demo__screen {
+    background: var(--bg-alt); border-radius: 28px; height: 100%;
+    padding: 56px 18px 18px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .demo__empty {
+    margin: auto; text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px;
+  }
+  .demo__el {
+    padding: 12px 14px; background: #fff; border: 1px solid var(--border);
+    border-radius: 10px; font-size: 13px; color: var(--text-secondary);
+    animation: slideIn 0.4s ease-out; position: relative;
+  }
+  .demo__el--button {
+    background: var(--demo-accent, var(--primary));
+    color: #fff; text-align: center; font-weight: 600;
+    border-color: var(--demo-accent, var(--primary));
+  }
+  .demo__el--input { color: var(--text-muted); font-style: italic; }
+  .demo__el-remove {
+    position: absolute; top: 4px; right: 4px;
+    width: 20px; height: 20px; border: none; background: transparent;
+    color: var(--text-muted); cursor: pointer; opacity: 0;
+    font-size: 14px; display: grid; place-items: center;
+    transition: opacity var(--transition);
+  }
+  .demo__el:hover .demo__el-remove { opacity: 1; }
+  .demo__el-remove:hover { color: #dc2626; }
+  @media (max-width: 900px) {
+    .demo__grid { grid-template-columns: 1fr; }
+    .demo__phone { margin: 0 auto; }
+  }
+
+  /* === IMPACT === */
+  .impact { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: #fff; }
+  .impact .section__eyebrow { background: rgba(255, 255, 255, 0.15); color: #fff; }
+  .impact .section__title { color: #fff; max-width: 820px; }
+  .impact .section__lead { color: rgba(255, 255, 255, 0.82); }
+  .impact__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+  .stat {
+    padding: 32px 28px; background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-lg);
+    backdrop-filter: blur(8px);
+  }
+  .stat__num {
+    font-size: 56px; font-weight: 800; line-height: 1;
+    color: #fff; margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat__num-suffix { font-size: 32px; color: #4fd4a8; }
+  .stat__label { font-size: 13px; color: rgba(255, 255, 255, 0.75); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .stat__desc { font-size: 14px; color: rgba(255, 255, 255, 0.9); line-height: 1.5; }
+  @media (max-width: 900px) { .impact__grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .impact__grid { grid-template-columns: 1fr; } }
+
+  /* === ROADMAP === */
+  .roadmap__timeline { position: relative; margin-top: 20px; }
+  .roadmap__timeline::before {
+    content: ''; position: absolute; left: 31px; top: 10px; bottom: 10px;
+    width: 2px; background: linear-gradient(180deg, var(--primary) 0%, var(--border-strong) 100%);
+  }
+  .phase {
+    position: relative; padding: 20px 0 36px 80px;
+  }
+  .phase__dot {
+    position: absolute; left: 20px; top: 24px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--primary); border: 4px solid #fff;
+    box-shadow: 0 0 0 2px var(--primary);
+  }
+  .phase__label {
+    font-size: 12px; font-weight: 700; color: var(--primary);
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;
+  }
+  .phase h3 { font-size: 22px; margin-bottom: 10px; }
+  .phase p { color: var(--text-secondary); max-width: 680px; margin-bottom: 12px; }
+  .phase__tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .phase__tag {
+    padding: 5px 12px; background: var(--primary-soft);
+    color: var(--primary); border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+  }
+
+  /* === CTA === */
+  .cta { text-align: center; padding: 120px 0; background: var(--bg-alt); border-top: 1px solid var(--border); }
+  .cta h2 { font-size: clamp(32px, 4vw, 48px); font-weight: 800; margin-bottom: 16px; max-width: 760px; margin-inline: auto; }
+  .cta p { font-size: 19px; color: var(--text-secondary); max-width: 620px; margin: 0 auto 36px; }
+  .cta__actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* === FOOTER === */
+  footer { padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 14px; border-top: 1px solid var(--border); background: #fff; }
+  footer strong { color: var(--primary); }
+
+  /* Reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ===== NAV ===== -->
+<nav class="nav" id="nav">
+  <div class="nav__inner">
+    <a href="#hero" class="nav__brand">
+      <div class="nav__brand-mark">M</div>
+      <span>MAB</span>
+    </a>
+    <div class="nav__links">
+      <a href="#problem" class="nav__link">Problem</a>
+      <a href="#solution" class="nav__link">Solution</a>
+      <a href="#features" class="nav__link">Features</a>
+      <a href="#demo" class="nav__link">Demo</a>
+      <a href="#impact" class="nav__link">Impact</a>
+      <a href="#roadmap" class="nav__link">Roadmap</a>
+    </div>
+    <a href="#cta" class="nav__cta">Get Started</a>
+  </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="hero">
+  <div class="container hero__inner">
+    <div>
+      <div class="hero__eyebrow">
+        <span class="hero__eyebrow-dot"></span>
+        MiniApps Builder for Tawakkalna
+      </div>
+      <h1>Ship government mini-apps in <span class="gradient">hours, not weeks</span>.</h1>
+      <p class="hero__sub">
+        MAB is a visual builder that lets any team design, configure, and export
+        production-ready mini-apps embeddable directly into the Tawakkalna super-app —
+        without writing a single line of code.
+      </p>
+      <div class="hero__actions">
+        <a href="#demo" class="btn btn--primary">
+          See it in action
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+        <a href="#roadmap" class="btn btn--ghost">Adoption plan</a>
+      </div>
+    </div>
+    <div class="hero__visual">
+      <div class="phone-mock">
+        <div class="phone-screen">
+          <div class="mock-hdr">Service Request</div>
+          <div class="mock-el mock-el--input">Full name</div>
+          <div class="mock-el mock-el--input">National ID</div>
+          <div class="mock-el">Select region</div>
+          <div class="mock-el mock-el--btn">Submit Request</div>
+        </div>
+      </div>
+      <div class="hero__badge hero__badge--1">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        No code required
+      </div>
+      <div class="hero__badge hero__badge--2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Deploy in minutes
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PROBLEM ===== -->
+<section class="problem" id="problem">
+  <div class="container">
+    <div class="reveal">
+      <div class="section__eyebrow">The bottleneck</div>
+      <h2 class="section__title">Every new government service today is an engineering project.</h2>
+      <p class="section__lead">
+        Tawakkalna hosts 600+ digital services from dozens of government partners.
+        Each new service starts a full development cycle — and that's the wall
+        between citizens and the services they need.
+      </p>
+    </div>
+    <div class="problem__grid">
+      <div class="problem-card reveal">
+        <div class="problem-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3>Weeks per mini-app</h3>
+        <p>Even a simple service form requires a full development sprint from brief to production.</p>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3>Engineering bottleneck</h3>
+        <p>A single engineering team serves every partner, so priority always wins — and everyone else waits.</p>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <h3>Inconsistent UX</h3>
+        <p>Every team ships a different look and flow, eroding trust and training citizens to re-learn each service.</p>
+      </div>
+      <div class="problem-card reveal">
+        <div class="problem-card__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.71"/></svg>
+        </div>
+        <h3>Hard to maintain</h3>
+        <p>Dozens of standalone codebases compound into a long tail of tech debt and security surface area.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SOLUTION ===== -->
+<section class="solution" id="solution">
+  <div class="container">
+    <div class="reveal">
+      <div class="section__eyebrow">The answer</div>
+      <h2 class="section__title">MAB — build mini-apps in the browser.</h2>
+      <p class="section__lead">
+        A visual composer for Tawakkalna mini-apps. Partners, analysts, and designers
+        assemble fully-functional experiences on an interactive phone canvas —
+        MAB generates clean, production-grade code automatically.
+      </p>
+    </div>
+    <div class="solution__steps">
+      <div class="step reveal">
+        <div class="step__num">1</div>
+        <div class="step__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <h3>Compose</h3>
+        <p>Drag elements — forms, maps, media, tables — onto an interactive phone canvas. What you see is what you ship.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step__num">2</div>
+        <div class="step__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <h3>Configure</h3>
+        <p>Set data sources, styles, languages, and partner theming. Preview changes live on the device canvas.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step__num">3</div>
+        <div class="step__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </div>
+        <h3>Export</h3>
+        <p>Download a portable package, ready to embed directly into the Tawakkalna super-app. No handoff, no rebuild.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features" id="features">
+  <div class="container">
+    <div class="reveal">
+      <div class="section__eyebrow">What's inside</div>
+      <h2 class="section__title">Everything a partner needs to ship a complete mini-app.</h2>
+      <p class="section__lead">
+        MAB is not a toy — it's a full authoring platform. Click through the capabilities that matter to your team.
+      </p>
+    </div>
+    <div class="features__layout">
+      <div class="features__tabs" role="tablist">
+        <button class="features__tab active" data-tab="elements">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Rich element library
+        </button>
+        <button class="features__tab" data-tab="blocks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+          Reusable blocks
+        </button>
+        <button class="features__tab" data-tab="pages">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Multi-page flows
+        </button>
+        <button class="features__tab" data-tab="theming">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+          Partner theming
+        </button>
+        <button class="features__tab" data-tab="i18n">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          Bilingual native
+        </button>
+        <button class="features__tab" data-tab="data">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          Dynamic data binding
+        </button>
+        <button class="features__tab" data-tab="code">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Live code preview
+        </button>
+        <button class="features__tab" data-tab="ai">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></svg>
+          AI assistant
+        </button>
+        <button class="features__tab" data-tab="checkpoints">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          Checkpoints & history
+        </button>
+      </div>
+      <div class="features__panel" id="features-panel">
+        <!-- Dynamically filled -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DEMO ===== -->
+<section class="demo" id="demo">
+  <div class="container">
+    <div class="reveal">
+      <div class="section__eyebrow">Try it yourself</div>
+      <h2 class="section__title">Click elements and watch them appear on the canvas.</h2>
+      <p class="section__lead">
+        This is a simplified sandbox of the MAB experience. Add elements, change partner theme, see the result instantly.
+      </p>
+    </div>
+    <div class="demo__grid">
+      <div class="demo__builder reveal">
+        <h4>Element Library</h4>
+        <div class="demo__palette">
+          <button class="demo__el-btn" data-add="text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            Text
+          </button>
+          <button class="demo__el-btn" data-add="input">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="7" y1="12" x2="11" y2="12"/></svg>
+            Input
+          </button>
+          <button class="demo__el-btn" data-add="dropdown">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            Dropdown
+          </button>
+          <button class="demo__el-btn" data-add="checkbox">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Checkbox
+          </button>
+          <button class="demo__el-btn" data-add="date">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Date
+          </button>
+          <button class="demo__el-btn" data-add="map">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Map
+          </button>
+          <button class="demo__el-btn" data-add="image">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Image
+          </button>
+          <button class="demo__el-btn" data-add="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="8" rx="4"/></svg>
+            Button
+          </button>
+        </div>
+        <h4>Partner Theme</h4>
+        <div class="demo__themes">
+          <span class="demo__themes-label">Accent:</span>
+          <button class="demo__swatch active" data-color="#1b7a5f" style="background: #1b7a5f"></button>
+          <button class="demo__swatch" data-color="#0d6efd" style="background: #0d6efd"></button>
+          <button class="demo__swatch" data-color="#d4a855" style="background: #d4a855"></button>
+          <button class="demo__swatch" data-color="#8b3dff" style="background: #8b3dff"></button>
+          <button class="demo__swatch" data-color="#dc2626" style="background: #dc2626"></button>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="demo__phone">
+          <div class="demo__screen" id="demo-screen">
+            <div class="demo__empty">Click an element to add it</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== IMPACT ===== -->
+<section class="impact" id="impact">
+  <div class="container">
+    <div class="reveal">
+      <div class="section__eyebrow">Measured outcomes</div>
+      <h2 class="section__title">A platform play that multiplies throughput across the whole super-app.</h2>
+      <p class="section__lead">
+        Hard numbers, based on typical mini-app complexity and partner demand within the Tawakkalna ecosystem.
+      </p>
+    </div>
+    <div class="impact__grid">
+      <div class="stat reveal">
+        <div class="stat__num"><span data-count="10">0</span><span class="stat__num-suffix">×</span></div>
+        <div class="stat__label">Faster</div>
+        <div class="stat__desc">Time-to-production, from weeks of engineering work down to hours of visual authoring.</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat__num"><span data-count="80">0</span><span class="stat__num-suffix">%</span></div>
+        <div class="stat__label">Reuse</div>
+        <div class="stat__desc">Common UI patterns captured once as shared blocks, reused across every partner.</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat__num"><span data-count="600">0</span><span class="stat__num-suffix">+</span></div>
+        <div class="stat__label">Services</div>
+        <div class="stat__desc">Addressable surface — every service in the Tawakkalna catalog can be authored this way.</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat__num"><span data-count="100">0</span><span class="stat__num-suffix">%</span></div>
+        <div class="stat__label">Consistency</div>
+        <div class="stat__desc">Every mini-app inherits the same theming system, accessibility, and bilingual defaults.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== ROADMAP ===== -->
+<section class="roadmap" id="roadmap">
+  <div class="container">
+    <div class="reveal">
+      <div class="section__eyebrow">Adoption plan</div>
+      <h2 class="section__title">A phased rollout your team can start next month.</h2>
+      <p class="section__lead">
+        Low-risk, measurable, and designed to prove value before scaling across all partners.
+      </p>
+    </div>
+    <div class="roadmap__timeline">
+      <div class="phase reveal">
+        <div class="phase__dot"></div>
+        <div class="phase__label">Phase 1 — Weeks 1 to 4</div>
+        <h3>Pilot with two partners</h3>
+        <p>
+          Onboard two government partners with real mini-app backlog. Author five mini-apps end-to-end.
+          Measure delivery time, partner satisfaction, and code-quality outcomes vs. the current baseline.
+        </p>
+        <div class="phase__tags">
+          <span class="phase__tag">2 partners</span>
+          <span class="phase__tag">5 mini-apps</span>
+          <span class="phase__tag">Baseline metrics</span>
+        </div>
+      </div>
+      <div class="phase reveal">
+        <div class="phase__dot"></div>
+        <div class="phase__label">Phase 2 — Months 2 to 3</div>
+        <h3>Scale and grow the block library</h3>
+        <p>
+          Expand to ten partners. Capture the common patterns that emerge as shared blocks. Formalize
+          partner theming presets. Add dynamic data bindings for the most common backend services.
+        </p>
+        <div class="phase__tags">
+          <span class="phase__tag">10 partners</span>
+          <span class="phase__tag">Block library</span>
+          <span class="phase__tag">Theming presets</span>
+        </div>
+      </div>
+      <div class="phase reveal">
+        <div class="phase__dot"></div>
+        <div class="phase__label">Phase 3 — Months 4 to 6</div>
+        <h3>Self-service platform</h3>
+        <p>
+          Integrate MAB into the Tawakkalna developer portal as a self-service tool. Partners author
+          mini-apps independently. Engineering moves from delivery to review — a force multiplier across the ecosystem.
+        </p>
+        <div class="phase__tags">
+          <span class="phase__tag">Self-service</span>
+          <span class="phase__tag">Portal embedded</span>
+          <span class="phase__tag">Engineering as reviewer</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta" id="cta">
+  <div class="container reveal">
+    <h2>Ready to unblock your partners and your roadmap?</h2>
+    <p>Give us a sprint to prove it. A pilot with two partners will show measurable outcomes before any wider commitment.</p>
+    <div class="cta__actions">
+      <a href="#" class="btn btn--primary">Request a walkthrough</a>
+      <a href="#" class="btn btn--ghost">Download the spec</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    Built for <strong>Tawakkalna</strong>. Designed for speed.
+  </div>
+</footer>
+
+<script>
+  // === Nav shadow on scroll ===
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 8);
+  });
+
+  // === Active nav link on scroll ===
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav__link');
+  const observerNav = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  sections.forEach(s => observerNav.observe(s));
+
+  // === Reveal on scroll ===
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+  // === Features tabs ===
+  const featureContent = {
+    elements: {
+      title: 'Rich element library',
+      desc: 'Every building block a modern mini-app needs — all configured through a visual properties panel, no component API to learn.',
+      items: ['Text & headings', 'Buttons', 'Input fields', 'Dropdowns', 'Radio & checkboxes', 'Date pickers', 'Media selectors', 'Interactive maps', 'Data tables', 'Alerts', 'Containers', 'Dividers']
+    },
+    blocks: {
+      title: 'Reusable blocks',
+      desc: 'Save any configured element as a named block and reuse it across every project. Build an institutional pattern library organically from real work.',
+      items: ['Snapshot any element', 'Shared across pages', 'Versioned and named', 'One-click instantiate', 'Independent theming override', 'Grow the library organically']
+    },
+    pages: {
+      title: 'Multi-page flows',
+      desc: 'Build complete user journeys. Add pages, name them, and navigate between them — all from the same canvas.',
+      items: ['Unlimited pages per app', 'Tabbed page switcher', 'Page-level settings', 'Shared state across pages', 'Reorder and rename', 'Duplicate pages']
+    },
+    theming: {
+      title: 'Partner theming',
+      desc: 'Each government partner brings its own brand. MAB applies their accent, fonts, logo, and border radius globally — one switch, whole app retinted.',
+      items: ['Accent & secondary colors', 'Custom fonts & URLs', 'Partner logos', 'Border radius tokens', 'Live preview', 'Save partner presets']
+    },
+    i18n: {
+      title: 'Bilingual by default',
+      desc: 'Every MAB mini-app ships Arabic and English natively. Toggle language on the canvas to verify layout, direction, and text fit in both.',
+      items: ['EN/AR on every element', 'Live language toggle', 'Automatic RTL flipping', 'Per-element labels', 'Export includes both', 'Text fit validation']
+    },
+    data: {
+      title: 'Dynamic data binding',
+      desc: 'Go beyond static forms. Bind dropdowns, tables, and content to backend functions so mini-apps hydrate from live data at runtime.',
+      items: ['Static or dynamic mode', 'Function name binding', 'Auto-generated field keys', 'HMAC-signed requests', 'Safe for partner backends', 'Debug mode for testing']
+    },
+    code: {
+      title: 'Live code preview',
+      desc: 'Engineering stays in the loop. Every change on the canvas is reflected in live, syntax-highlighted code — reviewable and auditable at any moment.',
+      items: ['HTML / CSS / JS output', 'Real-time regeneration', 'Syntax highlighting', 'Clean, readable code', 'Copy any file', 'Export as embeddable zip']
+    },
+    ai: {
+      title: 'AI assistant',
+      desc: 'An AI agent embedded alongside the canvas. Ask it to build a form, tweak a layout, or explain an element — author with a conversation.',
+      items: ['In-app chat panel', 'Contextual to current page', 'Build by natural language', 'Refactor layouts', 'Explain any element', 'Accelerate onboarding']
+    },
+    checkpoints: {
+      title: 'Checkpoints & history',
+      desc: 'Save any version of your mini-app as a named checkpoint. Restore with one click. Experiment fearlessly and never lose good work.',
+      items: ['Named revisions', 'One-click restore', 'Timestamped snapshots', 'Delete safely', 'Auto-save to local storage', 'Import/export for sharing']
+    }
+  };
+
+  function renderFeature(key) {
+    const f = featureContent[key];
+    const html = `
+      <h3>${f.title}</h3>
+      <p>${f.desc}</p>
+      <ul class="features__list">
+        ${f.items.map(i => `<li>${i}</li>`).join('')}
+      </ul>
+    `;
+    document.getElementById('features-panel').innerHTML = html;
+  }
+  renderFeature('elements');
+  document.querySelectorAll('.features__tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.features__tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderFeature(tab.dataset.tab);
+    });
+  });
+
+  // === Animated counters ===
+  const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseInt(el.dataset.count, 10);
+        const duration = 1400;
+        const start = performance.now();
+        const animate = (now) => {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.round(target * eased);
+          if (progress < 1) requestAnimationFrame(animate);
+        };
+        requestAnimationFrame(animate);
+        counterObserver.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+  // === Interactive demo ===
+  const screen = document.getElementById('demo-screen');
+  const elementTemplates = {
+    text: { label: 'Welcome to your service', cls: '' },
+    input: { label: 'Enter your national ID...', cls: 'demo__el--input' },
+    dropdown: { label: 'Select a region  ▾', cls: '' },
+    checkbox: { label: '☐ I agree to the terms', cls: '' },
+    date: { label: '📅 2026-04-16', cls: '' },
+    map: { label: 'Map · Riyadh (24.71, 46.67)', cls: '' },
+    image: { label: '[ image placeholder ]', cls: '' },
+    button: { label: 'Submit Request', cls: 'demo__el--button' }
+  };
+
+  let empty = screen.querySelector('.demo__empty');
+
+  document.querySelectorAll('[data-add]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (empty) { empty.remove(); empty = null; }
+      const tpl = elementTemplates[btn.dataset.add];
+      const el = document.createElement('div');
+      el.className = `demo__el ${tpl.cls}`;
+      el.textContent = tpl.label;
+      const rm = document.createElement('button');
+      rm.className = 'demo__el-remove';
+      rm.innerHTML = '×';
+      rm.setAttribute('aria-label', 'Remove element');
+      rm.addEventListener('click', (e) => {
+        e.stopPropagation();
+        el.remove();
+        if (!screen.querySelector('.demo__el')) {
+          empty = document.createElement('div');
+          empty.className = 'demo__empty';
+          empty.textContent = 'Click an element to add it';
+          screen.appendChild(empty);
+        }
+      });
+      el.appendChild(rm);
+      screen.appendChild(el);
+    });
+  });
+
+  // === Theme swatches ===
+  document.querySelectorAll('.demo__swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.demo__swatch').forEach(s => s.classList.remove('active'));
+      sw.classList.add('active');
+      document.documentElement.style.setProperty('--demo-accent', sw.dataset.color);
+    });
+  });
+</script>
+
+</body>
+</html>
