@@ -101,6 +101,9 @@ export class BuilderService {
 
   clearSavedState(): void {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(REVISIONS_KEY);
+    this.revisions.set([]);
+    this.activeRevisionId.set(null);
   }
 
   revisions = signal<Revision[]>(this.loadRevisions());
