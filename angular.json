@@ -59,7 +59,7 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "allowedHosts": [".onrender.com"],
+            "allowedHosts": true,
             "proxyConfig": "proxy.conf.json"
           },
           "configurations": {
