@@ -95,6 +95,7 @@ export class DataTab {
 
   toggleFieldMapping(index: number, included: boolean): void {
     const el = this.element; if (!el?.submitConfig) return;
+    const previousMappings = [...el.submitConfig.fieldMappings];
     const mappings = [...el.submitConfig.fieldMappings];
     if (included) {
       const available = this.availableFields;
@@ -106,7 +107,12 @@ export class DataTab {
       const idx = mappings.findIndex(m => m.elementId === field.elementId);
       if (idx >= 0) mappings.splice(idx, 1);
     }
-    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, fieldMappings: mappings } });
+    const payloadTemplate = this.resolvePayloadTemplate(
+      el.submitConfig.payloadTemplate,
+      previousMappings,
+      mappings
+    );
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, fieldMappings: mappings, payloadTemplate } });
   }
 
   isFieldIncluded(elementId: string): boolean {
@@ -119,10 +125,16 @@ export class DataTab {
 
   updateFieldKeyName(elementId: string, keyName: string): void {
     const el = this.element; if (!el?.submitConfig) return;
+    const previousMappings = [...el.submitConfig.fieldMappings];
     const mappings = el.submitConfig.fieldMappings.map(m =>
       m.elementId === elementId ? { ...m, keyName } : m
     );
-    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, fieldMappings: mappings } });
+    const payloadTemplate = this.resolvePayloadTemplate(
+      el.submitConfig.payloadTemplate,
+      previousMappings,
+      mappings
+    );
+    this.builder.updateElement(el.id, { submitConfig: { ...el.submitConfig, fieldMappings: mappings, payloadTemplate } });
   }
 
   getFieldTypeBadge(source: string): string {
@@ -139,6 +151,15 @@ export class DataTab {
       obj[f.keyName || f.elementLabel] = `{{${f.keyName || f.elementLabel}}}`;
     }
     return JSON.stringify(obj, null, 2);
+  }
+
+  private resolvePayloadTemplate(currentTemplate: string | undefined, previousMappings: FieldMapping[], nextMappings: FieldMapping[]): string {
+    const current = (currentTemplate || '').trim();
+    const previousDefault = this.generateDefaultPayloadTemplate(previousMappings);
+    if (!current || current === '{}' || current === previousDefault) {
+      return this.generateDefaultPayloadTemplate(nextMappings);
+    }
+    return currentTemplate || '{}';
   }
 
   updateMethod(method: string): void {
