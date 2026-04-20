@@ -5,7 +5,6 @@ services:
     container_name: Mini-App-Builder
     ports:
       - "4200:4200"
-      - "4201:4201"
     volumes:
       # Mount source for live reload (optional; remove if you prefer rebuild-only)
       - .:/app

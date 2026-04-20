@@ -96,7 +96,8 @@ export class PreviewModal implements AfterViewInit, OnDestroy {
   private async proxyFetch(req: { id: number; url: string; method: string; headers: Record<string, string>; body: string | null }): Promise<void> {
     const iframe = this.previewFrame.nativeElement;
     try {
-      const proxyUrl = `http://localhost:4201/${encodeURIComponent(req.url)}`;
+      // Use same-origin path so deployed environments do not depend on localhost.
+      const proxyUrl = `/cors-proxy/${encodeURIComponent(req.url)}`;
       const resp = await fetch(proxyUrl, {
         method: req.method,
         headers: req.headers,

@@ -1,7 +1,8 @@
-import { createServer, request as httpRequest } from 'http';
-import { request as httpsRequest } from 'https';
+import { createServer, request as httpRequest } from 'node:http';
+import { request as httpsRequest } from 'node:https';
 
-const PORT = 4201;
+const PORT = Number(process.env.PROXY_PORT || 4201);
+const HOST = process.env.PROXY_HOST || '127.0.0.1';
 
 createServer((clientReq, clientRes) => {
   clientRes.setHeader('Access-Control-Allow-Origin', '*');
@@ -49,6 +50,6 @@ createServer((clientReq, clientRes) => {
   });
 
   clientReq.pipe(proxyReq);
-}).listen(PORT, () => {
-  console.log(`CORS proxy running on http://localhost:${PORT}`);
+}).listen(PORT, HOST, () => {
+  console.log(`CORS proxy running on http://${HOST}:${PORT}`);
 });

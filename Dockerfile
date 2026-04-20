@@ -12,8 +12,8 @@ RUN npm ci
 # Copy application source
 COPY . .
 
-# Expose Angular dev server and CORS proxy ports
-EXPOSE 4200 4201
+# Expose public Angular dev server port
+EXPOSE 4200
 
 # Run CORS proxy in background, then Angular dev server
-CMD sh -c "node cors-proxy.mjs & npm start -- --host 0.0.0.0"
+CMD sh -c "node cors-proxy.mjs & npm start -- --host 0.0.0.0 --port ${PORT:-4200}"
