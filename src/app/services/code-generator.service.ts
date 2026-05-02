@@ -86,7 +86,7 @@ select, input[type="text"], input[type="number"], input[type="email"], input[typ
   color: var(--text); border-radius: 8px; font-size: 14px;
   transition: border-color 0.15s; outline: none; font-family: inherit; box-sizing: border-box;
 }
-textarea { resize: vertical; }
+textarea { resize: none; }
 select:focus, input:focus, textarea:focus { border-color: var(--accent); }
 button {
   padding: 11px 22px; background: var(--accent); color: white; border: none;
@@ -1059,6 +1059,33 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
           js += `    if (!picker) return;\n`;
           js += `    var trigger = picker.querySelector('.img-picker__trigger');\n`;
           js += `    var grid = picker.querySelector('.img-picker__grid');\n`;
+          // Push absolutely-positioned siblings below this wrapper down when images grow the picker
+          js += `    var wrapper = picker.parentElement;\n`;
+          js += `    var below = [];\n`;
+          js += `    var initH = 0;\n`;
+          js += `    function adjustBelow() {\n`;
+          js += `      if (!wrapper || wrapper.style.position !== 'absolute') return;\n`;
+          js += `      var delta = wrapper.offsetHeight - initH;\n`;
+          js += `      if (delta < 0) delta = 0;\n`;
+          js += `      below.forEach(function(s) { s.style.top = 'calc(' + s.dataset.origTop + ' + ' + delta + 'px)'; });\n`;
+          js += `    }\n`;
+          js += `    if (wrapper && wrapper.style && wrapper.style.position === 'absolute') {\n`;
+          js += `      initH = wrapper.offsetHeight;\n`;
+          js += `      var pTop = parseFloat(wrapper.style.top) || 0;\n`;
+          js += `      Array.from(wrapper.parentElement.children).forEach(function(s) {\n`;
+          js += `        if (s !== wrapper && s.style && s.style.position === 'absolute') {\n`;
+          js += `          var sTop = parseFloat(s.style.top) || 0;\n`;
+          js += `          if (sTop > pTop) {\n`;
+          js += `            if (!s.dataset.origTop) s.dataset.origTop = s.style.top;\n`;
+          js += `            below.push(s);\n`;
+          js += `          }\n`;
+          js += `        }\n`;
+          js += `      });\n`;
+          js += `      if (window.ResizeObserver) {\n`;
+          js += `        var ro = new ResizeObserver(adjustBelow);\n`;
+          js += `        ro.observe(wrapper);\n`;
+          js += `      }\n`;
+          js += `    }\n`;
           js += `    var overlay = document.getElementById('bsOverlay');\n`;
           js += `    var sheet = document.getElementById('bsSheet');\n`;
           js += `    var bsList = document.getElementById('bsList');\n`;
@@ -1077,9 +1104,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
           js += `      }\n`;
           js += `      var removeBtn = document.createElement('button'); removeBtn.type = 'button'; removeBtn.className = 'img-picker__remove';\n`;
           js += `      removeBtn.innerHTML = '<svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" fill=\"none\"><path d=\"M1 1l10 10M11 1L1 11\" stroke=\"#fff\" stroke-width=\"1.8\" stroke-linecap=\"round\"/></svg>';\n`;
-          js += `      removeBtn.addEventListener('click', function() { item.classList.add('img-picker__item--removing'); item.addEventListener('animationend', function() { item.remove(); }); });\n`;
+          js += `      removeBtn.addEventListener('click', function() { item.classList.add('img-picker__item--removing'); item.addEventListener('animationend', function() { item.remove(); adjustBelow(); }); });\n`;
           js += `      item.appendChild(removeBtn);\n`;
           js += `      grid.appendChild(item);\n`;
+          js += `      adjustBelow();\n`;
           js += `    }\n`;
           js += `    function handleMediaResult(data) {\n`;
           js += `      var items = [];\n`;
@@ -1168,7 +1196,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
         if (el.type === 'input') {
           if (ar.settings?.['label']) {
             js += `    var label_${el.id.replace(/-/g, '_')} = document.getElementById('${el.id}');\n`;
-            js += `    if (label_${el.id.replace(/-/g, '_')}) label_${el.id.replace(/-/g, '_')}.previousElementSibling.textContent = ${JSON.stringify(ar.settings['label'])};\n`;
+            js += `    if (label_${el.id.replace(/-/g, '_')}) { var lbl_${el.id.replace(/-/g, '_')} = label_${el.id.replace(/-/g, '_')}.previousElementSibling; var star_${el.id.replace(/-/g, '_')} = lbl_${el.id.replace(/-/g, '_')}.querySelector('.required-star'); lbl_${el.id.replace(/-/g, '_')}.textContent = ${JSON.stringify(ar.settings['label'])}; if (star_${el.id.replace(/-/g, '_')}) { lbl_${el.id.replace(/-/g, '_')}.appendChild(document.createTextNode(' ')); lbl_${el.id.replace(/-/g, '_')}.appendChild(star_${el.id.replace(/-/g, '_')}); } }\n`;
           }
           if (ar.settings?.['placeholder']) {
             js += `    var input_${el.id.replace(/-/g, '_')} = document.getElementById('${el.id}');\n`;
@@ -1179,14 +1207,14 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
         if (el.type === 'date-picker') {
           if (ar.settings?.['label']) {
             js += `    var dp_${el.id.replace(/-/g, '_')} = document.getElementById('${el.id}');\n`;
-            js += `    if (dp_${el.id.replace(/-/g, '_')}) dp_${el.id.replace(/-/g, '_')}.previousElementSibling.textContent = ${JSON.stringify(ar.settings['label'])};\n`;
+            js += `    if (dp_${el.id.replace(/-/g, '_')}) { var dpl_${el.id.replace(/-/g, '_')} = dp_${el.id.replace(/-/g, '_')}.previousElementSibling; var dps_${el.id.replace(/-/g, '_')} = dpl_${el.id.replace(/-/g, '_')}.querySelector('.required-star'); dpl_${el.id.replace(/-/g, '_')}.textContent = ${JSON.stringify(ar.settings['label'])}; if (dps_${el.id.replace(/-/g, '_')}) { dpl_${el.id.replace(/-/g, '_')}.appendChild(document.createTextNode(' ')); dpl_${el.id.replace(/-/g, '_')}.appendChild(dps_${el.id.replace(/-/g, '_')}); } }\n`;
           }
         }
 
         if (el.type === 'media-select') {
           if (ar.settings?.['label']) {
             js += `    var ms_${el.id.replace(/-/g, '_')} = document.getElementById('${el.id}');\n`;
-            js += `    if (ms_${el.id.replace(/-/g, '_')}) ms_${el.id.replace(/-/g, '_')}.previousElementSibling.textContent = ${JSON.stringify(ar.settings['label'])};\n`;
+            js += `    if (ms_${el.id.replace(/-/g, '_')}) { var msl_${el.id.replace(/-/g, '_')} = ms_${el.id.replace(/-/g, '_')}.previousElementSibling; var mss_${el.id.replace(/-/g, '_')} = msl_${el.id.replace(/-/g, '_')}.querySelector('.required-star'); msl_${el.id.replace(/-/g, '_')}.textContent = ${JSON.stringify(ar.settings['label'])}; if (mss_${el.id.replace(/-/g, '_')}) { msl_${el.id.replace(/-/g, '_')}.appendChild(document.createTextNode(' ')); msl_${el.id.replace(/-/g, '_')}.appendChild(mss_${el.id.replace(/-/g, '_')}); } }\n`;
           }
           if (ar.options && ar.options.length > 0) {
             js += `    var ms_opts_${el.id.replace(/-/g, '_')} = document.getElementById('${el.id}').querySelectorAll('.img-picker__option');\n`;
@@ -1333,8 +1361,7 @@ ${body}${sheetHtml}
         }
         let result: string;
         if (isArea) {
-          const hVw = parseFloat((h / CodeGeneratorService.CANVAS_WIDTH * 100).toFixed(2));
-          result = label + `  <textarea id="${el.id}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}" style="height:${hVw}vw"${reqAttr}${patternAttr}${lengthAttr}${disabledAttr}></textarea>${errorDiv}`;
+          result = label + `  <textarea id="${el.id}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}" style="height:${h}px"${reqAttr}${patternAttr}${lengthAttr}${disabledAttr}></textarea>${errorDiv}`;
         } else {
           result = label + `  <input id="${el.id}" type="${el.settings['inputType'] || 'text'}" placeholder="${this.escapeHtml(el.settings['placeholder'] || '')}"${reqAttr}${patternAttr}${lengthAttr}${disabledAttr}>${errorDiv}`;
         }
@@ -1410,7 +1437,9 @@ ${body}${sheetHtml}
       }
       case 'media-select': {
         const isCompact = el.settings['triggerStyle'] === 'compact';
-        let html = `  <label class="el-label">${this.escapeHtml(el.settings['label'] || '')}</label>\n`;
+        const isRequired = el.settings['required'] === 'true';
+        const star = isRequired ? ' <span class="required-star">*</span>' : '';
+        let html = `  <label class="el-label">${this.escapeHtml(el.settings['label'] || '')}${star}</label>\n`;
         html += `  <div class="img-picker${isCompact ? ' img-picker--compact' : ''}" id="${el.id}">\n`;
         if (isCompact) {
           html += `    <div class="img-picker__trigger img-picker__trigger--compact">\n`;

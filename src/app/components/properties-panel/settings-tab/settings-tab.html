@@ -293,6 +293,12 @@
           <input type="text" [ngModel]="el.settings['triggerText'] || ''" (ngModelChange)="updateSetting('triggerText', $event)">
         </div>
       }
+      <label class="switch-row">
+        <span class="switch-row__label">Required</span>
+        <span class="switch" [class.switch--on]="el.settings['required'] === 'true'" (click)="updateSetting('required', el.settings['required'] === 'true' ? 'false' : 'true')">
+          <span class="switch__knob"></span>
+        </span>
+      </label>
       <ng-container *ngTemplateOutlet="optionsList"></ng-container>
     }
 

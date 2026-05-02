@@ -135,7 +135,7 @@
       @if (editing) {
         <input class="inline-edit" [value]="editValue" (input)="editValue = $any($event.target).value" (blur)="finishEdit()" (keydown)="onEditKeydown($event)" autofocus />
       } @else {
-        <label class="el-label">{{ displayLabel }}</label>
+        <label class="el-label">{{ displayLabel }}@if (element.settings['required'] === 'true') { <span class="required-star">*</span> }</label>
       }
       <div class="el-media-picker">
         @if (element.settings['triggerStyle'] === 'compact') {
