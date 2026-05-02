@@ -3,8 +3,11 @@
   @if (['text', 'button', 'input', 'dropdown', 'radio', 'checkbox', 'date-picker', 'media-select', 'alert', 'table'].includes(el.type)) {
     <div class="i18n-toggle">
       <label class="toggle-label">
-        <input type="checkbox" [ngModel]="el.i18nEnabled" (ngModelChange)="toggleI18n($event)">
+        <input type="checkbox" [ngModel]="el.i18nEnabled || builder.activeLang() === 'auto'" (ngModelChange)="toggleI18n($event)" [disabled]="builder.activeLang() === 'auto'">
         <span>Multi-language (EN/AR)</span>
+        @if (builder.activeLang() === 'auto') {
+          <span class="i18n-auto-hint">Auto-enabled</span>
+        }
       </label>
     </div>
   }

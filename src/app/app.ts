@@ -17,7 +17,7 @@ type RightTab = 'code' | 'ai';
   styleUrl: './app.scss',
 })
 export class App {
-  paletteWidth = 160;
+  paletteWidth = 199;
   propertiesWidth = 300;
   editorWidth = 480;
 

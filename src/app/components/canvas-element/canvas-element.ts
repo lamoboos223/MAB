@@ -51,6 +51,10 @@ export class CanvasElement {
     return this.builder.activeLang() === 'ar' && !!this.element.i18nEnabled;
   }
 
+  get isAutoLang(): boolean {
+    return this.builder.activeLang() === 'auto';
+  }
+
   get displayContent(): string {
     if (this.isAr && this.element.i18n?.ar?.staticContent) {
       return this.element.i18n.ar.staticContent;

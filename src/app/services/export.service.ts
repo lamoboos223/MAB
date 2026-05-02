@@ -20,10 +20,10 @@ export class ExportService {
       zip.file(page.fileName, page.html);
     }
 
-    const css = this.codeGen.generateCss(pages, themeMode, partnerTheme);
+    const css = this.codeGen.generateCss(pages, themeMode, partnerTheme, this.builder.activeLang());
     zip.file('css/style.css', css);
 
-    const js = this.codeGen.generateJs(pages, themeMode, this.builder.secretKey(), this.builder.debugMode(), 'standalone');
+    const js = this.codeGen.generateJs(pages, themeMode, this.builder.secretKey(), this.builder.debugMode(), 'standalone', this.builder.activeLang());
     zip.file('js/app.js', js);
 
     const twkHelperContent = await this.loadTwkHelper();

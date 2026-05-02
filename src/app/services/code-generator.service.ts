@@ -24,8 +24,8 @@ export class CodeGeneratorService {
     }));
   }
 
-  generateCss(pages: Page[], themeMode: 'light' | 'dark' | 'auto' = 'auto', partnerTheme: PartnerTheme | null = null): string {
-    const hasI18n = this.hasI18nElements(pages);
+  generateCss(pages: Page[], themeMode: 'light' | 'dark' | 'auto' = 'auto', partnerTheme: PartnerTheme | null = null, langMode: 'en' | 'ar' | 'auto' = 'en'): string {
+    const hasI18n = this.hasI18nElements(pages) || langMode === 'auto' || langMode === 'ar';
 
     const dark = {
       bg: '#0f0f11', text: '#fafafa', textSecondary: '#d4d4d8', textMuted: '#a1a1aa',
@@ -246,9 +246,9 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     return css;
   }
 
-  generateJs(pages: Page[], themeMode: 'light' | 'dark' | 'auto' = 'auto', secretKey: string = '', debugMode: boolean = false, debugTarget: 'preview' | 'standalone' = 'preview'): string {
-    const hasI18n = this.hasI18nElements(pages);
-    const needsDeviceInfo = themeMode === 'auto' || hasI18n;
+  generateJs(pages: Page[], themeMode: 'light' | 'dark' | 'auto' = 'auto', secretKey: string = '', debugMode: boolean = false, debugTarget: 'preview' | 'standalone' = 'preview', langMode: 'en' | 'ar' | 'auto' = 'en'): string {
+    const hasI18n = this.hasI18nElements(pages) || langMode === 'auto';
+    const needsDeviceInfo = themeMode === 'auto' || langMode === 'auto';
     const hasRequiredFields = pages.some(p => p.elements.some(e => e.type === 'input' && e.settings['required'] === 'true'));
     const hasSubmit = pages.some(p => p.elements.some(e => e.type === 'button' && e.submitConfig));
     let js = '';
@@ -444,10 +444,25 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
       js += `  });\n\n`;
     }
 
+    // Fixed language mode: set lang/dir immediately without device detection
+    if (langMode === 'ar') {
+      js += `  // Fixed Arabic language\n`;
+      js += `  document.documentElement.setAttribute('lang', 'ar');\n`;
+      js += `  document.documentElement.setAttribute('dir', 'rtl');\n`;
+      if (this.hasI18nElements(pages)) {
+        js += `  applyArabicTranslations();\n`;
+      }
+      js += `\n`;
+    } else if (langMode === 'en') {
+      js += `  // Fixed English language\n`;
+      js += `  document.documentElement.setAttribute('lang', 'en');\n`;
+      js += `  document.documentElement.setAttribute('dir', 'ltr');\n\n`;
+    }
+
     if (needsDeviceInfo) {
       const purposes = [];
       if (themeMode === 'auto') purposes.push('theme');
-      if (hasI18n) purposes.push('language');
+      if (langMode === 'auto') purposes.push('language');
       js += `  // Detect device info for ${purposes.join(' and ')}\n`;
       js += `  if (typeof TWK !== 'undefined' && TWK.getDeviceInfo) {\n`;
       js += `    TWK.getDeviceInfo().then(function(data) {\n`;
@@ -459,8 +474,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
         js += `      document.documentElement.setAttribute('data-theme', theme);\n`;
       }
 
-      if (hasI18n) {
-        js += `      // Apply language and direction\n`;
+      if (langMode === 'auto') {
+        js += `      // Apply language and direction based on device language\n`;
         js += `      var lang = (info.app_language || 'en').toLowerCase();\n`;
         js += `      var isAr = lang === 'ar' || lang.startsWith('ar');\n`;
         js += `      document.documentElement.setAttribute('lang', isAr ? 'ar' : 'en');\n`;

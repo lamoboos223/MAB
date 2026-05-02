@@ -67,6 +67,23 @@ export class ElementPalette {
     }
   }
 
+  setLang(lang: 'en' | 'ar' | 'auto'): void {
+    this.builder.activeLang.set(lang);
+    if (lang === 'auto') {
+      const translatableTypes = ['text', 'button', 'input', 'dropdown', 'radio', 'checkbox', 'date-picker', 'media-select', 'alert', 'table'];
+      const updatedPages = this.builder.pages().map(page => ({
+        ...page,
+        elements: page.elements.map(el => {
+          if (translatableTypes.includes(el.type) && !el.i18nEnabled) {
+            return { ...el, i18nEnabled: true, i18n: el.i18n || { ar: {} } };
+          }
+          return el;
+        })
+      }));
+      this.builder.pages.set(updatedPages);
+    }
+  }
+
   setThemeMode(mode: 'light' | 'dark' | 'auto'): void {
     this.builder.appThemeMode.set(mode);
     if (mode === 'light' || mode === 'dark') {

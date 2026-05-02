@@ -18,7 +18,7 @@ export interface Revision {
 interface SavedState {
   pages: Page[];
   activePageId: string;
-  activeLang: 'en' | 'ar';
+  activeLang: 'en' | 'ar' | 'auto';
   appThemeMode: 'light' | 'dark' | 'auto';
   secretKey: string;
   debugMode: boolean;
@@ -33,7 +33,7 @@ export class BuilderService {
   ]);
 
   activePageId = signal<string>('');
-  activeLang = signal<'en' | 'ar'>('en');
+  activeLang = signal<'en' | 'ar' | 'auto'>('en');
   appThemeMode = signal<'light' | 'dark' | 'auto'>('auto');
   selectedElementId = signal<string | null>(null);
   secretKey = signal<string>('MY_HMAC_SECRET_2025');
@@ -230,11 +230,17 @@ export class BuilderService {
     this.selectedElementId.set(null);
   }
 
+  private readonly translatableTypes: ElementType[] = ['text', 'button', 'input', 'dropdown', 'radio', 'checkbox', 'date-picker', 'media-select', 'alert', 'table'];
+
   addElement(type: ElementType): void {
     const element = this.createDefaultElement(type);
     const page = this.activePage();
     const count = page ? page.elements.length : 0;
     element.position = { x: 12, y: 12 + count * 70 };
+    if (this.activeLang() === 'auto' && this.translatableTypes.includes(type)) {
+      element.i18nEnabled = true;
+      element.i18n = { ar: {} };
+    }
     const pages = this.pages().map(p => {
       if (p.id === this.activePageId()) {
         return { ...p, elements: [...p.elements, element] };

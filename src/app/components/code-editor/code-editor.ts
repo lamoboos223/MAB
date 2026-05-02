@@ -49,7 +49,8 @@ export class CodeEditor {
     return this.generator.generateCss(
       this.builder.pages(),
       this.builder.appThemeMode(),
-      this.builder.partnerTheme()
+      this.builder.partnerTheme(),
+      this.builder.activeLang()
     );
   });
 
@@ -59,7 +60,8 @@ export class CodeEditor {
       this.builder.appThemeMode(),
       this.builder.secretKey(),
       this.builder.debugMode(),
-      'preview'
+      'preview',
+      this.builder.activeLang()
     );
   });
 
